@@ -25,7 +25,7 @@ const contactMethods = [
   },
   {
     type: "GitHub",
-    value: "github.com/yourusername",
+    value: "github.com/yongchane",
     href: "https://github.com/yongchane",
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
