@@ -13,7 +13,7 @@ const projects: Project[] = [
     description:
       "저의 개발 여정과 성과를 효과적으로 보여주기 위해 Next.js와 TypeScript를 기반으로 직접 구축한 포트폴리오 웹사이트입니다. \n 단순한 정보 나열을 넘어, 사용자 친화적인 UI/UX와 최적화된 성능을 통해 방문자가 저의 강점을 명확히 인지하도록 설계했습니다.",
     achievement:
-      "- 1인 기획/개발/디자인: \n 개인 포트폴리오의 목적과 페르소나를 명확히 설정하고, UI/UX 설계부터 FE 개발, 최종 배포까지 전 과정을 1인으로 책임졌습니다. \n\n- 성능 및 SEO 최적화:\n Next.js의 기능을 활용하여 초기 렌더링 속도를 향상시켰습니다. \n 또한, 직접 도메인을 구매하고 구글 SEO 작업을 진행하여 검색 엔진 최적화를 완료, 잠재적인 협업 기회와 사용자 접근성을 확보했습니다.\n\n- 기술 스택 활용:\n Tailwind CSS로 빠르고 일관된 스타일링을 적용했으며, Framer Motion으로 동적인 인터랙션을 구현하여 방문자에게 직관적이고 인상적인 경험을 제공했습니다.",
+      "- 1인 기획/개발/디자인: \n 개인 포트폴리오의 목적과 페르소나를 명확히 설정하고, UI/UX 설계부터 FE 개발, 최종 배포까지 전 과정을 1인으로 책임졌습니다. \n\n- 성능, 모바일 반응형 및 SEO 최적화:\n Next.js의 기능을 활용하여 초기 렌더링 속도를 향상시키고, PC/모바일 환경에 맞춘 반응형 레이아웃을 적용해 다양한 기기에서 일관된 사용자 경험을 제공했습니다. \n 또한, 직접 도메인을 구매하고 구글 SEO 작업을 진행하여 검색 엔진 최적화를 완료, 잠재적인 협업 기회와 사용자 접근성을 확보했습니다.\n\n- 기술 스택 활용:\n Tailwind CSS로 빠르고 일관된 스타일링을 적용했으며, Framer Motion으로 동적인 인터랙션을 구현하여 방문자에게 직관적이고 인상적인 경험을 제공했습니다.",
     role: "1인 개발 / UI UX / FE",
     period: "2025.10",
     tags: [
@@ -65,7 +65,7 @@ const projects: Project[] = [
     description:
       "빠르게 발전하는 AI 툴에 적응하고, 아이디어를 실제 서비스로 완성하는 전 과정을 경험하기 위한 'AI 툴로 20개 프로젝트 만들기' 챌린지의 첫 번째 프로젝트입니다. \n Next.js와 Framer Motion을 활용하여 화려한 인터랙션을 갖춘 웹 게임을 구현했으며, 현재 실제 도메인을 연결하여 라이브 서비스를 운영하고 있습니다.",
     achievement:
-      "- 1인 개발(기획/FE):\n Perplexity로 아이디어를 얻고 Claude를 활용해 기획부터 개발까지 1인 개발로 완수하며 AI 기반 개발 생산성을 입증했습니다.\n\n- 성능 최적화:\n Next.js의 SSR/ISR을 적용하여 초기 로딩 속도를 최적화했으며, Zustand를 통해 효율적으로 상태를 관리했습니다. \n Framer Motion으로 사용자에게 부드러운 애니메이션 경험을 제공했습니다.\n\n- 서비스 배포 및 운영:\n 직접 도메인을 구매하고 연결부터 배포까지 직접 수행하여 실제 서비스를 런칭했습니다. \n 또한, 구글 SEO 작업을 진행하여 검색 엔진 최적화를 완료, 잠재적인 협업 기회와 사용자 접근성을 확보했습니다.\n 현재는 사용자 확보를 위한 마케팅 전략을 구상하며 서비스 고도화를 준비하고 있습니다.",
+      "- 1인 개발(기획/FE):\n Perplexity로 아이디어를 얻고 Claude를 활용해 기획부터 개발까지 1인 개발로 완수하며 AI 기반 개발 생산성을 입증했습니다.\n\n- 성능 및 모바일 반응형 최적화:\n Next.js의 SSR/ISR을 적용하여 초기 로딩 속도를 최적화했으며, Tailwind CSS를 활용해 PC/모바일에 맞춘 반응형 레이아웃과 터치 친화적 인터랙션을 구현하여 다양한 기기에서 일관된 플레이 경험을 제공했습니다. \n 또한, Zustand로 효율적인 상태 관리를 수행했고, Framer Motion으로 사용자에게 부드러운 애니메이션 경험을 제공했습니다.\n\n- 서비스 배포 및 운영:\n 직접 도메인을 구매하고 연결부터 배포까지 직접 수행하여 실제 서비스를 런칭했습니다. \n 또한, 구글 SEO 작업을 진행하여 검색 엔진 최적화를 완료, 잠재적인 협업 기회와 사용자 접근성을 확보했습니다.\n 현재는 사용자 확보를 위한 마케팅 전략을 구상하며 서비스 고도화를 준비하고 있습니다.",
     role: "1인 개발 / PM / FE",
     period: "2025.08 - 2025.09",
     tags: [
@@ -78,7 +78,7 @@ const projects: Project[] = [
       "SEO",
       "Vercel",
     ],
-    link: "https://example.com",
+    link: "https://www.shootingstar.run",
     github: "https://github.com/yongchane/ShootingStar.git",
   },
   {
@@ -99,6 +99,7 @@ const projects: Project[] = [
       "OpenAI",
       "Vercel",
     ],
+
     github: "https://github.com/2025-Likelion-Hackathon/Team_Mut4_FE.git",
   },
   {
@@ -122,6 +123,7 @@ const projects: Project[] = [
       "Cursor",
       "Vercel",
     ],
+    theis: "https://www.dbpia.co.kr/journal/articleDetail?nodeId=NODE12253169",
     figma:
       "https://www.figma.com/proto/o9zslKzAPQ8ElewOnOwTB7/%EC%BA%A1%EC%8A%A4%ED%86%A4-%EB%94%94%EC%9E%90%EC%9D%B8-2025---%EB%82%B4%EA%B8%B8%EB%A7%8C?page-id=3%3A3450&node-id=118-1786&viewport=280%2C355%2C0.25&t=4XrPPNwSA3g7jU0b-1&scaling=scale-down&content-scaling=fixed&starting-point-node-id=523%3A428",
     github: "https://github.com/yongchane/2025_Capstone.git",
@@ -233,7 +235,7 @@ export default function Projects() {
                         {tag}
                       </span>
                     ))}
-                    <div className="flex items-center gap-2 ml-auto">
+                    <div className="flex items-center gap-2 ml-auto mb-[6px]">
                       {project.link && (
                         <a
                           href={project.link}
@@ -254,6 +256,17 @@ export default function Projects() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           Figma 보기
+                        </a>
+                      )}
+                      {project.theis && (
+                        <a
+                          href={project.theis}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-1 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          논문 보기
                         </a>
                       )}
                       {project.github && (
