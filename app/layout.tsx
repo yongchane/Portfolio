@@ -61,13 +61,21 @@ export const metadata: Metadata = {
     description:
       "프론트엔드 개발자 현용찬의 포트폴리오입니다. React, Next.js, TypeScript를 활용한 웹 개발 프로젝트와 기술 스택을 소개합니다.",
     siteName: "현용찬 포트폴리오",
-    images: [{ url: "/logo.png", width: 1200, height: 630 }],
+    images: [
+      {
+        url: "/preview.png",
+        width: 1200,
+        height: 630,
+        alt: "현용찬 포트폴리오 미리보기",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "현용찬 | Frontend Developer Portfolio",
     description:
       "프론트엔드 개발자 현용찬의 포트폴리오입니다. React, Next.js, TypeScript를 활용한 웹 개발 프로젝트와 기술 스택을 소개합니다.",
+    images: ["/preview.png"],
   },
   robots: {
     index: true,
