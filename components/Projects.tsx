@@ -9,53 +9,114 @@ const projects: Project[] = [
   {
     id: "1",
     title: "[외주] (주) 한국 기타가와 홈페이지 리뉴얼",
-    imageUrl: "/kitagawa.png",
+    imageUrl: "/kitagawa.jpeg",
     description:
       " 정밀 척 및 공작기계 부품 분야의 글로벌 전문 기업인 기타가와(Kitagawa)의 한국 지사 웹사이트 개편 프로젝트를 외주로 맡아 수행중입니다. \n 노후화된 기존 사이트로 인해 현지 고객 접점이 악화된 상황에서, 한국 사용자 경험에 맞춘 PC, 모바일 반응형 웹사이트를 구축하여 브랜드 신뢰도를 강화하는 것을 목표로 하고있습니다",
-    role: "PM / FE Lead",
+    achievement:
+      "- PM: 회사 대표님과 미팅을 통해 요구사항을 분석하고, 이를 바탕으로 전체 프로젝트 기획 및 일정 관리를 주도했습니다.\n\n- FE Lead: Next.js 기반 아키텍처를 설계하고, 회사 전체 페이지, 반응형 웹/앱, 관리자 페이지 개발을 담당했습니다.\n\n- 성능 최적화: 5,000건 이상의 제품 데이터를 효율적으로 처리하기 위해 SSR과 TanStack Query를 적용, 기존 사이트 대비 페이지 렌더링 속도를 70% 이상 개선했습니다.",
+    role: "팀장 / PM / FE ",
     period: "(진행 중) 2025.08 - ",
-    tags: ["TypeScript", "Next.js", "Zustand", "Tailwind CSS", "CSS-in-JS"],
-    achievements: [
-      "30+ 재사용 가능한 컴포넌트 설계 및 구현",
-      "TypeScript 기반 타입 시스템으로 개발 생산성 40% 향상",
-      "Tree-shaking 최적화로 번들 사이즈 60% 감소",
-      "Storybook 기반 인터랙티브 문서화로 팀 협업 개선",
+    tags: [
+      "TypeScript",
+      "Next.js",
+      "TanStack Query",
+      "Zustand",
+      "Tailwind CSS",
+      "CSS-in-JS",
     ],
-    link: "https://example.com",
-    github: "https://github.com/example",
   },
   {
     id: "2",
-    title: "대시보드 웹 애플리케이션",
-    imageUrl: "/images/project2.png",
+    title: "[Vibe coding] 운빨 고양이 달리기 게임",
+    imageUrl: "/runcat.png",
     description:
-      "실시간 데이터 시각화 대시보드. Next.js와 Zustand를 활용한 복잡한 상태 관리 및 최적화된 렌더링 구현.",
-    role: "Frontend Lead",
-    period: "2023.06 - 2023.12",
-    tags: ["Next.js", "TypeScript", "Zustand", "Recharts", "Tailwind CSS"],
-    achievements: [
-      "SSR/ISR을 활용한 초기 로딩 속도 70% 개선",
-      "Zustand를 활용한 효율적인 전역 상태 관리",
-      "React.memo와 useMemo를 활용한 렌더링 최적화",
-      "Lighthouse 성능 점수 95점 이상 달성",
-    ],
-    link: "https://example.com",
+      "'AI 툴로 20개 프로젝트 만들기' 챌린지의 두 번째 작업물입니다.\n Next.js와 TypeScript를 기반으로, HTML Canvas를 사용하여 고양이가 달리는 로그라이크형 게임을 구현하는 중입니다. 10 스테이지마다 주어지는 랜덤 음식을 통해 고양이가 새로운 능력치를 얻고 모습이 진화하는 독특한 컨셉으로, AI를 활용한 신속한 프로토타이핑과 개발 가능성을 탐구한 프로젝트입니다.",
+    achievement:
+      "- 기획(PM): Perplexity로 자료를 조사하고 Claude와 함께 아이디어를 구체화하며 전체 프로젝트를 기획했습니다.\n\n- 디자인: Gemini의 이미지 생성 모델을 활용해 초기 캐릭터 컨셉을 디자인하고, Adobe 툴로 디테일을 완성하여 독창적인 게임 비주얼을 구현했습니다.\n\n- FE 개발: Claude CLI와 VSCode Copilot을 적극 활용하는 '바이브 코딩'으로 개발 생산성을 극대화했습니다. 복잡한 게임 로직과 캐릭터 애니메이션을 Canvas API 위에 효율적으로 구현하며 AI 기반 개발 워크플로우를 성공적으로 구축했습니다.",
+    role: "1인 개발 / PM / Design / FE",
+    period: "(진행중) 2025.09 - ",
+    tags: ["TypeScript", "Next.js", "Canvas API", "Zustand", "AI Development"],
+    github: "https://github.com/yongchane/CatRunner.git",
   },
   {
     id: "3",
-    title: "반응형 랜딩 페이지",
-    imageUrl: "/images/project3.png",
+    title: "[Vibe coding] 별똥별 게임",
+    imageUrl: "/star.png",
     description:
-      "모바일 우선 접근 방식으로 설계된 반응형 랜딩 페이지. 웹 표준과 접근성을 준수하며 부드러운 인터랙션 구현.",
-    role: "Frontend Developer",
-    period: "2023.01 - 2023.03",
-    tags: ["React", "TypeScript", "Framer Motion", "WCAG 2.1"],
-    achievements: [
-      "WCAG 2.1 AA 수준 접근성 준수",
-      "Framer Motion을 활용한 60fps 애니메이션",
-      "모든 디바이스에서 일관된 사용자 경험 제공",
-      "전환율 35% 증가",
+      "빠르게 발전하는 AI 툴에 적응하고, 아이디어를 실제 서비스로 완성하는 전 과정을 경험하기 위한 'AI 툴로 20개 프로젝트 만들기' 챌린지의 첫 번째 프로젝트입니다. \n Next.js와 Framer Motion을 활용하여 화려한 인터랙션을 갖춘 웹 게임을 구현했으며, 현재 실제 도메인을 연결하여 라이브 서비스를 운영하고 있습니다.",
+    achievement:
+      "- 1인 개발(기획/FE): Perplexity로 아이디어를 얻고 Claude를 활용해 기획부터 개발까지 1인 개발로 완수하며 AI 기반 개발 생산성을 입증했습니다.\n\n- 성능 최적화: Next.js의 SSR/ISR을 적용하여 초기 로딩 속도를 최적화했으며, Zustand를 통해 효율적으로 상태를 관리했습니다. \n Framer Motion으로 사용자에게 부드러운 애니메이션 경험을 제공했습니다.\n\n- 서비스 배포 및 운영: 도메인 구매 및 연결부터 배포까지 직접 수행하여 실제 서비스를 런칭했습니다. 현재는 사용자 확보를 위한 마케팅 전략을 구상하며 서비스 고도화를 준비하고 있습니다.",
+    role: "1인 개발 / PM / FE",
+    period: "2025.08 - 2025.09",
+    tags: [
+      "Next.js",
+      "TypeScript",
+      "Zustand",
+      "Framer Motion",
+      "Tailwind CSS",
+      "AI Development",
     ],
+    link: "https://example.com",
+    github: "https://github.com/yongchane/ShootingStar.git",
+  },
+  {
+    id: "4",
+    title: "TOOR - 너와 나의 투어를 잇는 토박이",
+    imageUrl: "/toor.png",
+    description:
+      "현지인 데이터와 AI를 통해 여행지의 가격 불투명성(바가지) 문제를 해결하는 신뢰 기반 여행 플랫폼입니다. \n GPS 기반의 현지인 인증 시스템으로 신뢰도 높은 정보를 제공하고, AI 챗봇이 개인화된 여행 가이드를 제시하여 국내 여행의 가성비를 혁신하는 것을 목표로 합니다.",
+    achievement:
+      "- PM: 팀 리더로서 '바가지 없는 여행'이라는 서비스의 핵심 가치를 설정하고, 아이디어 기획부터 백엔드/디자인 팀과의 협업을 조율하며 프로젝트 전체를 이끌었습니다.\n\n- FE Lead: React(Vite), Tailwind CSS를 기반으로 모바일 우선의 반응형 웹 아키텍처를 설계하고 프론트엔드 개발을 총괄했습니다. \n Vercel을 통한 배포를 완료하였습니다. \n\n- 핵심 기능 개발: GPS를 활용한 위치 기반 현지인 인증, 실시간 가격 비교 카드 UI, 북마크 API 연동, OpenAI GPT 기반의 AI 챗봇 등 서비스의 주요 기능을 직접 구현하여 아이디어를 성공적으로 현실화했습니다.",
+    role: "팀장 / PM / FE lead",
+    period: "2025-08",
+    tags: [
+      "React",
+      "Vite",
+      "Tailwind CSS",
+      "Kakao rest API",
+      "OpenAI",
+      "Vercel",
+    ],
+    github: "https://github.com/2025-Likelion-Hackathon/Team_Mut4_FE.git",
+  },
+  {
+    id: "5",
+    title: "[Capstone] 내길만 - AI 기반 맞춤형 경로 추천 서비스",
+    imageUrl: "/load2.png",
+    description:
+      "사용자의 이동 및 검색 패턴을 AI가 학습하여 개인화된 최적의 경로와 장소를 추천하는 졸업 작품 프로젝트입니다. React와 TypeScript를 기반으로, 카카오맵 API와 AI 추천 엔진을 연동하여 '나만을 위한 길'을 찾아주는 새로운 인포테인먼트 서비스를 구현했습니다.",
+    achievement:
+      '- PM 및 UI/UX 설계: 시장 조사를 통해 서비스의 방향성을 수립하고 Notion으로 기획을 구체화했습니다. Figma를 활용하여 전체 서비스의 UI/UX 설계를 직접 담당하며 사용자 중심의 인터페이스를 구축했습니다.\n\n- FE 개발: React(Vite), TypeScript, Tailwind CSS 기반의 프론트엔드 아키텍처를 설계하고 개발을 총괄했습니다. \n 카카오맵 API를 연동하여 지도/경로 시각화 기능을 구현하고, AI 기반 패턴 분석 추천 모듈을 연동하는 핵심 파트를 담당했습니다. \n Vercel을 통한 배포를 완료하였습니다. \n\n- 학술적 성과 인정: 프로젝트의 기술적 독창성과 정보 편의성 향상 방안을 인정받아, 한국엔터테인먼트산업학회에 "사용자 선호 기반 맞춤형 길 찾기 및 장소 추천 서비스 AI 기반 인포테인먼트 기술을 활용한 정보 편의성 향상 방안" 주제로 논문을 등재하고 직접 발표하는 성과를 거두었습니다.',
+    role: "팀장 / PM / UI UX / FE",
+    period: "2025.05 - 2025.06",
+    tags: [
+      "React",
+      "TypeScript",
+      "Vite",
+      "Zustand",
+      "Tailwind CSS",
+      "Kakao rest API",
+      "AI",
+      "Cursor",
+      "Vercel",
+    ],
+    figma:
+      "https://www.figma.com/proto/o9zslKzAPQ8ElewOnOwTB7/%EC%BA%A1%EC%8A%A4%ED%86%A4-%EB%94%94%EC%9E%90%EC%9D%B8-2025---%EB%82%B4%EA%B8%B8%EB%A7%8C?page-id=3%3A3450&node-id=118-1786&viewport=280%2C355%2C0.25&t=4XrPPNwSA3g7jU0b-1&scaling=scale-down&content-scaling=fixed&starting-point-node-id=523%3A428",
+    github: "https://github.com/yongchane/2025_Capstone.git",
+  },
+  {
+    id: "6",
+    title: "[전국 연합 동아리 SW 해커톤 1등] 물렐루야! - 물은 답을 알고 있다.",
+    imageUrl: "water.png",
+    description:
+      "2024년 전국 연합 동아리 SW 해커톤에서 1등(단장상)을 수상한, 건강한 수분 섭취 습관 형성 서비스입니다.\n 단순히 마신 물의 양만 기록하는 것을 넘어, 커피나 주스 등 음료 종류별 수분 섭취량을 추적하고 통계와 루틴 기능을 제공하여 사용자가 자신의 습관을 직관적으로 관리하고 개선하도록 돕습니다.",
+    achievement:
+      "- 전국 연합 동아리 SW 해커톤 1등(단장상) 수상: 첫 해커톤 도전에서 팀의 1등 수상을 이끌었습니다.\n\n- PM : 팀장으로서 아이디어 기획부터 최종 발표까지 프로젝트 전 과정을 책임졌습니다.\n 무박 2일이라는 짧은 시간 동안 팀원들의 역할을 조율하고 동기를 부여하며 성공적으로 프로젝트를 완수했습니다. \n\n-  FE Lead : React 기반의 프론트엔드 개발을 리드하며, 메인 대시보드, 음료 기록, 통계 UI 등 사용자의 핵심 경험을 구성하는 주요 기능들을 직접 구현했습니다.",
+    role: "팀장 / PM / FE Lead",
+    period: "2024.09",
+    tags: ["React", "SCSS", "Styled-Components", "Tailwind CSS"],
+    github:
+      "https://github.com/Hoseox9oormthonUniv-Hackathon/TEAM6_Water_lujah-_FE.git",
   },
 ];
 
@@ -74,9 +135,6 @@ export default function Projects() {
           className="text-center mb-16"
         >
           <h2 className="text-5xl md:text-6xl font-bold mb-6">Projects</h2>
-          <p className="text-xl text-muted max-w-2xl mx-auto">
-            실무에서 해결한 문제와 구현한 솔루션
-          </p>
         </motion.div>
 
         {/* Projects list */}
@@ -97,12 +155,12 @@ export default function Projects() {
                 <motion.img
                   src={project.imageUrl}
                   alt={project.title}
-                  className="transition-transform duration-500 hover:scale-105"
+                  className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
                 />
               </div>
 
               {/* Text Content Section */}
-              <div className="bg-white rounded-2xl border border-border p-8 col-span-2 shadow-lg">
+              <div className="bg-white rounded-2xl border border-border p-8 md:col-span-2 shadow-lg">
                 <div
                   className="cursor-pointer"
                   onClick={() =>
@@ -137,26 +195,61 @@ export default function Projects() {
                   <p className="text-muted text-sm mb-4">
                     담당: {project.role} · {project.period}
                   </p>
+                  <div className="pt-6 my-6 border-t border-border">
+                    <p className="text-lg leading-relaxed whitespace-pre-line">
+                      {project.description}
+                    </p>
+                  </div>
 
-                  {/* Project description */}
-                  <p className="text-lg mb-6 leading-relaxed whitespace-pre-line">
-                    {project.description}
-                  </p>
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2">
+                  {/* Tags and Links */}
+                  <div className="flex flex-wrap items-center gap-2 ">
                     {project.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="px-3 py-1 bg-secondary text-sm font-medium rounded-lg"
+                        className="px-3 py-1 bg-secondary text-sm font-medium rounded-lg mb-[6px]"
                       >
                         {tag}
                       </span>
                     ))}
+                    <div className="flex items-center gap-2 ml-auto">
+                      {project.link && (
+                        <a
+                          href={project.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-1 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          프로젝트 보기
+                        </a>
+                      )}
+                      {project.figma && (
+                        <a
+                          href={project.figma}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-1 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Figma 보기
+                        </a>
+                      )}
+                      {project.github && (
+                        <a
+                          href={project.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-1 border-2 border-border text-sm font-semibold rounded-lg hover:border-primary hover:text-primary transition-all"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          GitHub
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Achievements (expanded) */}
+                {/* Project description (expandable) */}
                 <motion.div
                   initial={false}
                   animate={{
@@ -166,52 +259,13 @@ export default function Projects() {
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   className="overflow-hidden"
                 >
-                  <div className="pt-6 mt-6 border-t border-border">
-                    <h4 className="text-xl font-bold mb-4">주요 성과</h4>
-                    <ul className="space-y-3">
-                      {project.achievements.map((achievement, i) => (
-                        <motion.li
-                          key={i}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.4, delay: i * 0.1 }}
-                          className="flex gap-3"
-                        >
-                          <div className="flex-shrink-0 w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-sm font-bold mt-0.5">
-                            {i + 1}
-                          </div>
-                          <span className="text-lg">{achievement}</span>
-                        </motion.li>
-                      ))}
-                    </ul>
-
-                    {/* Links */}
-                    {(project.link || project.github) && (
-                      <div className="flex gap-4 mt-6">
-                        {project.link && (
-                          <a
-                            href={project.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            프로젝트 보기
-                          </a>
-                        )}
-                        {project.github && (
-                          <a
-                            href={project.github}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-6 py-3 border-2 border-border font-semibold rounded-lg hover:border-primary hover:text-primary transition-all"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            GitHub
-                          </a>
-                        )}
-                      </div>
-                    )}
+                  <div className="pt-6 mt-6 border-t border-border ">
+                    <p className="text-muted font-[700] text-lg mb-4">
+                      [주요 역할 및 성과]
+                    </p>
+                    <p className="text-lg leading-relaxed whitespace-pre-line">
+                      {project.achievement}
+                    </p>
                   </div>
                 </motion.div>
               </div>

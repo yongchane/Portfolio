@@ -6,7 +6,7 @@ export interface Project {
   imageUrl: string;
   period: string;
   tags: string[];
-  achievements: string[];
+  achievement: string;
   link?: string;
   github?: string;
   image?: string;
@@ -29,5 +29,4 @@ export interface Experience {
   position: string;
   period: string;
   description: string;
-  achievements: string[];
 }
