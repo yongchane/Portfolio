@@ -12,11 +12,12 @@ const navItems = [
 
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { scrollY } = useScroll();
   const backgroundColor = useTransform(
     scrollY,
     [0, 100],
-    ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0.9)"]
+    ["rgba(255, 255, 255, 0.8)", "rgba(255, 255, 255, 0.9)"]
   );
 
   useEffect(() => {
@@ -32,7 +33,7 @@ export default function Navigation() {
     <motion.nav
       style={{ backgroundColor }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "shadow-lg backdrop-blur-lg" : ""
+        isScrolled ? "shadow-lg backdrop-blur-lg " : ""
       }`}
     >
       <div className="max-w-6xl mx-auto px-6 py-4">
@@ -65,22 +66,60 @@ export default function Navigation() {
           </div>
 
           {/* Mobile menu button */}
-          <button className="md:hidden p-2" aria-label="Menu">
+          <button
+            className="md:hidden p-2"
+            aria-label="Menu"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
             <svg
               className="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
+              {isMobileMenuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
             </svg>
           </button>
         </div>
+
+        {/* Mobile menu */}
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden w-full  bg-[rgba(255, 255, 255, 0.9)] border-t border-border/50 mt-4"
+          >
+            <div className="flex flex-col gap-4 py-4">
+              {navItems.map((item) => (
+                <motion.a
+                  key={item.name}
+                  href={item.href}
+                  className="text-foreground/70 hover:text-foreground font-medium transition-colors px-4 py-2 hover:bg-secondary rounded-lg text-end "
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {item.name}
+                </motion.a>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
     </motion.nav>
   );

@@ -26,7 +26,7 @@ export default function Hero() {
 
         {/* Main heading with word-by-word animation */}
         <motion.h1
-          className="text-6xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight"
+          className="text-[50px] md:text-7xl lg:text-8xl font-bold mb-8 leading-tight"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
@@ -98,7 +98,7 @@ export default function Hero() {
 
         {/* Scroll indicator */}
         <motion.div
-          className="absolute bottom-12 left-1/2 -translate-x-1/2"
+          className="md:absolute bottom-12 left-1/2 -translate-x-1/2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 1.2 }}
