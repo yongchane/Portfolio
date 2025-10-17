@@ -8,6 +8,7 @@ export interface Project {
   tags: string[];
   achievement: string;
   link?: string;
+  figma?: string;
   github?: string;
   image?: string;
 }
