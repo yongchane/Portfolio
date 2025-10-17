@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://www.hyunyongchan.kr/sitemap.xml
+
+# Host
+Host: https://www.hyunyongchan.kr

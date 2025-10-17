@@ -13,38 +13,68 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "현용찬의 포트폴리오 - 프론트엔드 개발자",
-  description: "안녕하세요 Frontend Developer 현용찬입니다. 환영합니다!",
+  metadataBase: new URL("https://www.hyunyongchan.kr"),
+  title: {
+    default: "현용찬 | Frontend Developer Portfolio",
+    template: "%s | 현용찬",
+  },
+  description:
+    "프론트엔드 개발자 현용찬의 포트폴리오입니다. React, Next.js, TypeScript를 활용한 웹 개발 프로젝트와 기술 스택을 소개합니다.",
   keywords: [
-    "Frontend Developer",
-    "React",
-    "TypeScript",
-    "Next.js",
-    "UI Components",
-    "Portfolio",
     "현용찬",
+    "hyunyongchan",
+    "Hyun Yongchan",
+    "Frontend Developer",
     "프론트엔드 개발자",
+    "React",
+    "Next.js",
+    "TypeScript",
+    "JavaScript",
+    "웹 개발자",
+    "포트폴리오",
+    "Portfolio",
     "웹 개발",
-    "프로그래밍",
-    "프론트엔드 포트폴리오",
-    "웹 애플리케이션",
-    "사용자 인터페이스",
-    "웹 디자인",
-    "프론트엔드 기술",
-    "오픈 소스",
-    "개발 블로그",
-    "코딩 프로젝트",
-    "프론트엔드 아키텍처",
-    "웹 성능 최적화",
-    "접근성",
-    "반응형 디자인",
-    "현용찬 포트폴리오",
+    "UI/UX",
+    "프론트엔드",
+    "개발자 포트폴리오",
   ],
-  authors: [{ name: "현용찬" }],
+  authors: [{ name: "현용찬", url: "https://www.hyunyongchan.kr" }],
+  creator: "현용찬",
+  publisher: "현용찬",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   openGraph: {
-    title: "현용찬의 포트폴리오 - 프론트엔드 개발자",
-    description: "안녕하세요 Frontend Developer 현용찬입니다. 환영합니다!",
     type: "website",
+    locale: "ko_KR",
+    url: "https://www.hyunyongchan.kr",
+    title: "현용찬 | Frontend Developer Portfolio",
+    description:
+      "프론트엔드 개발자 현용찬의 포트폴리오입니다. React, Next.js, TypeScript를 활용한 웹 개발 프로젝트와 기술 스택을 소개합니다.",
+    siteName: "현용찬 포트폴리오",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "현용찬 | Frontend Developer Portfolio",
+    description:
+      "프론트엔드 개발자 현용찬의 포트폴리오입니다. React, Next.js, TypeScript를 활용한 웹 개발 프로젝트와 기술 스택을 소개합니다.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google:
+      "google-site-verification=6t4Xj9ynV-QobYWpgTe7ngKVp8CRDzzyHlIEKHI9pvQ", // Google Search Console에서 발급받은 코드로 교체 필요
   },
 };
 
@@ -53,8 +83,36 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: "현용찬",
+    alternateName: "Hyun Yongchan",
+    url: "https://www.hyunyongchan.kr",
+    jobTitle: "Frontend Developer",
+    description:
+      "프론트엔드 개발자 현용찬의 포트폴리오입니다. React, Next.js, TypeScript를 활용한 웹 개발 프로젝트와 기술 스택을 소개합니다.",
+    email: "vaga0330@gmail.com",
+    knowsAbout: [
+      "React",
+      "Next.js",
+      "TypeScript",
+      "JavaScript",
+      "Frontend Development",
+      "Web Development",
+      "UI/UX",
+    ],
+    sameAs: ["https://github.com/yongchane"],
+  };
+
   return (
     <html lang="ko" className="scroll-smooth">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
