@@ -46,7 +46,7 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            "현용찬" 입니다
+            &ldquo;현용찬&rdquo; 입니다
           </motion.span>
         </motion.h1>
 
@@ -57,11 +57,11 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          "현" 재를 통해 미래를 만드는 개발자,
+          &ldquo;현&rdquo; 재를 통해 미래를 만드는 개발자,
           <br />
-          "용" 기 있는 도전과 밝은 에너지로 새로운 길을 개척합니다.
+          &ldquo;용&rdquo; 기 있는 도전과 밝은 에너지로 새로운 길을 개척합니다.
           <br />
-          "찬" 란한 성장과 함께 발전해 나가고 싶습니다.
+          &ldquo;찬&rdquo; 란한 성장과 함께 발전해 나가고 싶습니다.
         </motion.p>
 
         {/* CTA Buttons */}

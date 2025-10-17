@@ -2,28 +2,6 @@
 
 import { motion } from "framer-motion";
 import { FaUser, FaEnvelope, FaGithub, FaPhone } from "react-icons/fa";
-const highlights = [
-  {
-    title: "실패를 학습으로 바꾸는 사람",
-    description:
-      "실험과 빠른 피드백으로 실패를 데이터로 전환합니다. 작은 리스크로 자주 시도하고 회고로 제품을 개선합니다.",
-  },
-  {
-    title: "경험으로 증명하는 개발",
-    description:
-      "PoC·A/B 테스트와 사용자 피드백으로 가설을 검증합니다. 실제 사용 경험을 근거로 의사결정해 시행착오를 줄입니다.",
-  },
-  {
-    title: "누구보다 긍정적인 문제 해결자",
-    description:
-      "문제 앞에서 가능성을 먼저 봅니다. 제약을 기회로 바꾸고 현실적인 대안을 빠르게 제시합니다.",
-  },
-  {
-    title: "편안한 분위기를 만드는 동료",
-    description:
-      "명확한 커뮤니케이션과 존중을 바탕으로 협업합니다. 문서화와 코드리뷰로 심리적 안정감을 주며 팀의 속도를 높입니다.",
-  },
-];
 
 export default function About() {
   return (

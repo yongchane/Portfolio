@@ -139,7 +139,7 @@ export default function Projects() {
 
         {/* Projects list */}
         <div className="space-y-24">
-          {projects.map((project, index) => (
+          {projects.map((project) => (
             <motion.div
               key={project.id}
               initial={{ opacity: 0, y: 30 }}
