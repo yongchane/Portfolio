@@ -28,6 +28,19 @@ const projects: Project[] = [
   },
   {
     id: "2",
+    title: "[Vibe coding] 운빨 고양이 달리기 게임",
+    imageUrl: "/runcat.png",
+    description:
+      "'AI 툴로 20개 프로젝트 만들기' 챌린지의 두 번째 작업물입니다.\n Next.js와 TypeScript를 기반으로, HTML Canvas를 사용하여 고양이가 달리는 로그라이크형 게임을 구현하는 중입니다. 10 스테이지마다 주어지는 랜덤 음식을 통해 고양이가 새로운 능력치를 얻고 모습이 진화하는 독특한 컨셉으로, AI를 활용한 신속한 프로토타이핑과 개발 가능성을 탐구한 프로젝트입니다.",
+    achievement:
+      "- 기획(PM):\n Perplexity로 자료를 조사하고 Claude와 함께 아이디어를 구체화하며 전체 프로젝트를 기획했습니다.\n\n- 디자인:\n Gemini의 이미지 생성 모델을 활용해 초기 캐릭터 컨셉을 디자인하고, Adobe 툴로 디테일을 완성하여 독창적인 게임 비주얼을 구현했습니다.\n\n- FE 개발:\n Claude CLI와 VSCode Copilot을 적극 활용하는 '바이브 코딩'으로 개발 생산성을 극대화했습니다. 복잡한 게임 로직과 캐릭터 애니메이션을 Canvas API 위에 효율적으로 구현하며 AI 기반 개발 워크플로우를 성공적으로 구축했습니다.",
+    role: "1인 개발 / PM / Design / FE",
+    period: "(진행중) 2025.09 - ",
+    tags: ["TypeScript", "Next.js", "Canvas API", "Zustand", "AI Development"],
+    github: "https://github.com/yongchane/CatRunner.git",
+  },
+  {
+    id: "3",
     title: "[외주] (주) 한국 기타가와 홈페이지 리뉴얼",
     imageUrl: "/kitagawa.jpeg",
     description:
@@ -45,19 +58,7 @@ const projects: Project[] = [
       "Emotion",
     ],
   },
-  {
-    id: "3",
-    title: "[Vibe coding] 운빨 고양이 달리기 게임",
-    imageUrl: "/runcat.png",
-    description:
-      "'AI 툴로 20개 프로젝트 만들기' 챌린지의 두 번째 작업물입니다.\n Next.js와 TypeScript를 기반으로, HTML Canvas를 사용하여 고양이가 달리는 로그라이크형 게임을 구현하는 중입니다. 10 스테이지마다 주어지는 랜덤 음식을 통해 고양이가 새로운 능력치를 얻고 모습이 진화하는 독특한 컨셉으로, AI를 활용한 신속한 프로토타이핑과 개발 가능성을 탐구한 프로젝트입니다.",
-    achievement:
-      "- 기획(PM):\n Perplexity로 자료를 조사하고 Claude와 함께 아이디어를 구체화하며 전체 프로젝트를 기획했습니다.\n\n- 디자인:\n Gemini의 이미지 생성 모델을 활용해 초기 캐릭터 컨셉을 디자인하고, Adobe 툴로 디테일을 완성하여 독창적인 게임 비주얼을 구현했습니다.\n\n- FE 개발:\n Claude CLI와 VSCode Copilot을 적극 활용하는 '바이브 코딩'으로 개발 생산성을 극대화했습니다. 복잡한 게임 로직과 캐릭터 애니메이션을 Canvas API 위에 효율적으로 구현하며 AI 기반 개발 워크플로우를 성공적으로 구축했습니다.",
-    role: "1인 개발 / PM / Design / FE",
-    period: "(진행중) 2025.09 - ",
-    tags: ["TypeScript", "Next.js", "Canvas API", "Zustand", "AI Development"],
-    github: "https://github.com/yongchane/CatRunner.git",
-  },
+
   {
     id: "4",
     title: "[Vibe coding] 별똥별 게임",
