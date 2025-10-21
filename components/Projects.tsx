@@ -189,13 +189,15 @@ export default function Projects() {
 
               {/* Text Content Section */}
               <div className="bg-white rounded-2xl border border-border p-8 md:col-span-2 shadow-lg">
-                <div
-                  className="cursor-pointer"
+                <button
+                  className="w-full text-left cursor-pointer"
                   onClick={() =>
                     setSelectedProject(
                       selectedProject === project.id ? null : project.id
                     )
                   }
+                  aria-expanded={selectedProject === project.id}
+                  aria-label={`${project.title} 상세 정보 ${selectedProject === project.id ? '닫기' : '펼치기'}`}
                 >
                   {/* Project header */}
                   <div className="flex items-center justify-between gap-4 mb-4">
@@ -211,6 +213,7 @@ export default function Projects() {
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -286,7 +289,7 @@ export default function Projects() {
                       )}
                     </div>
                   </div>
-                </div>
+                </button>
 
                 {/* Project description (expandable) */}
                 <motion.div

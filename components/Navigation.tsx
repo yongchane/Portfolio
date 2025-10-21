@@ -17,7 +17,7 @@ export default function Navigation() {
   const backgroundColor = useTransform(
     scrollY,
     [0, 100],
-    ["rgba(255, 255, 255, 0.8)", "rgba(255, 255, 255, 0.9)"]
+    ["rgba(255, 255, 255, 0.8)", "rgba(255, 255, 255, 1)"]
   );
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export default function Navigation() {
               <motion.a
                 key={item.name}
                 href={item.href}
-                className="text-foreground/70 hover:text-foreground font-medium transition-colors relative group"
+                className="text-foreground hover:text-foreground/90 font-medium transition-colors relative group"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -68,7 +68,8 @@ export default function Navigation() {
           {/* Mobile menu button */}
           <button
             className="md:hidden p-2"
-            aria-label="Menu"
+            aria-label="메뉴"
+            aria-expanded={isMobileMenuOpen}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             <svg
@@ -103,14 +104,14 @@ export default function Navigation() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden w-full  bg-[rgba(255, 255, 255, 0.9)] border-t border-border/50 mt-4"
+            className="md:hidden w-full bg-white border-t border-border/50 mt-4"
           >
             <div className="flex flex-col gap-4 py-4">
               {navItems.map((item) => (
                 <motion.a
                   key={item.name}
                   href={item.href}
-                  className="text-foreground/70 hover:text-foreground font-medium transition-colors px-4 py-2 hover:bg-secondary rounded-lg text-end "
+                  className="text-foreground hover:text-foreground/90 font-medium transition-colors px-4 py-2 hover:bg-secondary rounded-lg text-end"
                   onClick={() => setIsMobileMenuOpen(false)}
                   whileTap={{ scale: 0.95 }}
                 >
