@@ -136,7 +136,7 @@ const projects: Project[] = [
   {
     id: "7",
     title: "[전국 연합 동아리 SW 해커톤 1등] 물렐루야! - 물은 답을 알고 있다.",
-    imageUrl: "water.png",
+    imageUrl: "/water.png",
     description:
       "2024년 전국 연합 동아리 SW 해커톤에서 1등(단장상)을 수상한, 건강한 수분 섭취 습관 형성 서비스입니다.\n 단순히 마신 물의 양만 기록하는 것을 넘어, 커피나 주스 등 음료 종류별 수분 섭취량을 추적하고 통계와 루틴 기능을 제공하여 사용자가 자신의 습관을 직관적으로 관리하고 개선하도록 돕습니다.",
     achievement:
@@ -187,6 +187,7 @@ export default function Projects() {
                   src={project.imageUrl}
                   alt={project.title}
                   fill
+                  quality={85}
                   priority={project.id === "1"}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-cover object-center"
@@ -203,7 +204,9 @@ export default function Projects() {
                     )
                   }
                   aria-expanded={selectedProject === project.id}
-                  aria-label={`${project.title} 상세 정보 ${selectedProject === project.id ? '닫기' : '펼치기'}`}
+                  aria-label={`${project.title} 상세 정보 ${
+                    selectedProject === project.id ? "닫기" : "펼치기"
+                  }`}
                 >
                   {/* Project header */}
                   <div className="flex items-center justify-between gap-4 mb-4">

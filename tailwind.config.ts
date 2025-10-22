@@ -18,7 +18,7 @@ const config: Config = {
         secondary: '#f2f4f6',
         accent: '#0064ff',
         border: '#e5e8eb',
-        muted: '#6b7684',
+        muted: '#4e5968',
       },
       fontFamily: {
         sans: ['var(--font-geist-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],

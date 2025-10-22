@@ -16,7 +16,7 @@ export default function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="mb-6"
         >
           <span className="text-muted text-lg font-medium">
@@ -29,13 +29,13 @@ export default function Hero() {
           className="text-[50px] md:text-7xl lg:text-8xl font-bold mb-8 leading-tight"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
         >
           <motion.span
             className="inline-block"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.3, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
           >
             처음 뵙겠습니다
           </motion.span>
@@ -44,7 +44,7 @@ export default function Hero() {
             className="inline-block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.3, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
           >
             &ldquo;현용찬&rdquo; 입니다
           </motion.span>
@@ -55,7 +55,7 @@ export default function Hero() {
           className="text-xl md:text-2xl text-muted max-w-3xl mb-12 leading-relaxed text-left pl-6 md:pl-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.3, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
         >
           &ldquo;현&rdquo; 재를 통해 미래를 만드는 개발자,
           <br />
@@ -69,7 +69,7 @@ export default function Hero() {
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.3, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
         >
           <motion.a
             href="#projects"
@@ -101,7 +101,7 @@ export default function Hero() {
           className="md:absolute bottom-12 left-1/2 -translate-x-1/2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1.2 }}
+          transition={{ duration: 0.5, delay: 0.55 }}
         >
           <motion.div
             className="w-6 h-10 border-2 border-border rounded-full flex justify-center"
