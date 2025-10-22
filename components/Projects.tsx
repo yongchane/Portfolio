@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
+import Image from "next/image";
 import type { Project } from "@/types";
 
 // 샘플 프로젝트 데이터 - 실제 프로젝트로 교체하세요
@@ -177,15 +178,20 @@ export default function Projects() {
               className="grid md:grid-cols-3 gap-12 items-center"
             >
               {/* Image Section */}
-              <div
-                className={`relative w-full h-80 rounded-2xl overflow-hidden shadow-xl `}
+              <motion.div
+                className="relative w-full h-80 rounded-2xl overflow-hidden shadow-xl"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
               >
-                <motion.img
+                <Image
                   src={project.imageUrl}
                   alt={project.title}
-                  className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
+                  fill
+                  priority={project.id === "1"}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover object-center"
                 />
-              </div>
+              </motion.div>
 
               {/* Text Content Section */}
               <div className="bg-white rounded-2xl border border-border p-8 md:col-span-2 shadow-lg">
