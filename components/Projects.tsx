@@ -10,7 +10,7 @@ const projects: Project[] = [
   {
     id: "1",
     title: "개인 포트폴리오 웹사이트 제작",
-    imageUrl: "/portfolio.png",
+    imageUrl: "/portfolio.webp",
     description:
       "저의 개발 여정과 성과를 효과적으로 보여주기 위해 Next.js와 TypeScript를 기반으로 직접 구축한 포트폴리오 웹사이트입니다. \n 단순한 정보 나열을 넘어, 사용자 친화적인 UI/UX와 최적화된 성능을 통해 방문자가 저의 강점을 명확히 인지하도록 설계했습니다.",
     achievement:
@@ -30,7 +30,7 @@ const projects: Project[] = [
   {
     id: "2",
     title: "[Vibe coding] 운빨 고양이 달리기 게임",
-    imageUrl: "/runcat.png",
+    imageUrl: "/runcat.webp",
     description:
       "'AI 툴로 20개 프로젝트 만들기' 챌린지의 두 번째로 작업중인 프로젝트입니다.\n 기획-디자인-개발 전 과정을 AI와 협업하여 1인 개발한 Canvas 기반 로그라이크 웹 게임입니다.\n 10 스테이지마다 주어지는 랜덤 음식을 통해 고양이가 새로운 능력치를 얻고 모습이 진화하는 독특한 컨셉으로, AI를 활용한 신속한 프로토타이핑과 개발 가능성을 탐구한 프로젝트입니다.",
     achievement:
@@ -43,7 +43,7 @@ const projects: Project[] = [
   {
     id: "3",
     title: "[외주] (주) 한국 기타가와 홈페이지 리뉴얼",
-    imageUrl: "/kitagawa.jpeg",
+    imageUrl: "/kitagawa.webp",
     description:
       " 정밀 척 및 공작기계 부품 분야의 글로벌 전문 기업인 기타가와(Kitagawa)의 한국 지사 웹사이트 개편 프로젝트를 외주로 맡아 수행중입니다. \n 노후화된 기존 사이트로 인해 현지 고객 접점이 악화된 상황에서, 한국 사용자 경험에 맞춘 PC, 모바일 반응형 웹사이트를 구축하여 브랜드 신뢰도를 강화하는 것을 목표로 하고있습니다",
     achievement:
@@ -63,7 +63,7 @@ const projects: Project[] = [
   {
     id: "4",
     title: "[Vibe coding] 별똥별 게임",
-    imageUrl: "/star.png",
+    imageUrl: "/star.webp",
     description:
       "빠르게 발전하는 AI 툴에 적응하고, 아이디어를 실제 서비스로 완성하는 전 과정을 경험하기 위한 'AI 툴로 20개 프로젝트 만들기' 챌린지의 첫 번째 프로젝트입니다. \n Next.js와 Framer Motion을 활용하여 화려한 인터랙션을 갖춘 웹 게임을 구현했으며, 현재 실제 도메인을 연결하여 라이브 서비스를 운영하며 고도화를 진행 중입니다.",
     achievement:
@@ -87,7 +87,7 @@ const projects: Project[] = [
     id: "5",
     title:
       "[멋쟁이사자처럼13기 중앙 해커톤]TOOR - 너와 나의 투어를 잇는 토박이",
-    imageUrl: "/toor.png",
+    imageUrl: "/toor.webp",
     description:
       "현지인 데이터와 AI를 통해 여행지의 가격 불투명성(바가지) 문제를 해결하는 신뢰 기반 여행 플랫폼입니다. \n GPS 기반의 현지인 인증 시스템으로 신뢰도 높은 정보를 제공하고, AI 챗봇이 개인화된 여행 가이드를 제시하여 국내 여행의 가성비를 혁신하는 것을 목표로 합니다.",
     achievement:
@@ -108,7 +108,7 @@ const projects: Project[] = [
   {
     id: "6",
     title: "[Capstone] 내길만 - AI 기반 맞춤형 경로 추천 서비스",
-    imageUrl: "/load2.png",
+    imageUrl: "/load2.webp",
     description:
       "사용자의 이동 및 검색 패턴을 AI가 학습하여 개인화된 최적의 경로와 장소를 추천하는 졸업 작품 프로젝트입니다. 기획, UI/UX 설계, FE 개발을 총괄했으며, 그 성과를 학회 논문으로 발표했습니다.",
     achievement:
@@ -136,7 +136,7 @@ const projects: Project[] = [
   {
     id: "7",
     title: "[전국 연합 동아리 SW 해커톤 1등] 물렐루야! - 물은 답을 알고 있다.",
-    imageUrl: "/water.png",
+    imageUrl: "/water.webp",
     description:
       "2024년 전국 연합 동아리 SW 해커톤에서 1등(단장상)을 수상한, 건강한 수분 섭취 습관 형성 서비스입니다.\n 단순히 마신 물의 양만 기록하는 것을 넘어, 커피나 주스 등 음료 종류별 수분 섭취량을 추적하고 통계와 루틴 기능을 제공하여 사용자가 자신의 습관을 직관적으로 관리하고 개선하도록 돕습니다.",
     achievement:

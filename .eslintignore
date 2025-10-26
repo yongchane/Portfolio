@@ -1,0 +1,18 @@
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Scripts (Node.js style)
+scripts/
+
+# Dependencies
+node_modules/
+
+# Cache
+.cache/
+.turbo/
+
+# Generated files
+*.tsbuildinfo
