@@ -92,6 +92,9 @@ export const metadata: Metadata = {
   verification: {
     google:
       "google-site-verification=6t4Xj9ynV-QobYWpgTe7ngKVp8CRDzzyHlIEKHI9pvQ", // Google Search Console에서 발급받은 코드로 교체 필요
+    other: {
+      "naver-site-verification": "65c9426fde6b8122a634b13c126c5aad5d25ee3b",
+    },
   },
 };
 
