@@ -8,7 +8,51 @@ import type { Project } from "@/types";
 // 샘플 프로젝트 데이터 - 실제 프로젝트로 교체하세요
 const projects: Project[] = [
   {
-    id: "1",
+    id: "0", // 기존 프로젝트 순서에 맞게 번호 지정
+    title: "Dreamics.ai - AI 꿈 웹툰 헬스케어 플랫폼",
+    imageUrl: "/dreamics.webp",
+    description:
+      "95%의 사람들이 기상 후 5분 내에 꿈을 잊어버린다는 문제에서 출발해, 꿈을 말하면 AI가 자동으로 웹툰으로 변환하고 정신건강 지표를 분석해주는 AI 헬스케어 플랫폼입니다.\n 텍스트 또는 음성으로 꿈을 입력하면 GPT-5-nano 장면 분해 → DALL-E 3 이미지 생성 → 감정 6종 분석 → Dream Health Index 산출까지 End-to-End로 자동화한 '꿈→웹툰' 파이프라인을 세계 최초로 구현했습니다.",
+    achievement:
+      "- 멀티모달 AI 3종 동시 통합: GPT-5-nano(장면 분해·감정 분석), DALL-E 3(웹툰 이미지 생성), Whisper(음성→텍스트 변환)를 하나의 파이프라인으로 연결하여, 꿈 한 편을 20초 이내에 4컷 웹툰으로 자동 완성하는 End-to-End 시스템을 구현했습니다.\n\n- 초기 로딩 40% 개선 및 번들 최적화: 코드 스플리팅(Dynamic Import)과 Lazy Loading, React.memo·useMemo·useCallback 기반 메모이제이션을 적용하여 초기 번들 크기를 387KB, 로딩 시간을 2.1초로 달성했습니다 (목표 3초 대비 30% 초과 달성).\n\n- TypeScript 100% 커버리지로 런타임 안정성 확보: 20개 이상의 인터페이스(DreamScene, DreamAnalysis, DreamHealthIndex 등)를 중앙 타입 정의로 관리하여 컴파일 타임 에러 제로를 달성하고, 4개 Zustand 스토어(Auth·Dream·Chat·Health)로 복잡한 상태를 모듈화했습니다.\n\n- 헬스케어 비즈니스 모델 설계: 글로벌 디지털 헬스케어(2030년 $6,600억) + 웹툰·AI만화 시장(2030년 $483억)을 분석하고, Freemium(월 1,990원~) + B2B SaaS(수면클리닉·심리상담센터 월 50만원) 이중 수익 구조를 설계하여 MAU 10,000명 기준 MRR 1,000만원 달성 로드맵을 수립했습니다.",
+    role: "팀장 / PM / FE",
+    period: "[서비스 중] 2026.02.14 - 2026.02.20", // 실제 해커톤 날짜로 수정 필요
+    tags: [
+      "TypeScript",
+      "React 18",
+      "Vite",
+      "Zustand",
+      "Tailwind CSS",
+      "Framer Motion",
+      "Recharts",
+      "OpenAI API",
+    ],
+    link: "https://www.dreamics.ai.kr/",
+  },
+  {
+    id: "1", // 기존 순서에 맞게 지정
+    title: "League of Gacha - 롤 프로게이머 랜덤 가챠 게임",
+    imageUrl: "/loga.webp",
+    description:
+      "리그오브레전드 프로게이머 200명 이상의 데이터를 기반으로, FIFA 스타일 카드 리빌 애니메이션과 실제 우승 로스터 감지 기능을 갖춘 인터랙티브 가챠 웹 게임입니다.\n AI 협업(바이브 코딩)으로 기획부터 배포까지 단 2일 만에 완성했으며, 서비스 런칭 14일 만에 누적 사용자 2,600명을 달성하며 실제 수요를 검증한 라이브 서비스입니다.",
+    achievement:
+      "- 런칭 14일 만에 누적 사용자 2,600명 달성: 바이브 코딩(AI 협업)으로 기획~배포 전 과정을 단 2일 만에 완성하고 즉시 서비스를 오픈하여, 빠른 실행력과 높은 초기 사용자 유입을 동시에 증명했습니다.\n\n- 데이터 기반 UX 개선 사이클 구축: Microsoft Clarity(히트맵·세션 녹화)와 Google Analytics(사용자 행동 퍼널)를 연동하여 실사용자 데이터를 수집하고, 이를 바탕으로 UI 개선 및 신규 기능(SNS 공유 미리보기, 페이커 모드 등)을 지속 배포하는 운영·유지보수 체계를 구축했습니다.\n\n- Firebase 기반 실시간 커뮤니티 플랫폼 구현: Firebase Realtime Database를 도입해 로스터 공유·좋아요·댓글 기능을 구현하고, 커뮤니티 스토리지 아키텍처를 직접 설계하여 확장 가능한 서비스 구조를 마련했습니다.\n\n- 한/영 이중 언어 SEO 최적화: 시멘틱 HTML, OG 이미지 자동 생성, RSS 피드, sitemap 등록을 통해 국내외 검색 유입을 극대화하고, Cloudflare Pages를 활용한 글로벌 CDN 배포로 안정적인 성능을 확보했습니다.",
+    role: "1인 개발 / PM / FE",
+    period: "[서비스 중] 2026.01.14 -2026.01.16",
+    tags: [
+      "TypeScript",
+      "Next.js",
+      "Firebase",
+      "Framer Motion",
+      "Tailwind CSS",
+      "Google Analytics",
+      "MS Clarity",
+      "Cloudflare Pages",
+    ],
+    link: "https://leagueofgacha.com/",
+  },
+  {
+    id: "2",
     title: "개인 포트폴리오 웹사이트 제작",
     imageUrl: "/portfolio.webp",
     description:
@@ -16,7 +60,7 @@ const projects: Project[] = [
     achievement:
       "- 성능 최적화: 빌드 프로세스 최적화를 통해 Lighthouse 성능 점수 95점 이상을 달성하고, 초기 로딩 번들 크기를 102KB까지 감소시켰습니다.\n\n- UI/UX 설계 및 개발: 재사용 가능한 컴포넌트 아키텍처를 설계하여 유지보수성을 높이고, Framer Motion의 whileInView 옵션으로 스크롤 애니메이션을 최적화하여 부드러운 사용자 경험을 제공했습니다.\n\n- 배포 및 운영: 직접 도메인을 구매하고 Google Search Console에 사이트맵을 등록하는 등 SEO 작업을 통해 실제 검색 엔진에 노출되는 라이브 서비스를 운영하고 있습니다.",
     role: "1인 개발 / UI UX / FE",
-    period: "2025.10",
+    period: "[서비스 중] 2025.10",
     tags: [
       "Next.js",
       "TypeScript",
@@ -28,7 +72,7 @@ const projects: Project[] = [
     link: "https://www.hyunyongchan.kr/", // 실제 도메인 주소로 변경해주세요.
   },
   {
-    id: "2",
+    id: "3",
     title: "[Vibe coding] 운빨 고양이 달리기 게임",
     imageUrl: "/runcat.webp",
     description:
@@ -36,25 +80,12 @@ const projects: Project[] = [
     achievement:
       "- 상태 동기화 문제 해결: React UI와 Canvas 게임 로직 간의 상태 동기화 문제를 Zustand를 도입하여 100% 해결하고, 정확한 게임 일시정지 및 능력치 업데이트를 구현했습니다.\n\n- Canvas 렌더링 최적화: 다수의 객체 렌더링으로 인한 FPS 저하 문제를 '오프스크린 Canvas'와 '객체 컬링' 기법으로 해결하여, 모든 스테이지에서 안정적으로 60 FPS를 유지하도록 성능을 개선했습니다.\n\n- AI 워크플로우 구축: 기획(Perplexity), 디자인(Gemini), 개발(Copilot) 등 전 과정에 AI를 활용하여 아이디어를 빠르게 프로토타이핑하고 완성하는 새로운 개발 방식을 성공적으로 구축했습니다.",
     role: "1인 개발 / PM / Design / FE",
-    period: "(진행중) 2025.09 - ",
+    period: " 2025.09 - 2025.10",
     tags: ["TypeScript", "Next.js", "Canvas API", "Zustand", "AI Development"],
     github: "https://github.com/yongchane/CatRunner.git",
   },
   {
-    id: "3",
-    title: "(주) 한국 기타가와 홈페이지 리뉴얼",
-    imageUrl: "/kitagawa.webp",
-    description:
-      " 정밀 척 및 공작기계 부품 분야의 글로벌 전문 기업인 기타가와(Kitagawa)의 한국 지사 웹사이트 개편 프로젝트를 프리랜서로 수행하였습니다. \n 노후화된 기존 사이트로 인해 현지 고객 접점이 악화된 상황에서, 한국 사용자 경험에 맞춘 PC, 모바일 반응형 웹사이트를 구축하여 브랜드 신뢰도를 강화하는 것을 목표로 하였습니다",
-    achievement:
-      "- 웹 성능 683% 향상: Lighthouse 성능 점수를 12점에서 94점으로 개선하고, 초기 로딩 시간을 4.8초에서 1.0초로 단축하여 사용자 이탈률을 크게 개선했습니다.\n\n- 생산성 및 안정성 확보: 재사용 가능한 컴포넌트 아키텍처와 TypeScript를 도입하여 런타임 에러를 85% 이상 감소시키고, 향후 유지보수 비용을 절감할 수 있는 확장 가능한 구조를 마련했습니다.\n\n- SEO 최적화: Google Search Console에 사이트맵을 등록하고 시멘틱 HTML 사용,메타 태그, 이미지를 최적화하여 검색 엔진 노출을 극대화를 통해 월 검색 노출 1900건 이상 달성하였습니다.",
-    role: "팀장 / PM / FE ",
-    period: "2025.08 - 2025.11",
-    tags: ["TypeScript", "Next.js", "Zustand", "Tailwind CSS", "Emotion"],
-  },
-
-  {
-    id: "4",
+    id: "5",
     title: "[Vibe coding] 별똥별 게임",
     imageUrl: "/star.webp",
     description:
@@ -62,7 +93,7 @@ const projects: Project[] = [
     achievement:
       "- 초기 로딩 성능 개선: 동적 임포트(Dynamic Import)를 활용해 초기 번들 크기를 40% 감소시키고, 모바일 환경의 초기 로딩 시간을 3초 이상에서 1초 이내로 단축하여 Lighthouse 성능 점수를 92점까지 향상시켰습니다.\n\n- 상태 관리 시스템 구축: 복잡한 게임 상태로 인한 버그를 해결하기 위해 TypeScript와 Zustand를 결합한 타입-안전 전역 상태 관리 시스템을 구축하여 상태 관련 버그를 90% 이상 감소시켰습니다.\n\n- 1인 서비스 런칭: 기획, 개발뿐만 아니라 직접 도메인을 구매하고 Google SEO 작업을 완료하여, 검색 엔진에 노출되는 실제 라이브 서비스를 배포하고 운영하는 경험을 했습니다.",
     role: "1인 개발 / PM / FE",
-    period: "2025.08 - 2025.09",
+    period: "[서비스 중] 2025.08 - 2025.09",
     tags: [
       "Next.js",
       "TypeScript",
@@ -77,7 +108,7 @@ const projects: Project[] = [
     github: "https://github.com/yongchane/ShootingStar.git",
   },
   {
-    id: "5",
+    id: "6",
     title:
       "[멋쟁이사자처럼13기 중앙 해커톤]TOOR - 너와 나의 투어를 잇는 토박이",
     imageUrl: "/toor.webp",
@@ -99,7 +130,7 @@ const projects: Project[] = [
     github: "https://github.com/2025-Likelion-Hackathon/Team_Mut4_FE.git",
   },
   {
-    id: "6",
+    id: "7",
     title: "[Capstone] 내길만 - AI 기반 맞춤형 경로 추천 서비스",
     imageUrl: "/load2.webp",
     description:
@@ -127,7 +158,7 @@ const projects: Project[] = [
     github: "https://github.com/yongchane/2025_Capstone.git",
   },
   {
-    id: "7",
+    id: "8",
     title: "[전국 연합 동아리 SW 해커톤 1등] 물렐루야! - 물은 답을 알고 있다.",
     imageUrl: "/water.webp",
     description:
@@ -193,7 +224,7 @@ export default function Projects() {
                   className="w-full text-left cursor-pointer"
                   onClick={() =>
                     setSelectedProject(
-                      selectedProject === project.id ? null : project.id
+                      selectedProject === project.id ? null : project.id,
                     )
                   }
                   aria-expanded={selectedProject === project.id}
@@ -253,7 +284,7 @@ export default function Projects() {
                           className="px-4 py-1 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-hover transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          프로젝트 보기
+                          사이트 보기
                         </a>
                       )}
                       {project.figma && (

@@ -1,13 +1,30 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Optimize workspace root resolution
+  outputFileTracingRoot: "/Users/hyeon-yongchan/Desktop/데스크탑 - 현용찬의 노트북/Potflio/portfolio",
+
+  // Production optimizations
+  productionBrowserSourceMaps: false,
+
+  // Build performance optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+
+  // Experimental features for faster builds
+  experimental: {
+    optimizePackageImports: ['react-icons', 'framer-motion'],
+    webpackBuildWorker: true,
+  },
+
   images: {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
-    contentDispositionType: 'attachment',
+    contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 };

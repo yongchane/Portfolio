@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 const navItems = [
   { name: "About", href: "#about" },
   { name: "Tech Stack", href: "#tech-stack" },
+  { name: "Experience", href: "#experience" },
+  { name: "Awards", href: "#awards" },
   { name: "Projects", href: "#projects" },
   { name: "Contact", href: "#contact" },
 ];
@@ -17,7 +19,7 @@ export default function Navigation() {
   const backgroundColor = useTransform(
     scrollY,
     [0, 100],
-    ["rgba(255, 255, 255, 0.8)", "rgba(255, 255, 255, 1)"]
+    ["rgba(255, 255, 255, 0.8)", "rgba(255, 255, 255, 1)"],
   );
 
   useEffect(() => {

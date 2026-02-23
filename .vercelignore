@@ -1,0 +1,4 @@
+# Ignore everything in .gitignore
+.git
+node_modules
+.env*

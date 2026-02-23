@@ -87,6 +87,21 @@ export default function Hero() {
           </motion.a>
 
           <motion.a
+            href="#experience"
+            className="group relative px-8 py-4 bg-foreground text-background font-semibold rounded-xl overflow-hidden transition-all hover:shadow-lg"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <span className="relative z-10">경력 보기</span>
+            <motion.div
+              className="absolute inset-0 bg-foreground/80"
+              initial={{ x: "-100%" }}
+              whileHover={{ x: 0 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            />
+          </motion.a>
+
+          <motion.a
             href="#contact"
             className="px-8 py-4 border-2 border-border font-semibold rounded-xl hover:border-primary hover:text-primary transition-all"
             whileHover={{ scale: 1.02 }}
