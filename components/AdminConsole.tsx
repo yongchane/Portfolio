@@ -309,7 +309,10 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
                     </div>
                   </div>
                 ) : (
-                  <EmptyState title="노트를 찾지 못했습니다" description="워크스페이스 루트 또는 markdown note scan 결과를 확인해 주세요." />
+                  <EmptyState
+                    title="노트를 찾지 못했습니다"
+                    description={`워크스페이스 루트 또는 markdown note scan 결과를 확인해 주세요. 현재 root: ${data.dataSource.workspaceRoot || "미탐지"} · note count: ${data.dataSource.notesCount}`}
+                  />
                 )}
               </div>
             </div>
@@ -336,7 +339,9 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
                 "보고 템플릿: 3줄 요약 / 작업 간단 설명 / 앞으로 해야할 작업",
                 "Portfolio main 브랜치 직접 작업/머지 금지",
                 `워크스페이스 루트: ${data.dataSource.workspaceRoot || "미탐지"}`,
+                `노트 개수: ${data.dataSource.notesCount}개`,
                 `노트 스캔 루트: ${data.dataSource.notesRoots.join(" | ")}`,
+                `탐색한 workspace 후보: ${data.dataSource.attemptedWorkspaceRoots.slice(0, 4).join(" | ")}${data.dataSource.attemptedWorkspaceRoots.length > 4 ? " ..." : ""}`,
               ]}
             />
           )}

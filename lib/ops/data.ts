@@ -1,4 +1,5 @@
 import { promises as fs } from "fs";
+import os from "os";
 import path from "path";
 import projectsData from "@/data/ops/projects.json";
 import tasksData from "@/data/ops/tasks.json";
@@ -7,50 +8,111 @@ import type { NoteItem, NoteType, OpsConsoleData, Project, Task } from "@/lib/op
 const projects = projectsData as Project[];
 const tasks = tasksData as Task[];
 
-const WORKSPACE_ROOT_CANDIDATES = [
-  process.env.OPENCLAW_WORKSPACE,
-  "/Users/hyeon-yongchan/.openclaw/workspace",
-  path.resolve(process.cwd(), "../.openclaw/workspace"),
-].filter(Boolean) as string[];
-
-const NOTE_SCAN_ROOTS = ["obsidian-vault", "docs"] as const;
+const NOTE_SCAN_ROOT_NAMES = ["obsidian-vault", "docs"] as const;
+const WORKSPACE_MARKERS = ["AGENTS.md", ...NOTE_SCAN_ROOT_NAMES] as const;
 
 export async function getOpsConsoleData(): Promise<OpsConsoleData> {
-  const workspaceRoot = await findWorkspaceRoot();
-  const notes = workspaceRoot ? await loadNotes(workspaceRoot) : [];
+  const workspaceResolution = await findWorkspaceRoot();
+  const noteRoots = workspaceResolution.root
+    ? NOTE_SCAN_ROOT_NAMES.map((rootName) => path.join(workspaceResolution.root!, rootName))
+    : [];
+  const notes = workspaceResolution.root ? await loadNotes(workspaceResolution.root) : [];
 
   return {
     projects,
     tasks,
     notes,
     dataSource: {
-      workspaceRoot,
-      notesRoots: NOTE_SCAN_ROOTS.map((root) => workspaceRoot ? path.join(workspaceRoot, root) : root),
+      workspaceRoot: workspaceResolution.root,
+      notesRoots: noteRoots.length ? noteRoots : NOTE_SCAN_ROOT_NAMES.map((root) => root),
+      attemptedWorkspaceRoots: workspaceResolution.attemptedRoots,
+      notesCount: notes.length,
     },
   };
 }
 
 async function findWorkspaceRoot() {
-  for (const candidate of WORKSPACE_ROOT_CANDIDATES) {
-    try {
-      const stat = await fs.stat(candidate);
-      if (stat.isDirectory()) {
-        return candidate;
-      }
-    } catch {}
+  const attemptedRoots: string[] = [];
+
+  for (const candidate of getWorkspaceRootCandidates()) {
+    const normalizedCandidate = path.resolve(candidate);
+    if (attemptedRoots.includes(normalizedCandidate)) continue;
+    attemptedRoots.push(normalizedCandidate);
+
+    if (await looksLikeWorkspaceRoot(normalizedCandidate)) {
+      return {
+        root: normalizedCandidate,
+        attemptedRoots,
+      };
+    }
   }
 
-  return undefined;
+  return {
+    root: undefined,
+    attemptedRoots,
+  };
+}
+
+function getWorkspaceRootCandidates() {
+  const rawCandidates = [
+    process.env.OPENCLAW_WORKSPACE,
+    process.env.PORTFOLIO_OPS_WORKSPACE,
+    path.join(os.homedir(), ".openclaw", "workspace"),
+    "/Users/hyeon-yongchan/.openclaw/workspace",
+    ...expandAncestors(process.cwd()),
+  ].filter(Boolean) as string[];
+
+  return rawCandidates;
+}
+
+function expandAncestors(start: string) {
+  const visited = new Set<string>();
+  const ancestors: string[] = [];
+  let current = path.resolve(start);
+
+  while (!visited.has(current)) {
+    visited.add(current);
+    ancestors.push(current, path.join(current, ".openclaw", "workspace"));
+
+    const parent = path.dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+
+  return ancestors;
+}
+
+async function looksLikeWorkspaceRoot(candidate: string) {
+  try {
+    const stat = await fs.stat(candidate);
+    if (!stat.isDirectory()) return false;
+  } catch {
+    return false;
+  }
+
+  const markerChecks = await Promise.all(
+    WORKSPACE_MARKERS.map(async (marker) => {
+      try {
+        await fs.access(path.join(candidate, marker));
+        return true;
+      } catch {
+        return false;
+      }
+    }),
+  );
+
+  return markerChecks.some(Boolean);
 }
 
 async function loadNotes(workspaceRoot: string): Promise<NoteItem[]> {
   const markdownFiles = (
     await Promise.all(
-      NOTE_SCAN_ROOTS.map((root) => collectMarkdownFiles(path.join(workspaceRoot, root))),
+      NOTE_SCAN_ROOT_NAMES.map((root) => collectMarkdownFiles(path.join(workspaceRoot, root))),
     )
   ).flat();
 
-  const notes = await Promise.all(markdownFiles.map((filePath) => buildNoteItem(workspaceRoot, filePath)));
+  const uniqueFiles = [...new Set(markdownFiles.map((filePath) => path.resolve(filePath)))];
+  const notes = await Promise.all(uniqueFiles.map((filePath) => buildNoteItem(workspaceRoot, filePath)));
 
   return notes
     .filter((note): note is NoteItem => Boolean(note))

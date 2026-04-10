@@ -54,5 +54,7 @@ export type OpsConsoleData = {
   dataSource: {
     workspaceRoot?: string;
     notesRoots: string[];
+    attemptedWorkspaceRoots: string[];
+    notesCount: number;
   };
 };
