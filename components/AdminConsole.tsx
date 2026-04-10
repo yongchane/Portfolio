@@ -5,6 +5,7 @@ import clsx from "clsx";
 
 type TaskStatus = "planned" | "doing" | "verifying" | "shipped" | "blocked";
 type ProjectStage = "idea" | "planning" | "building" | "verifying" | "live";
+type NoteType = "daily-chat-log" | "project-ops" | "aeyong-debug" | "weekly-review";
 
 type Task = {
   id: string;
@@ -17,6 +18,8 @@ type Task = {
   nextActions: string[];
   relatedDocs?: string[];
   relatedCommits?: string[];
+  noteIds?: string[];
+  needsDecision?: string[];
   updatedAt: string;
 };
 
@@ -31,6 +34,18 @@ type Project = {
   docs?: string[];
 };
 
+type NoteItem = {
+  id: string;
+  title: string;
+  type: NoteType;
+  project?: string;
+  tags: string[];
+  updatedAt: string;
+  path: string;
+  summary: string;
+  highlights: string[];
+};
+
 const ACCESS_CODE = "hy-ops-0408";
 
 const projects: Project[] = [
@@ -42,7 +57,7 @@ const projects: Project[] = [
     repo: "yongchane/tori-admin",
     branch: "master",
     deployUrl: "https://purrpurr-hub-public.vercel.app/",
-    docs: ["Tori Harness", "MCP Plan"]
+    docs: ["Tori Harness", "MCP Plan"],
   },
   {
     id: "pawpong",
@@ -51,7 +66,7 @@ const projects: Project[] = [
     summary: "브리더 온보딩·상담·신뢰를 중심으로 재설계 중인 반려동물 플랫폼",
     repo: "Pawpong/pawpong_admin_frontend",
     branch: "main",
-    docs: ["Pawpong Contest Harness", "Admin IA/AARRR"]
+    docs: ["Pawpong Contest Harness", "Admin IA/AARRR"],
   },
   {
     id: "portfolio",
@@ -59,15 +74,78 @@ const projects: Project[] = [
     stage: "building",
     summary: "애옹 작업, 프로젝트 상태, 문서/릴리즈를 한곳에서 관리하기 위한 개인 운영 콘솔",
     repo: "yongchane/Portfolio",
-    branch: "develop"
+    branch: "develop",
+    docs: ["Obsidian for Aeyong Ops", "Ops Console UI Plan"],
   },
   {
     id: "openclaw",
     name: "OpenClaw 운영",
     stage: "live",
     summary: "role agent, harness docs, OAuth health check를 포함한 작업 운영 레이어",
-    docs: ["Harness Engineering", "Async Registry", "OAuth Ops"]
-  }
+    docs: ["Harness Engineering", "Async Registry", "OAuth Ops"],
+  },
+];
+
+const notes: NoteItem[] = [
+  {
+    id: "note-daily-2026-04-10",
+    title: "2026-04-10 Daily Chat Log",
+    type: "daily-chat-log",
+    project: "Portfolio",
+    tags: ["ai-log", "portfolio", "ops-console"],
+    updatedAt: "2026-04-10 23:15",
+    path: "obsidian-vault/01 Daily Notes/2026-04-10.md",
+    summary: "Portfolio /ops 콘솔 V2 논의, GitHub형 운영 콘솔 재설계, Obsidian vault 시작 결정을 정리한 일일 노트",
+    highlights: [
+      "초기 /ops MVP가 너무 얕았다는 문제 인식",
+      "task-driven dashboard 구조로 재설계",
+      "Obsidian은 workspace 내부 vault로 먼저 시작",
+    ],
+  },
+  {
+    id: "note-project-portfolio-ops",
+    title: "Portfolio Ops Console",
+    type: "project-ops",
+    project: "Portfolio",
+    tags: ["project-ops", "portfolio", "ops-console"],
+    updatedAt: "2026-04-10 23:15",
+    path: "obsidian-vault/02 Projects/Portfolio Ops Console.md",
+    summary: "Portfolio 안에 현용찬 x 애옹 운영 콘솔을 만드는 프로젝트 노트",
+    highlights: [
+      "애옹 작업 관리 + 프로젝트 운영 + 문서/릴리즈/설정 통합",
+      "JSON/GitHub/notes 연결 필요",
+      "다음 단계는 notes link와 데이터 분리",
+    ],
+  },
+  {
+    id: "note-aeyong-collaboration",
+    title: "Aeyong Collaboration Notes",
+    type: "aeyong-debug",
+    tags: ["aeyong", "collaboration"],
+    updatedAt: "2026-04-10 23:15",
+    path: "obsidian-vault/03 Aeyong/Aeyong Collaboration Notes.md",
+    summary: "애옹 협업에서 중요한 규칙과 사용자의 기대치를 정리한 운영 노트",
+    highlights: [
+      "완료 보고보다 근거와 검증 중요",
+      "verifying / shipped 분리 필요",
+      "얕은 MVP보다 판단 가능한 정보 우선",
+    ],
+  },
+  {
+    id: "note-obsidian-plan",
+    title: "Obsidian for Aeyong Ops",
+    type: "project-ops",
+    project: "Portfolio",
+    tags: ["obsidian", "ops", "aeyong"],
+    updatedAt: "2026-04-10 23:12",
+    path: "docs/obsidian-for-aeyong-ops.md",
+    summary: "Obsidian을 저장소로, /ops를 뷰어로 쓰는 방향의 구조 문서",
+    highlights: [
+      "workspace 안에 obsidian-vault 생성",
+      "원문/요약/문제분석 3층 구조 권장",
+      "나중에 notes UI와 연결 가능",
+    ],
+  },
 ];
 
 const tasks: Task[] = [
@@ -81,15 +159,61 @@ const tasks: Task[] = [
     completedWork: [
       "develop 브랜치 생성",
       "초기 /ops MVP 추가",
-      "Overview / Tasks / Projects / Docs / Releases / Settings IA 재설계"
+      "Overview / Tasks / Projects / Docs / Releases / Settings IA 재설계",
     ],
     nextActions: [
       "프로젝트 상세 화면 추가",
       "JSON 데이터 분리",
-      "GitHub 상태 반자동 연동"
+      "GitHub 상태 반자동 연동",
     ],
-    relatedCommits: ["d339ed6"],
-    updatedAt: "2026-04-10 22:45"
+    relatedCommits: ["d339ed6", "182dd78"],
+    noteIds: ["note-daily-2026-04-10", "note-project-portfolio-ops"],
+    needsDecision: ["데이터 저장 구조(JSON vs DB) 확정", "공개/비공개 노트 노출 범위 결정"],
+    updatedAt: "2026-04-10 22:50",
+  },
+  {
+    id: "task-aeyong-task-page",
+    title: "애옹 작업 관리 페이지 기획 반영",
+    projectId: "portfolio",
+    category: "planning",
+    status: "doing",
+    summary: "작업 상태가 아니라 판단 가능한 실행 추적을 목표로 작업 구조를 재정의",
+    completedWork: [
+      "사용자 성향 기준으로 작업 관리 페이지 목적 재정의",
+      "상태/증거/다음 액션/판단 필요 항목 구조화",
+      "Obsidian notes를 작업 카드와 연결하는 방향 반영",
+    ],
+    nextActions: [
+      "필터/정렬 UX 추가",
+      "사용자 판단 필요 패널 강화",
+      "작업 상세 화면 확장",
+    ],
+    relatedDocs: ["Aeyong task planning"],
+    noteIds: ["note-aeyong-collaboration", "note-daily-2026-04-10"],
+    needsDecision: ["작업 카드 정보 밀도 최종 조정"],
+    updatedAt: "2026-04-10 23:18",
+  },
+  {
+    id: "task-obsidian-ops",
+    title: "Obsidian 기반 운영 기록 시스템 시작",
+    projectId: "portfolio",
+    category: "ops",
+    status: "doing",
+    summary: "Obsidian 앱 없이도 쓸 수 있는 markdown vault와 notes viewer 방향을 세팅",
+    completedWork: [
+      "workspace 내부 obsidian-vault 생성",
+      "Daily / Project / Aeyong / Review 템플릿 생성",
+      "초기 노트 3종 작성 및 notes viewer 방향 정의",
+    ],
+    nextActions: [
+      "Notes 섹션 UI 강화",
+      "md 파일 실연동 구조 추가",
+      "대화 저장 정책 확정 후 자동 축적 시작",
+    ],
+    relatedDocs: ["Obsidian for Aeyong Ops"],
+    noteIds: ["note-obsidian-plan", "note-daily-2026-04-10"],
+    needsDecision: ["전체 대화 저장 vs 요약/문제 중심 저장 정책 결정"],
+    updatedAt: "2026-04-10 23:15",
   },
   {
     id: "task-tori-direct-publish",
@@ -101,54 +225,16 @@ const tasks: Task[] = [
     completedWork: [
       "publish API를 direct DB publish로 변경",
       "published_at 반영",
-      "worker cron 비활성화"
+      "worker cron 비활성화",
     ],
     nextActions: [
       "배포본에서 생성/게시/반영 최종 확인",
       "legacy worker 코드 정리",
-      "운영 로그 화면 정리"
+      "운영 로그 화면 정리",
     ],
     relatedCommits: ["7f1e64d", "6d3b01c"],
-    updatedAt: "2026-04-06 15:57"
+    updatedAt: "2026-04-06 15:57",
   },
-  {
-    id: "task-pawpong-admin-redesign",
-    title: "Pawpong 어드민 리뉴얼 IA/AARRR/플로우 재설계",
-    projectId: "pawpong",
-    category: "planning",
-    status: "doing",
-    summary: "기존 기능 나열형 어드민을 운영자 중심 task-first 구조로 재정의",
-    completedWork: [
-      "운영 중인 어드민 레포 분석",
-      "새 IA/AARRR/플로우 설계",
-      "Notion 문서 초안 작성"
-    ],
-    nextActions: [
-      "화면별 와이어프레임 설계",
-      "어드민 핵심 메뉴 MVP 정의",
-      "프로토타입과 실제 어드민 연결 전략 수립"
-    ],
-    updatedAt: "2026-04-10 20:40"
-  },
-  {
-    id: "task-openclaw-harness",
-    title: "OpenClaw 하네스 엔지니어링 강화",
-    projectId: "openclaw",
-    category: "ops",
-    status: "shipped",
-    summary: "요청 라우팅, 상태 머신, done criteria, role contract를 문서와 규칙으로 반영",
-    completedWork: [
-      "Harness Engineering Baseline 문서화",
-      "AGENTS에 운영 베이스라인 반영",
-      "OAuth healthcheck cron 추가"
-    ],
-    nextActions: [
-      "Notion integration 표준화",
-      "role agent 운영 고도화",
-      "GitHub/배포 상태와 연결"
-    ],
-    updatedAt: "2026-04-10 15:04"
-  }
 ];
 
 const taskStatusMeta: Record<TaskStatus, { label: string; tone: string }> = {
@@ -167,11 +253,18 @@ const projectStageMeta: Record<ProjectStage, { label: string; tone: string }> = 
   live: { label: "운영 중", tone: "bg-emerald-100 text-emerald-700" },
 };
 
+const noteTypeMeta: Record<NoteType, { label: string; tone: string }> = {
+  "daily-chat-log": { label: "Daily Log", tone: "bg-sky-100 text-sky-700" },
+  "project-ops": { label: "Project Note", tone: "bg-fuchsia-100 text-fuchsia-700" },
+  "aeyong-debug": { label: "Aeyong Note", tone: "bg-amber-100 text-amber-700" },
+  "weekly-review": { label: "Review", tone: "bg-emerald-100 text-emerald-700" },
+};
+
 const sidebarItems = [
   { id: "overview", label: "Overview" },
   { id: "tasks", label: "Tasks" },
   { id: "projects", label: "Projects" },
-  { id: "docs", label: "Docs" },
+  { id: "notes", label: "Notes" },
   { id: "releases", label: "Releases" },
   { id: "settings", label: "Settings" },
 ] as const;
@@ -183,16 +276,20 @@ export default function AdminConsole() {
   const [unlocked, setUnlocked] = useState(false);
   const [section, setSection] = useState<SectionId>("overview");
   const [selectedProjectId, setSelectedProjectId] = useState<string>(projects[0].id);
+  const [selectedNoteId, setSelectedNoteId] = useState<string>(notes[0].id);
 
   const selectedProject = projects.find((item) => item.id === selectedProjectId) || projects[0];
   const projectTasks = tasks.filter((task) => task.projectId === selectedProject.id);
+  const selectedNote = notes.find((item) => item.id === selectedNoteId) || notes[0];
 
   const summary = useMemo(() => ({
     totalProjects: projects.length,
     activeTasks: tasks.filter((task) => task.status === "doing").length,
     verifyingTasks: tasks.filter((task) => task.status === "verifying").length,
-    shippedThisWeek: tasks.filter((task) => task.status === "shipped").length,
+    notesCount: notes.length,
   }), []);
+
+  const attentionTasks = tasks.filter((task) => task.status === "blocked" || task.status === "verifying" || (task.needsDecision?.length ?? 0) > 0).slice(0, 3);
 
   if (!unlocked) {
     return (
@@ -245,8 +342,8 @@ export default function AdminConsole() {
             <ul className="space-y-2 text-sm text-white/80 list-disc pl-4">
               <li>결론 먼저 보고</li>
               <li>main 브랜치는 명시 허락 전 금지</li>
-              <li>프로젝트별 상태/다음 액션 분리</li>
-              <li>하네스 기준으로 작업/검증/비동기 운영</li>
+              <li>완료와 검증을 분리</li>
+              <li>작업 카드에 근거/다음 액션/판단 필요를 같이 둔다</li>
             </ul>
           </div>
         </aside>
@@ -257,28 +354,35 @@ export default function AdminConsole() {
               <header>
                 <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">Overview</p>
                 <h2 className="text-4xl font-bold mb-3">오늘의 운영 상황</h2>
-                <p className="text-white/70 max-w-3xl">애옹 작업, 프로젝트 상태, 최근 완료 사항과 다음 우선순위를 한 번에 보는 홈 화면입니다.</p>
+                <p className="text-white/70 max-w-3xl">애옹 작업, 프로젝트 상태, Obsidian notes, 사용자 판단 필요 항목을 한 번에 보는 홈 화면입니다.</p>
               </header>
               <div className="grid gap-4 md:grid-cols-4">
                 <SummaryCard label="전체 프로젝트" value={String(summary.totalProjects)} />
                 <SummaryCard label="진행 중 작업" value={String(summary.activeTasks)} />
                 <SummaryCard label="검증 중 작업" value={String(summary.verifyingTasks)} />
-                <SummaryCard label="완료된 작업" value={String(summary.shippedThisWeek)} />
+                <SummaryCard label="저장된 노트" value={String(summary.notesCount)} />
               </div>
-              <div className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
-                <Panel title="최근 작업">
+              <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                <Panel title="사용자 판단 필요">
                   <div className="space-y-4">
-                    {tasks.slice(0, 4).map((task) => (
+                    {attentionTasks.map((task) => (
                       <TaskRow key={task.id} task={task} projectName={projects.find((p) => p.id === task.projectId)?.name || "-"} compact />
                     ))}
                   </div>
                 </Panel>
-                <Panel title="오늘의 우선순위">
-                  <ol className="space-y-3 text-sm text-white/80 list-decimal pl-4">
-                    <li>Portfolio 운영 콘솔 V2 구조 다듬기</li>
-                    <li>Pawpong 어드민 IA → 실제 화면 와이어프레임화</li>
-                    <li>Tori 배포본 최종 반영 상태 재확인</li>
-                  </ol>
+                <Panel title="최근 Obsidian 노트">
+                  <div className="space-y-3">
+                    {notes.slice(0, 3).map((note) => (
+                      <button key={note.id} onClick={() => { setSelectedNoteId(note.id); setSection("notes"); }} className="w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-left hover:bg-white/10 transition">
+                        <div className="flex items-center justify-between gap-3 mb-2">
+                          <strong>{note.title}</strong>
+                          <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", noteTypeMeta[note.type].tone)}>{noteTypeMeta[note.type].label}</span>
+                        </div>
+                        <p className="text-sm text-white/70 mb-2">{note.summary}</p>
+                        <p className="text-xs text-white/45">{note.path}</p>
+                      </button>
+                    ))}
+                  </div>
                 </Panel>
               </div>
             </div>
@@ -289,12 +393,22 @@ export default function AdminConsole() {
               <header>
                 <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">Tasks</p>
                 <h2 className="text-4xl font-bold mb-3">애옹 작업 관리</h2>
-                <p className="text-white/70 max-w-3xl">프로젝트를 넘나드는 실제 작업 단위를 상태/최근 작업/다음 액션 기준으로 추적합니다.</p>
+                <p className="text-white/70 max-w-3xl">상태 요약이 아니라, 실제 한 일 / 다음 액션 / 판단 필요 / Obsidian notes 근거까지 함께 보는 실행 추적 화면입니다.</p>
               </header>
-              <div className="space-y-4">
-                {tasks.map((task) => (
-                  <TaskRow key={task.id} task={task} projectName={projects.find((p) => p.id === task.projectId)?.name || "-"} />
-                ))}
+              <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+                <div className="space-y-4">
+                  {tasks.map((task) => (
+                    <TaskRow key={task.id} task={task} projectName={projects.find((p) => p.id === task.projectId)?.name || "-"} />
+                  ))}
+                </div>
+                <Panel title="왜 이 페이지가 중요한가">
+                  <ul className="space-y-3 text-sm text-white/80 list-disc pl-4">
+                    <li>애옹이 무슨 작업을 했는지 추적</li>
+                    <li>완료와 검증을 분리해서 보기</li>
+                    <li>문제/오해/판단 필요를 빠르게 찾기</li>
+                    <li>작업을 Obsidian notes와 연결해 협업 자산으로 축적</li>
+                  </ul>
+                </Panel>
               </div>
             </div>
           )}
@@ -349,17 +463,60 @@ export default function AdminConsole() {
             </div>
           )}
 
-          {section === "docs" && (
-            <SimpleSection
-              title="Docs"
-              description="기획 문서, IA, AARRR, 운영 플로우, 회고 문서를 프로젝트별로 관리하는 공간"
-              bullets={[
-                "포퐁 어드민 IA / AARRR / 운영 플로우",
-                "Tori Harness / MCP / 운영 문서",
-                "OpenClaw Harness / Async Registry / OAuth Ops",
-                "프로젝트별 회고/릴리즈 문서 연결 예정"
-              ]}
-            />
+          {section === "notes" && (
+            <div className="space-y-8">
+              <header>
+                <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">Notes</p>
+                <h2 className="text-4xl font-bold mb-3">Obsidian Notes Viewer</h2>
+                <p className="text-white/70 max-w-3xl">Obsidian 앱을 따로 열지 않아도 `/ops` 안에서 작업 기록과 대화 요약, 프로젝트 운영 노트를 탐색하는 공간입니다.</p>
+              </header>
+              <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+                <div className="space-y-3">
+                  {notes.map((note) => (
+                    <button
+                      key={note.id}
+                      onClick={() => setSelectedNoteId(note.id)}
+                      className={clsx(
+                        "w-full rounded-3xl border p-4 text-left transition",
+                        selectedNote.id === note.id ? "border-white/30 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10"
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <strong>{note.title}</strong>
+                        <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", noteTypeMeta[note.type].tone)}>{noteTypeMeta[note.type].label}</span>
+                      </div>
+                      <p className="text-sm text-white/70 mb-2">{note.summary}</p>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {note.tags.map((tag) => <span key={tag} className="rounded-full bg-white/10 px-2 py-1 text-xs text-white/70">#{tag}</span>)}
+                      </div>
+                      <p className="text-xs text-white/45">{note.path}</p>
+                    </button>
+                  ))}
+                </div>
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+                  <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <h3 className="text-3xl font-bold">{selectedNote.title}</h3>
+                    <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", noteTypeMeta[selectedNote.type].tone)}>{noteTypeMeta[selectedNote.type].label}</span>
+                  </div>
+                  <p className="text-sm text-white/45 mb-4">{selectedNote.path} · {selectedNote.updatedAt}</p>
+                  <p className="text-white/75 mb-6">{selectedNote.summary}</p>
+                  <div className="rounded-2xl border border-white/10 bg-black/20 p-5 mb-6">
+                    <p className="text-sm font-semibold text-white/55 mb-3">핵심 포인트</p>
+                    <ul className="space-y-2 text-sm text-white/80 list-disc pl-4">
+                      {selectedNote.highlights.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+                    <p className="text-sm font-semibold text-white/55 mb-3">왜 이 Notes 구조가 필요한가</p>
+                    <ul className="space-y-2 text-sm text-white/80 list-disc pl-4">
+                      <li>너와 애옹의 대화/작업/문제 분석을 자산화할 수 있음</li>
+                      <li>작업 카드와 연결해 근거와 문맥을 같이 볼 수 있음</li>
+                      <li>Obsidian 앱 없이도 포트폴리오 `/ops`에서 바로 열람 가능</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
           {section === "releases" && (
@@ -370,7 +527,7 @@ export default function AdminConsole() {
                 "프로젝트별 deploy URL",
                 "현재 작업 브랜치와 최근 커밋",
                 "비로그인 public 200 검증 여부",
-                "배포 후 검증 대기 작업 표시"
+                "배포 후 검증 대기 작업 표시",
               ]}
             />
           )}
@@ -382,8 +539,8 @@ export default function AdminConsole() {
               bullets={[
                 "보고 템플릿: 3줄 요약 / 작업 간단 설명 / 앞으로 해야할 작업",
                 "Portfolio main 브랜치 직접 작업/머지 금지",
-                "Notion integration 정리 필요 (Macmini vs openclaw)",
-                "OAuth healthcheck 및 하네스 운영 규칙 유지"
+                "Obsidian vault 경로: workspace/obsidian-vault",
+                "다음 단계: GitHub 연동 + notes 실제 파일 파싱",
               ]}
             />
           )}
@@ -434,7 +591,7 @@ function TaskRow({ task, projectName, compact = false }: { task: Task; projectNa
           <span className="text-xs text-white/45">{task.updatedAt}</span>
         </div>
       </div>
-      <div className={clsx("grid gap-4", compact ? "md:grid-cols-2" : "md:grid-cols-[1fr_1fr_0.8fr]")}>
+      <div className={clsx("grid gap-4", compact ? "md:grid-cols-2" : "md:grid-cols-[1fr_1fr_0.9fr]")}>
         <div>
           <p className="text-sm font-semibold text-white/55 mb-2">완료된 작업</p>
           <ul className="space-y-2 text-sm text-white/80 list-disc pl-4">
@@ -449,10 +606,12 @@ function TaskRow({ task, projectName, compact = false }: { task: Task; projectNa
         </div>
         {!compact && (
           <div>
-            <p className="text-sm font-semibold text-white/55 mb-2">연결 정보</p>
+            <p className="text-sm font-semibold text-white/55 mb-2">판단 / 근거</p>
             <div className="space-y-2 text-sm text-white/75">
               <p>Docs: {task.relatedDocs?.join(", ") || "-"}</p>
               <p>Commits: {task.relatedCommits?.join(", ") || "-"}</p>
+              <p>Notes: {task.noteIds?.length || 0}개 연결</p>
+              <p>Decision: {task.needsDecision?.join(" / ") || "-"}</p>
             </div>
           </div>
         )}
