@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import type { NoteItem, OpsConsoleData, ProjectStage, Task, TaskStatus, NoteType } from "@/lib/ops/types";
 
@@ -47,10 +47,41 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
   const [section, setSection] = useState<SectionId>("overview");
   const [selectedProjectId, setSelectedProjectId] = useState<string>(data.projects[0]?.id ?? "");
   const [selectedNoteId, setSelectedNoteId] = useState<string>(data.notes[0]?.id ?? "");
+  const [noteQuery, setNoteQuery] = useState("");
 
   const selectedProject = data.projects.find((item) => item.id === selectedProjectId) || data.projects[0];
   const projectTasks = data.tasks.filter((task) => task.projectId === selectedProject?.id);
-  const selectedNote = data.notes.find((item) => item.id === selectedNoteId) || data.notes[0];
+
+  const filteredNotes = useMemo(() => {
+    const query = noteQuery.trim().toLowerCase();
+    if (!query) return data.notes;
+
+    return data.notes.filter((note) => {
+      const haystack = [
+        note.title,
+        note.summary,
+        note.path,
+        note.project,
+        note.tags.join(" "),
+        note.headings.join(" "),
+        note.rawExcerpt,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(query);
+    });
+  }, [data.notes, noteQuery]);
+
+  const selectedNote = filteredNotes.find((item) => item.id === selectedNoteId) || filteredNotes[0] || data.notes[0];
+
+  useEffect(() => {
+    if (!filteredNotes.length) return;
+    if (!filteredNotes.some((note) => note.id === selectedNoteId)) {
+      setSelectedNoteId(filteredNotes[0].id);
+    }
+  }, [filteredNotes, selectedNoteId]);
 
   const notesById = useMemo(() => new Map(data.notes.map((note) => [note.id, note])), [data.notes]);
   const summary = useMemo(
@@ -246,9 +277,20 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
                 <h2 className="text-4xl font-bold mb-3">Workspace Notes Viewer</h2>
                 <p className="text-white/70 max-w-3xl">Obsidian 앱을 따로 열지 않아도 `/ops` 안에서 작업 기록과 대화 요약, 프로젝트 운영 문서를 실제 markdown 파일 기준으로 탐색합니다.</p>
               </header>
-              <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-                <div className="space-y-3 max-h-[70vh] overflow-auto pr-2">
-                  {data.notes.map((note) => (
+              <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+                <div className="space-y-3 rounded-3xl border border-white/10 bg-white/5 p-4">
+                  <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <label className="block text-xs uppercase tracking-[0.2em] text-white/45 mb-2">노트 검색</label>
+                    <input
+                      value={noteQuery}
+                      onChange={(event) => setNoteQuery(event.target.value)}
+                      placeholder="제목, 태그, 경로, 내용 검색"
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-white/30"
+                    />
+                    <p className="mt-2 text-xs text-white/45">{filteredNotes.length} / {data.notes.length}개 노트 표시 · root {data.dataSource.workspaceRoot || "미탐지"}</p>
+                  </div>
+                  <div className="max-h-[62vh] space-y-3 overflow-auto pr-1">
+                    {filteredNotes.map((note) => (
                     <button
                       key={note.id}
                       onClick={() => setSelectedNoteId(note.id)}
@@ -268,6 +310,13 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
                       <p className="text-xs text-white/45">{note.path}</p>
                     </button>
                   ))}
+
+                  {!filteredNotes.length && (
+                    <div className="rounded-3xl border border-dashed border-white/10 bg-black/20 p-5 text-sm text-white/60">
+                      검색 조건에 맞는 노트가 없습니다. 다른 키워드를 시도해 주세요.
+                    </div>
+                  )}
+                </div>
                 </div>
 
                 {selectedNote ? (
@@ -311,7 +360,7 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
                 ) : (
                   <EmptyState
                     title="노트를 찾지 못했습니다"
-                    description={`워크스페이스 루트 또는 markdown note scan 결과를 확인해 주세요. 현재 root: ${data.dataSource.workspaceRoot || "미탐지"} · note count: ${data.dataSource.notesCount}`}
+                    description={`워크스페이스 루트 또는 markdown note scan 결과를 확인해 주세요. 현재 root: ${data.dataSource.workspaceRoot || "미탐지"} · note count: ${data.dataSource.notesCount} · attempted: ${data.dataSource.attemptedWorkspaceRoots.join(" | ") || "없음"}`}
                   />
                 )}
               </div>

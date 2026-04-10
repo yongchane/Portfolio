@@ -11,6 +11,12 @@ const tasks = tasksData as Task[];
 const NOTE_SCAN_ROOT_NAMES = ["obsidian-vault", "docs"] as const;
 const WORKSPACE_MARKERS = ["AGENTS.md", ...NOTE_SCAN_ROOT_NAMES] as const;
 
+type WorkspaceCandidate = {
+  root: string;
+  noteRoots: string[];
+  notesCount: number;
+};
+
 export async function getOpsConsoleData(): Promise<OpsConsoleData> {
   const workspaceResolution = await findWorkspaceRoot();
   const noteRoots = workspaceResolution.root
@@ -33,22 +39,32 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
 
 async function findWorkspaceRoot() {
   const attemptedRoots: string[] = [];
+  const viableCandidates: WorkspaceCandidate[] = [];
 
   for (const candidate of getWorkspaceRootCandidates()) {
-    const normalizedCandidate = path.resolve(candidate);
-    if (attemptedRoots.includes(normalizedCandidate)) continue;
+    const normalizedCandidate = await normalizeCandidate(candidate);
+    if (!normalizedCandidate || attemptedRoots.includes(normalizedCandidate)) continue;
     attemptedRoots.push(normalizedCandidate);
 
-    if (await looksLikeWorkspaceRoot(normalizedCandidate)) {
-      return {
-        root: normalizedCandidate,
-        attemptedRoots,
-      };
+    if (!(await looksLikeWorkspaceRoot(normalizedCandidate))) {
+      continue;
     }
+
+    const noteRoots = NOTE_SCAN_ROOT_NAMES
+      .map((rootName) => path.join(normalizedCandidate, rootName));
+    const notesCount = await countMarkdownFiles(noteRoots);
+
+    viableCandidates.push({
+      root: normalizedCandidate,
+      noteRoots,
+      notesCount,
+    });
   }
 
+  const bestCandidate = viableCandidates.find((candidate) => candidate.notesCount > 0) || viableCandidates[0];
+
   return {
-    root: undefined,
+    root: bestCandidate?.root,
     attemptedRoots,
   };
 }
@@ -57,6 +73,8 @@ function getWorkspaceRootCandidates() {
   const rawCandidates = [
     process.env.OPENCLAW_WORKSPACE,
     process.env.PORTFOLIO_OPS_WORKSPACE,
+    process.env.WORKSPACE_ROOT,
+    process.env.INIT_CWD,
     path.join(os.homedir(), ".openclaw", "workspace"),
     "/Users/hyeon-yongchan/.openclaw/workspace",
     ...expandAncestors(process.cwd()),
@@ -82,6 +100,14 @@ function expandAncestors(start: string) {
   return ancestors;
 }
 
+async function normalizeCandidate(candidate: string) {
+  try {
+    return await fs.realpath(path.resolve(candidate));
+  } catch {
+    return path.resolve(candidate);
+  }
+}
+
 async function looksLikeWorkspaceRoot(candidate: string) {
   try {
     const stat = await fs.stat(candidate);
@@ -102,6 +128,11 @@ async function looksLikeWorkspaceRoot(candidate: string) {
   );
 
   return markerChecks.some(Boolean);
+}
+
+async function countMarkdownFiles(noteRoots: string[]) {
+  const markdownFiles = (await Promise.all(noteRoots.map((root) => collectMarkdownFiles(root)))).flat();
+  return markdownFiles.length;
 }
 
 async function loadNotes(workspaceRoot: string): Promise<NoteItem[]> {
@@ -164,7 +195,7 @@ async function buildNoteItem(workspaceRoot: string, filePath: string): Promise<N
     id: `note-${slugify(relativePath.replace(/\\/g, "/").replace(/\.mdx?$/i, ""))}`,
     title,
     type: normalizeNoteType(parsed.data.type, relativePath),
-    project: parsed.data.project,
+    project: normalizeOptionalValue(parsed.data.project),
     tags: normalizeTags(parsed.data.tags),
     updatedAt: formatDateTime(parsed.data.date || stat.mtime.toISOString()),
     path: relativePath.replace(/\\/g, "/"),
@@ -182,7 +213,7 @@ function parseFrontmatter(raw: string) {
     return { data: {} as Record<string, string>, content: raw };
   }
 
-  const match = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!match) {
     return { data: {} as Record<string, string>, content: raw };
   }
@@ -209,6 +240,17 @@ function normalizeTags(rawTags?: string) {
     .split(",")
     .map((tag) => tag.trim())
     .filter(Boolean);
+}
+
+function normalizeOptionalValue(value?: string) {
+  if (!value) return undefined;
+
+  const normalized = value.replace(/^['\"]|['\"]$/g, "").trim();
+  if (!normalized || normalized === "undefined" || normalized === "null") {
+    return undefined;
+  }
+
+  return normalized;
 }
 
 function normalizeNoteType(rawType: string | undefined, relativePath: string): NoteType {
