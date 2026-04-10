@@ -1,0 +1,37 @@
+[
+  {
+    "id": "tori-house",
+    "name": "Tori의 집",
+    "stage": "verifying",
+    "summary": "콘텐츠 운영을 direct DB publish 구조로 전환 중인 Tori public/admin 프로젝트",
+    "repo": "yongchane/tori-admin",
+    "branch": "master",
+    "deployUrl": "https://purrpurr-hub-public.vercel.app/",
+    "docs": ["Tori Harness", "MCP Plan"]
+  },
+  {
+    "id": "pawpong",
+    "name": "Pawpong",
+    "stage": "building",
+    "summary": "브리더 온보딩·상담·신뢰를 중심으로 재설계 중인 반려동물 플랫폼",
+    "repo": "Pawpong/pawpong_admin_frontend",
+    "branch": "main",
+    "docs": ["Pawpong Contest Harness", "Admin IA/AARRR"]
+  },
+  {
+    "id": "portfolio",
+    "name": "Portfolio 운영 콘솔",
+    "stage": "building",
+    "summary": "애옹 작업, 프로젝트 상태, 문서/릴리즈를 한곳에서 관리하기 위한 개인 운영 콘솔",
+    "repo": "yongchane/Portfolio",
+    "branch": "develop",
+    "docs": ["Obsidian for Aeyong Ops", "Ops Console UI Plan"]
+  },
+  {
+    "id": "openclaw",
+    "name": "OpenClaw 운영",
+    "stage": "live",
+    "summary": "role agent, harness docs, OAuth health check를 포함한 작업 운영 레이어",
+    "docs": ["Harness Engineering", "Async Registry", "OAuth Ops"]
+  }
+]

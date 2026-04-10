@@ -1,4 +1,5 @@
 import AdminConsole from "@/components/AdminConsole";
+import { getOpsConsoleData } from "@/lib/ops/data";
 
 export const metadata = {
   title: "Ops Console",
@@ -8,6 +9,8 @@ export const metadata = {
   },
 };
 
-export default function OpsPage() {
-  return <AdminConsole />;
+export default async function OpsPage() {
+  const data = await getOpsConsoleData();
+
+  return <AdminConsole data={data} />;
 }

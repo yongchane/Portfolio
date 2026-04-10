@@ -2,240 +2,9 @@
 
 import { useMemo, useState } from "react";
 import clsx from "clsx";
-
-type TaskStatus = "planned" | "doing" | "verifying" | "shipped" | "blocked";
-type ProjectStage = "idea" | "planning" | "building" | "verifying" | "live";
-type NoteType = "daily-chat-log" | "project-ops" | "aeyong-debug" | "weekly-review";
-
-type Task = {
-  id: string;
-  title: string;
-  projectId: string;
-  category: "planning" | "build" | "deploy" | "ops" | "docs";
-  status: TaskStatus;
-  summary: string;
-  completedWork: string[];
-  nextActions: string[];
-  relatedDocs?: string[];
-  relatedCommits?: string[];
-  noteIds?: string[];
-  needsDecision?: string[];
-  updatedAt: string;
-};
-
-type Project = {
-  id: string;
-  name: string;
-  stage: ProjectStage;
-  summary: string;
-  repo?: string;
-  branch?: string;
-  deployUrl?: string;
-  docs?: string[];
-};
-
-type NoteItem = {
-  id: string;
-  title: string;
-  type: NoteType;
-  project?: string;
-  tags: string[];
-  updatedAt: string;
-  path: string;
-  summary: string;
-  highlights: string[];
-};
+import type { NoteItem, OpsConsoleData, ProjectStage, Task, TaskStatus, NoteType } from "@/lib/ops/types";
 
 const ACCESS_CODE = "hy-ops-0408";
-
-const projects: Project[] = [
-  {
-    id: "tori-house",
-    name: "Tori의 집",
-    stage: "verifying",
-    summary: "콘텐츠 운영을 direct DB publish 구조로 전환 중인 Tori public/admin 프로젝트",
-    repo: "yongchane/tori-admin",
-    branch: "master",
-    deployUrl: "https://purrpurr-hub-public.vercel.app/",
-    docs: ["Tori Harness", "MCP Plan"],
-  },
-  {
-    id: "pawpong",
-    name: "Pawpong",
-    stage: "building",
-    summary: "브리더 온보딩·상담·신뢰를 중심으로 재설계 중인 반려동물 플랫폼",
-    repo: "Pawpong/pawpong_admin_frontend",
-    branch: "main",
-    docs: ["Pawpong Contest Harness", "Admin IA/AARRR"],
-  },
-  {
-    id: "portfolio",
-    name: "Portfolio 운영 콘솔",
-    stage: "building",
-    summary: "애옹 작업, 프로젝트 상태, 문서/릴리즈를 한곳에서 관리하기 위한 개인 운영 콘솔",
-    repo: "yongchane/Portfolio",
-    branch: "develop",
-    docs: ["Obsidian for Aeyong Ops", "Ops Console UI Plan"],
-  },
-  {
-    id: "openclaw",
-    name: "OpenClaw 운영",
-    stage: "live",
-    summary: "role agent, harness docs, OAuth health check를 포함한 작업 운영 레이어",
-    docs: ["Harness Engineering", "Async Registry", "OAuth Ops"],
-  },
-];
-
-const notes: NoteItem[] = [
-  {
-    id: "note-daily-2026-04-10",
-    title: "2026-04-10 Daily Chat Log",
-    type: "daily-chat-log",
-    project: "Portfolio",
-    tags: ["ai-log", "portfolio", "ops-console"],
-    updatedAt: "2026-04-10 23:15",
-    path: "obsidian-vault/01 Daily Notes/2026-04-10.md",
-    summary: "Portfolio /ops 콘솔 V2 논의, GitHub형 운영 콘솔 재설계, Obsidian vault 시작 결정을 정리한 일일 노트",
-    highlights: [
-      "초기 /ops MVP가 너무 얕았다는 문제 인식",
-      "task-driven dashboard 구조로 재설계",
-      "Obsidian은 workspace 내부 vault로 먼저 시작",
-    ],
-  },
-  {
-    id: "note-project-portfolio-ops",
-    title: "Portfolio Ops Console",
-    type: "project-ops",
-    project: "Portfolio",
-    tags: ["project-ops", "portfolio", "ops-console"],
-    updatedAt: "2026-04-10 23:15",
-    path: "obsidian-vault/02 Projects/Portfolio Ops Console.md",
-    summary: "Portfolio 안에 현용찬 x 애옹 운영 콘솔을 만드는 프로젝트 노트",
-    highlights: [
-      "애옹 작업 관리 + 프로젝트 운영 + 문서/릴리즈/설정 통합",
-      "JSON/GitHub/notes 연결 필요",
-      "다음 단계는 notes link와 데이터 분리",
-    ],
-  },
-  {
-    id: "note-aeyong-collaboration",
-    title: "Aeyong Collaboration Notes",
-    type: "aeyong-debug",
-    tags: ["aeyong", "collaboration"],
-    updatedAt: "2026-04-10 23:15",
-    path: "obsidian-vault/03 Aeyong/Aeyong Collaboration Notes.md",
-    summary: "애옹 협업에서 중요한 규칙과 사용자의 기대치를 정리한 운영 노트",
-    highlights: [
-      "완료 보고보다 근거와 검증 중요",
-      "verifying / shipped 분리 필요",
-      "얕은 MVP보다 판단 가능한 정보 우선",
-    ],
-  },
-  {
-    id: "note-obsidian-plan",
-    title: "Obsidian for Aeyong Ops",
-    type: "project-ops",
-    project: "Portfolio",
-    tags: ["obsidian", "ops", "aeyong"],
-    updatedAt: "2026-04-10 23:12",
-    path: "docs/obsidian-for-aeyong-ops.md",
-    summary: "Obsidian을 저장소로, /ops를 뷰어로 쓰는 방향의 구조 문서",
-    highlights: [
-      "workspace 안에 obsidian-vault 생성",
-      "원문/요약/문제분석 3층 구조 권장",
-      "나중에 notes UI와 연결 가능",
-    ],
-  },
-];
-
-const tasks: Task[] = [
-  {
-    id: "task-portfolio-console-v2",
-    title: "Portfolio /ops 운영 콘솔 V2 설계 및 구현",
-    projectId: "portfolio",
-    category: "build",
-    status: "doing",
-    summary: "기존 상태판을 GitHub형 개인 운영 콘솔 구조로 확장",
-    completedWork: [
-      "develop 브랜치 생성",
-      "초기 /ops MVP 추가",
-      "Overview / Tasks / Projects / Docs / Releases / Settings IA 재설계",
-    ],
-    nextActions: [
-      "프로젝트 상세 화면 추가",
-      "JSON 데이터 분리",
-      "GitHub 상태 반자동 연동",
-    ],
-    relatedCommits: ["d339ed6", "182dd78"],
-    noteIds: ["note-daily-2026-04-10", "note-project-portfolio-ops"],
-    needsDecision: ["데이터 저장 구조(JSON vs DB) 확정", "공개/비공개 노트 노출 범위 결정"],
-    updatedAt: "2026-04-10 22:50",
-  },
-  {
-    id: "task-aeyong-task-page",
-    title: "애옹 작업 관리 페이지 기획 반영",
-    projectId: "portfolio",
-    category: "planning",
-    status: "doing",
-    summary: "작업 상태가 아니라 판단 가능한 실행 추적을 목표로 작업 구조를 재정의",
-    completedWork: [
-      "사용자 성향 기준으로 작업 관리 페이지 목적 재정의",
-      "상태/증거/다음 액션/판단 필요 항목 구조화",
-      "Obsidian notes를 작업 카드와 연결하는 방향 반영",
-    ],
-    nextActions: [
-      "필터/정렬 UX 추가",
-      "사용자 판단 필요 패널 강화",
-      "작업 상세 화면 확장",
-    ],
-    relatedDocs: ["Aeyong task planning"],
-    noteIds: ["note-aeyong-collaboration", "note-daily-2026-04-10"],
-    needsDecision: ["작업 카드 정보 밀도 최종 조정"],
-    updatedAt: "2026-04-10 23:18",
-  },
-  {
-    id: "task-obsidian-ops",
-    title: "Obsidian 기반 운영 기록 시스템 시작",
-    projectId: "portfolio",
-    category: "ops",
-    status: "doing",
-    summary: "Obsidian 앱 없이도 쓸 수 있는 markdown vault와 notes viewer 방향을 세팅",
-    completedWork: [
-      "workspace 내부 obsidian-vault 생성",
-      "Daily / Project / Aeyong / Review 템플릿 생성",
-      "초기 노트 3종 작성 및 notes viewer 방향 정의",
-    ],
-    nextActions: [
-      "Notes 섹션 UI 강화",
-      "md 파일 실연동 구조 추가",
-      "대화 저장 정책 확정 후 자동 축적 시작",
-    ],
-    relatedDocs: ["Obsidian for Aeyong Ops"],
-    noteIds: ["note-obsidian-plan", "note-daily-2026-04-10"],
-    needsDecision: ["전체 대화 저장 vs 요약/문제 중심 저장 정책 결정"],
-    updatedAt: "2026-04-10 23:15",
-  },
-  {
-    id: "task-tori-direct-publish",
-    title: "Tori direct DB publish 전환",
-    projectId: "tori-house",
-    category: "deploy",
-    status: "verifying",
-    summary: "게시 시 GitHub 경유 없이 DB와 public API를 통해 바로 반영되게 정리",
-    completedWork: [
-      "publish API를 direct DB publish로 변경",
-      "published_at 반영",
-      "worker cron 비활성화",
-    ],
-    nextActions: [
-      "배포본에서 생성/게시/반영 최종 확인",
-      "legacy worker 코드 정리",
-      "운영 로그 화면 정리",
-    ],
-    relatedCommits: ["7f1e64d", "6d3b01c"],
-    updatedAt: "2026-04-06 15:57",
-  },
-];
 
 const taskStatusMeta: Record<TaskStatus, { label: string; tone: string }> = {
   planned: { label: "예정", tone: "bg-slate-100 text-slate-700" },
@@ -258,6 +27,7 @@ const noteTypeMeta: Record<NoteType, { label: string; tone: string }> = {
   "project-ops": { label: "Project Note", tone: "bg-fuchsia-100 text-fuchsia-700" },
   "aeyong-debug": { label: "Aeyong Note", tone: "bg-amber-100 text-amber-700" },
   "weekly-review": { label: "Review", tone: "bg-emerald-100 text-emerald-700" },
+  reference: { label: "Docs", tone: "bg-violet-100 text-violet-700" },
 };
 
 const sidebarItems = [
@@ -271,25 +41,31 @@ const sidebarItems = [
 
 type SectionId = (typeof sidebarItems)[number]["id"];
 
-export default function AdminConsole() {
+export default function AdminConsole({ data }: { data: OpsConsoleData }) {
   const [input, setInput] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   const [section, setSection] = useState<SectionId>("overview");
-  const [selectedProjectId, setSelectedProjectId] = useState<string>(projects[0].id);
-  const [selectedNoteId, setSelectedNoteId] = useState<string>(notes[0].id);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(data.projects[0]?.id ?? "");
+  const [selectedNoteId, setSelectedNoteId] = useState<string>(data.notes[0]?.id ?? "");
 
-  const selectedProject = projects.find((item) => item.id === selectedProjectId) || projects[0];
-  const projectTasks = tasks.filter((task) => task.projectId === selectedProject.id);
-  const selectedNote = notes.find((item) => item.id === selectedNoteId) || notes[0];
+  const selectedProject = data.projects.find((item) => item.id === selectedProjectId) || data.projects[0];
+  const projectTasks = data.tasks.filter((task) => task.projectId === selectedProject?.id);
+  const selectedNote = data.notes.find((item) => item.id === selectedNoteId) || data.notes[0];
 
-  const summary = useMemo(() => ({
-    totalProjects: projects.length,
-    activeTasks: tasks.filter((task) => task.status === "doing").length,
-    verifyingTasks: tasks.filter((task) => task.status === "verifying").length,
-    notesCount: notes.length,
-  }), []);
+  const notesById = useMemo(() => new Map(data.notes.map((note) => [note.id, note])), [data.notes]);
+  const summary = useMemo(
+    () => ({
+      totalProjects: data.projects.length,
+      activeTasks: data.tasks.filter((task) => task.status === "doing").length,
+      verifyingTasks: data.tasks.filter((task) => task.status === "verifying").length,
+      notesCount: data.notes.length,
+    }),
+    [data.projects.length, data.tasks, data.notes.length],
+  );
 
-  const attentionTasks = tasks.filter((task) => task.status === "blocked" || task.status === "verifying" || (task.needsDecision?.length ?? 0) > 0).slice(0, 3);
+  const attentionTasks = data.tasks
+    .filter((task) => task.status === "blocked" || task.status === "verifying" || (task.needsDecision?.length ?? 0) > 0)
+    .slice(0, 3);
 
   if (!unlocked) {
     return (
@@ -329,7 +105,7 @@ export default function AdminConsole() {
                 onClick={() => setSection(item.id)}
                 className={clsx(
                   "w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition",
-                  section === item.id ? "bg-white text-black" : "bg-white/5 text-white/75 hover:bg-white/10"
+                  section === item.id ? "bg-white text-black" : "bg-white/5 text-white/75 hover:bg-white/10",
                 )}
               >
                 {item.label}
@@ -366,13 +142,13 @@ export default function AdminConsole() {
                 <Panel title="사용자 판단 필요">
                   <div className="space-y-4">
                     {attentionTasks.map((task) => (
-                      <TaskRow key={task.id} task={task} projectName={projects.find((p) => p.id === task.projectId)?.name || "-"} compact />
+                      <TaskRow key={task.id} task={task} projectName={data.projects.find((p) => p.id === task.projectId)?.name || "-"} notesById={notesById} compact />
                     ))}
                   </div>
                 </Panel>
-                <Panel title="최근 Obsidian 노트">
+                <Panel title="최근 워크스페이스 노트">
                   <div className="space-y-3">
-                    {notes.slice(0, 3).map((note) => (
+                    {data.notes.slice(0, 4).map((note) => (
                       <button key={note.id} onClick={() => { setSelectedNoteId(note.id); setSection("notes"); }} className="w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-left hover:bg-white/10 transition">
                         <div className="flex items-center justify-between gap-3 mb-2">
                           <strong>{note.title}</strong>
@@ -393,12 +169,12 @@ export default function AdminConsole() {
               <header>
                 <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">Tasks</p>
                 <h2 className="text-4xl font-bold mb-3">애옹 작업 관리</h2>
-                <p className="text-white/70 max-w-3xl">상태 요약이 아니라, 실제 한 일 / 다음 액션 / 판단 필요 / Obsidian notes 근거까지 함께 보는 실행 추적 화면입니다.</p>
+                <p className="text-white/70 max-w-3xl">상태 요약이 아니라, 실제 한 일 / 다음 액션 / 판단 필요 / 노트 근거까지 함께 보는 실행 추적 화면입니다.</p>
               </header>
               <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
                 <div className="space-y-4">
-                  {tasks.map((task) => (
-                    <TaskRow key={task.id} task={task} projectName={projects.find((p) => p.id === task.projectId)?.name || "-"} />
+                  {data.tasks.map((task) => (
+                    <TaskRow key={task.id} task={task} projectName={data.projects.find((p) => p.id === task.projectId)?.name || "-"} notesById={notesById} />
                   ))}
                 </div>
                 <Panel title="왜 이 페이지가 중요한가">
@@ -406,14 +182,14 @@ export default function AdminConsole() {
                     <li>애옹이 무슨 작업을 했는지 추적</li>
                     <li>완료와 검증을 분리해서 보기</li>
                     <li>문제/오해/판단 필요를 빠르게 찾기</li>
-                    <li>작업을 Obsidian notes와 연결해 협업 자산으로 축적</li>
+                    <li>작업을 워크스페이스 노트와 연결해 협업 자산으로 축적</li>
                   </ul>
                 </Panel>
               </div>
             </div>
           )}
 
-          {section === "projects" && (
+          {section === "projects" && selectedProject && (
             <div className="space-y-8">
               <header>
                 <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">Projects</p>
@@ -422,13 +198,13 @@ export default function AdminConsole() {
               </header>
               <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
                 <div className="space-y-3">
-                  {projects.map((project) => (
+                  {data.projects.map((project) => (
                     <button
                       key={project.id}
                       onClick={() => setSelectedProjectId(project.id)}
                       className={clsx(
                         "w-full rounded-3xl border p-4 text-left transition",
-                        selectedProject.id === project.id ? "border-white/30 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10"
+                        selectedProject.id === project.id ? "border-white/30 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10",
                       )}
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
@@ -455,7 +231,7 @@ export default function AdminConsole() {
                   </div>
                   <div className="space-y-4">
                     {projectTasks.map((task) => (
-                      <TaskRow key={task.id} task={task} projectName={selectedProject.name} compact />
+                      <TaskRow key={task.id} task={task} projectName={selectedProject.name} notesById={notesById} compact />
                     ))}
                   </div>
                 </div>
@@ -467,18 +243,18 @@ export default function AdminConsole() {
             <div className="space-y-8">
               <header>
                 <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">Notes</p>
-                <h2 className="text-4xl font-bold mb-3">Obsidian Notes Viewer</h2>
-                <p className="text-white/70 max-w-3xl">Obsidian 앱을 따로 열지 않아도 `/ops` 안에서 작업 기록과 대화 요약, 프로젝트 운영 노트를 탐색하는 공간입니다.</p>
+                <h2 className="text-4xl font-bold mb-3">Workspace Notes Viewer</h2>
+                <p className="text-white/70 max-w-3xl">Obsidian 앱을 따로 열지 않아도 `/ops` 안에서 작업 기록과 대화 요약, 프로젝트 운영 문서를 실제 markdown 파일 기준으로 탐색합니다.</p>
               </header>
               <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-                <div className="space-y-3">
-                  {notes.map((note) => (
+                <div className="space-y-3 max-h-[70vh] overflow-auto pr-2">
+                  {data.notes.map((note) => (
                     <button
                       key={note.id}
                       onClick={() => setSelectedNoteId(note.id)}
                       className={clsx(
                         "w-full rounded-3xl border p-4 text-left transition",
-                        selectedNote.id === note.id ? "border-white/30 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10"
+                        selectedNote?.id === note.id ? "border-white/30 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10",
                       )}
                     >
                       <div className="flex items-center justify-between gap-3 mb-2">
@@ -493,28 +269,48 @@ export default function AdminConsole() {
                     </button>
                   ))}
                 </div>
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-                  <div className="flex flex-wrap items-center gap-3 mb-4">
-                    <h3 className="text-3xl font-bold">{selectedNote.title}</h3>
-                    <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", noteTypeMeta[selectedNote.type].tone)}>{noteTypeMeta[selectedNote.type].label}</span>
+
+                {selectedNote ? (
+                  <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+                    <div className="flex flex-wrap items-center gap-3 mb-4">
+                      <h3 className="text-3xl font-bold">{selectedNote.title}</h3>
+                      <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", noteTypeMeta[selectedNote.type].tone)}>{noteTypeMeta[selectedNote.type].label}</span>
+                    </div>
+                    <p className="text-sm text-white/45 mb-4">{selectedNote.path} · {selectedNote.updatedAt}</p>
+                    <p className="text-white/75 mb-6">{selectedNote.summary}</p>
+                    <div className="grid gap-4 md:grid-cols-2 mb-6 text-sm text-white/75">
+                      <InfoTile label="Project" value={selectedNote.project || "-"} />
+                      <InfoTile label="Tags" value={selectedNote.tags.length ? selectedNote.tags.join(", ") : "-"} />
+                      <InfoTile label="Headings" value={selectedNote.headings.length ? selectedNote.headings.join(" · ") : "-"} />
+                      <InfoTile label="Highlights" value={String(selectedNote.highlights.length)} />
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-5 mb-6">
+                      <p className="text-sm font-semibold text-white/55 mb-3">핵심 포인트</p>
+                      <ul className="space-y-2 text-sm text-white/80 list-disc pl-4">
+                        {(selectedNote.highlights.length ? selectedNote.highlights : selectedNote.preview).map((item) => <li key={item}>{item}</li>)}
+                      </ul>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-5 mb-6">
+                      <p className="text-sm font-semibold text-white/55 mb-3">원문 미리보기</p>
+                      <pre className="whitespace-pre-wrap text-sm text-white/80 font-sans leading-7">{selectedNote.rawExcerpt}</pre>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+                      <p className="text-sm font-semibold text-white/55 mb-3">연결된 작업</p>
+                      <div className="space-y-3">
+                        {data.tasks.filter((task) => task.noteIds?.includes(selectedNote.id)).map((task) => (
+                          <button key={task.id} onClick={() => setSection("tasks")} className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:bg-white/10 transition">
+                            <p className="text-xs uppercase tracking-[0.2em] text-white/45 mb-2">{data.projects.find((project) => project.id === task.projectId)?.name || "-"}</p>
+                            <strong>{task.title}</strong>
+                            <p className="text-sm text-white/70 mt-2">{task.summary}</p>
+                          </button>
+                        ))}
+                        {!data.tasks.some((task) => task.noteIds?.includes(selectedNote.id)) && <p className="text-sm text-white/55">아직 연결된 작업이 없습니다.</p>}
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-sm text-white/45 mb-4">{selectedNote.path} · {selectedNote.updatedAt}</p>
-                  <p className="text-white/75 mb-6">{selectedNote.summary}</p>
-                  <div className="rounded-2xl border border-white/10 bg-black/20 p-5 mb-6">
-                    <p className="text-sm font-semibold text-white/55 mb-3">핵심 포인트</p>
-                    <ul className="space-y-2 text-sm text-white/80 list-disc pl-4">
-                      {selectedNote.highlights.map((item) => <li key={item}>{item}</li>)}
-                    </ul>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-                    <p className="text-sm font-semibold text-white/55 mb-3">왜 이 Notes 구조가 필요한가</p>
-                    <ul className="space-y-2 text-sm text-white/80 list-disc pl-4">
-                      <li>너와 애옹의 대화/작업/문제 분석을 자산화할 수 있음</li>
-                      <li>작업 카드와 연결해 근거와 문맥을 같이 볼 수 있음</li>
-                      <li>Obsidian 앱 없이도 포트폴리오 `/ops`에서 바로 열람 가능</li>
-                    </ul>
-                  </div>
-                </div>
+                ) : (
+                  <EmptyState title="노트를 찾지 못했습니다" description="워크스페이스 루트 또는 markdown note scan 결과를 확인해 주세요." />
+                )}
               </div>
             </div>
           )}
@@ -539,8 +335,8 @@ export default function AdminConsole() {
               bullets={[
                 "보고 템플릿: 3줄 요약 / 작업 간단 설명 / 앞으로 해야할 작업",
                 "Portfolio main 브랜치 직접 작업/머지 금지",
-                "Obsidian vault 경로: workspace/obsidian-vault",
-                "다음 단계: GitHub 연동 + notes 실제 파일 파싱",
+                `워크스페이스 루트: ${data.dataSource.workspaceRoot || "미탐지"}`,
+                `노트 스캔 루트: ${data.dataSource.notesRoots.join(" | ")}`,
               ]}
             />
           )}
@@ -577,7 +373,9 @@ function InfoTile({ label, value }: { label: string; value: string }) {
   );
 }
 
-function TaskRow({ task, projectName, compact = false }: { task: Task; projectName: string; compact?: boolean }) {
+function TaskRow({ task, projectName, notesById, compact = false }: { task: Task; projectName: string; notesById: Map<string, NoteItem>; compact?: boolean }) {
+  const linkedNotes = (task.noteIds || []).map((noteId) => notesById.get(noteId)).filter((note): note is NoteItem => Boolean(note));
+
   return (
     <article className="rounded-3xl border border-white/10 bg-black/20 p-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between mb-3">
@@ -610,8 +408,15 @@ function TaskRow({ task, projectName, compact = false }: { task: Task; projectNa
             <div className="space-y-2 text-sm text-white/75">
               <p>Docs: {task.relatedDocs?.join(", ") || "-"}</p>
               <p>Commits: {task.relatedCommits?.join(", ") || "-"}</p>
-              <p>Notes: {task.noteIds?.length || 0}개 연결</p>
+              <p>Linked notes: {linkedNotes.length || 0}개</p>
               <p>Decision: {task.needsDecision?.join(" / ") || "-"}</p>
+              {linkedNotes.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {linkedNotes.map((note) => (
+                    <span key={note.id} className="rounded-full bg-white/10 px-2 py-1 text-xs text-white/70">{note.title}</span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -633,6 +438,15 @@ function SimpleSection({ title, description, bullets }: { title: string; descrip
           {bullets.map((item) => <li key={item}>{item}</li>)}
         </ul>
       </div>
+    </div>
+  );
+}
+
+function EmptyState({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="rounded-3xl border border-dashed border-white/15 bg-white/5 p-8">
+      <h3 className="text-2xl font-semibold mb-2">{title}</h3>
+      <p className="text-white/70">{description}</p>
     </div>
   );
 }

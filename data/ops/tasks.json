@@ -1,0 +1,88 @@
+[
+  {
+    "id": "task-portfolio-console-v2",
+    "title": "Portfolio /ops 운영 콘솔 V2 설계 및 구현",
+    "projectId": "portfolio",
+    "category": "build",
+    "status": "doing",
+    "summary": "기존 상태판을 GitHub형 개인 운영 콘솔 구조로 확장",
+    "completedWork": [
+      "develop 브랜치 생성",
+      "초기 /ops MVP 추가",
+      "Overview / Tasks / Projects / Docs / Releases / Settings IA 재설계"
+    ],
+    "nextActions": [
+      "프로젝트 상세 화면 추가",
+      "JSON 데이터 분리",
+      "GitHub 상태 반자동 연동"
+    ],
+    "relatedCommits": ["d339ed6", "182dd78"],
+    "noteIds": ["note-obsidian-vault-01-daily-notes-2026-04-10", "note-obsidian-vault-02-projects-portfolio-ops-console"],
+    "needsDecision": ["데이터 저장 구조(JSON vs DB) 확정", "공개/비공개 노트 노출 범위 결정"],
+    "updatedAt": "2026-04-10 22:50"
+  },
+  {
+    "id": "task-aeyong-task-page",
+    "title": "애옹 작업 관리 페이지 기획 반영",
+    "projectId": "portfolio",
+    "category": "planning",
+    "status": "doing",
+    "summary": "작업 상태가 아니라 판단 가능한 실행 추적을 목표로 작업 구조를 재정의",
+    "completedWork": [
+      "사용자 성향 기준으로 작업 관리 페이지 목적 재정의",
+      "상태/증거/다음 액션/판단 필요 항목 구조화",
+      "Obsidian notes를 작업 카드와 연결하는 방향 반영"
+    ],
+    "nextActions": [
+      "필터/정렬 UX 추가",
+      "사용자 판단 필요 패널 강화",
+      "작업 상세 화면 확장"
+    ],
+    "relatedDocs": ["Aeyong task planning"],
+    "noteIds": ["note-obsidian-vault-03-aeyong-aeyong-collaboration-notes", "note-obsidian-vault-01-daily-notes-2026-04-10"],
+    "needsDecision": ["작업 카드 정보 밀도 최종 조정"],
+    "updatedAt": "2026-04-10 23:18"
+  },
+  {
+    "id": "task-obsidian-ops",
+    "title": "Obsidian 기반 운영 기록 시스템 시작",
+    "projectId": "portfolio",
+    "category": "ops",
+    "status": "doing",
+    "summary": "Obsidian 앱 없이도 쓸 수 있는 markdown vault와 notes viewer 방향을 세팅",
+    "completedWork": [
+      "workspace 내부 obsidian-vault 생성",
+      "Daily / Project / Aeyong / Review 템플릿 생성",
+      "초기 노트 3종 작성 및 notes viewer 방향 정의"
+    ],
+    "nextActions": [
+      "Notes 섹션 UI 강화",
+      "md 파일 실연동 구조 추가",
+      "대화 저장 정책 확정 후 자동 축적 시작"
+    ],
+    "relatedDocs": ["Obsidian for Aeyong Ops"],
+    "noteIds": ["note-docs-obsidian-for-aeyong-ops", "note-obsidian-vault-01-daily-notes-2026-04-10"],
+    "needsDecision": ["전체 대화 저장 vs 요약/문제 중심 저장 정책 결정"],
+    "updatedAt": "2026-04-10 23:15"
+  },
+  {
+    "id": "task-tori-direct-publish",
+    "title": "Tori direct DB publish 전환",
+    "projectId": "tori-house",
+    "category": "deploy",
+    "status": "verifying",
+    "summary": "게시 시 GitHub 경유 없이 DB와 public API를 통해 바로 반영되게 정리",
+    "completedWork": [
+      "publish API를 direct DB publish로 변경",
+      "published_at 반영",
+      "worker cron 비활성화"
+    ],
+    "nextActions": [
+      "배포본에서 생성/게시/반영 최종 확인",
+      "legacy worker 코드 정리",
+      "운영 로그 화면 정리"
+    ],
+    "relatedCommits": ["7f1e64d", "6d3b01c"],
+    "updatedAt": "2026-04-06 15:57"
+  }
+]
