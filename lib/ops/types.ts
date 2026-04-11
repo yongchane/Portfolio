@@ -113,6 +113,17 @@ export type ExportSourceRoot = {
   path: string;
 };
 
+export type OpsSourceHealth = {
+  supabaseConfigured: boolean;
+  supabaseReachable: boolean;
+  activeMode: "live" | "export" | "supabase";
+  preferredMode: "auto" | "local" | "supabase";
+  notesMode: "live" | "export" | "supabase";
+  lastSyncStatus?: "started" | "succeeded" | "failed";
+  lastSyncMessage?: string;
+  lastSyncAt?: string;
+};
+
 export type GitHubRepoSnapshot = {
   repo: string;
   name: string;
@@ -182,5 +193,6 @@ export type OpsConsoleData = {
     notesRoots: string[];
     resolvedRoots: ExportSourceRoot[];
     notesCount: number;
+    sourceHealth: OpsSourceHealth;
   };
 };

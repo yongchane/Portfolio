@@ -3,23 +3,48 @@ import projectsData from "@/data/ops/projects.json";
 import tasksData from "@/data/ops/tasks.json";
 import { getNotesSourceData } from "@/lib/ops/notes-source";
 import { getSupabaseOpsConsoleData } from "@/lib/ops/supabase-data";
-import type { GitHubCache, NoteItem, OpsConsoleData, Project, Task, VaultSummary } from "@/lib/ops/types";
+import { getOpsDataMode, getSupabaseOpsDiagnostics } from "@/lib/ops/supabase";
+import type { GitHubCache, NoteItem, OpsConsoleData, OpsSourceHealth, Project, Task, VaultSummary } from "@/lib/ops/types";
 
 const projects = projectsData as Project[];
 const tasks = tasksData as Task[];
 const github = githubCacheData as GitHubCache;
 
 export async function getOpsConsoleData(): Promise<OpsConsoleData> {
-  const supabaseData = await getSupabaseOpsConsoleData();
+  const [supabaseData, diagnostics] = await Promise.all([
+    getSupabaseOpsConsoleData(),
+    getSupabaseOpsDiagnostics(),
+  ]);
+
   if (supabaseData) {
     return {
       ...supabaseData,
       github,
       vault: buildVaultSummary(supabaseData.notes),
+      dataSource: {
+        ...supabaseData.dataSource,
+        sourceHealth: {
+          ...supabaseData.dataSource.sourceHealth,
+          supabaseConfigured: diagnostics.configured,
+          supabaseReachable: diagnostics.available,
+        },
+      },
     };
   }
 
   const notesSource = await getNotesSourceData();
+  const preferredMode = getOpsDataMode();
+  const sourceHealth: OpsSourceHealth = {
+    supabaseConfigured: diagnostics.configured,
+    supabaseReachable: diagnostics.available,
+    activeMode: notesSource.mode,
+    preferredMode,
+    notesMode: notesSource.mode,
+    lastSyncStatus: diagnostics.available ? "succeeded" : undefined,
+    lastSyncMessage: diagnostics.configured
+      ? (diagnostics.available ? "Supabase configured but inactive for current request." : "Supabase env exists but ops tables are not reachable yet.")
+      : "Supabase env not configured. Using local/export notes path.",
+  };
 
   return {
     projects,
@@ -34,6 +59,7 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
       notesRoots: notesSource.notesRoots,
       resolvedRoots: notesSource.resolvedRoots,
       notesCount: notesSource.notes.length,
+      sourceHealth,
     },
   };
 }

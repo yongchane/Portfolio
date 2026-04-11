@@ -83,6 +83,12 @@ async function upsertProjects(supabase, projects) {
     branch: project.branch ?? null,
     deploy_url: project.deployUrl ?? null,
     docs: project.docs ?? [],
+    sectors: project.sectors ?? [],
+    checklist: project.checklist ?? [],
+    operating_cadence: project.operatingCadence ?? [],
+    admin_surfaces: project.adminSurfaces ?? [],
+    vault_views: project.vaultViews ?? [],
+    github_focus: project.githubFocus ?? [],
     updated_at: new Date().toISOString(),
   }));
 
@@ -125,6 +131,7 @@ async function upsertNotes(supabase, notes) {
     highlights: note.highlights ?? [],
     headings: note.headings ?? [],
     preview: note.preview ?? [],
+    links: note.links ?? [],
     raw_excerpt: note.rawExcerpt,
   }));
 
@@ -241,6 +248,7 @@ async function buildNoteItem(sourceConfig, filePath) {
     updatedAt: formatDateTime(parsed.data.date || stat.mtime.toISOString()),
     path: relativePath.replace(/\\/g, "/"),
     workspaceRootLabel: path.basename(sourceConfig.workspaceRoot),
+    links: extractLinks(raw),
     summary,
     highlights: bullets,
     headings,
@@ -304,6 +312,21 @@ function normalizeNoteType(rawType, relativePath) {
   if (["daily-chat-log", "project-ops", "aeyong-debug", "weekly-review"].includes(normalized)) return normalized;
   if (relativePath.startsWith("docs/")) return "reference";
   return "project-ops";
+}
+
+function extractLinks(raw) {
+  const links = new Set();
+  for (const match of raw.matchAll(/\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|[^\]]+)?\]\]/g)) {
+    const target = match[1]?.trim();
+    if (target) links.add(target);
+  }
+  for (const match of raw.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
+    const target = match[1]?.trim();
+    if (target && !target.startsWith("http://") && !target.startsWith("https://")) {
+      links.add(target.replace(/^\.\//, ""));
+    }
+  }
+  return [...links];
 }
 
 function formatDateTime(value) {

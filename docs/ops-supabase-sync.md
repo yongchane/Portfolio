@@ -55,8 +55,9 @@ npm run dev
 
 Implemented now:
 - schema SQL for `ops_projects`, `ops_tasks`, `ops_notes`, `ops_sync_state`, `ops_sync_runs`
-- sync script for projects/tasks/Obsidian notes -> Supabase
+- sync script for projects/tasks/Obsidian notes -> Supabase, including rich project metadata (`sectors`, `checklist`, `admin_surfaces`, `vault_views`, `github_focus`) and note link graph data
 - server data loader that can read `/ops` data from Supabase with local fallback
+- `/ops` settings now surfaces source-health state (preferred mode, Supabase configured/reachable, latest sync status/message)
 - `/api/ops/notes-version` now reports the active data source metadata
 
 Still up to you / deployment:

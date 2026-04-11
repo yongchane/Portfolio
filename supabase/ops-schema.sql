@@ -12,6 +12,12 @@ create table if not exists public.ops_projects (
   branch text,
   deploy_url text,
   docs jsonb not null default '[]'::jsonb,
+  sectors jsonb not null default '[]'::jsonb,
+  checklist jsonb not null default '[]'::jsonb,
+  operating_cadence jsonb not null default '[]'::jsonb,
+  admin_surfaces jsonb not null default '[]'::jsonb,
+  vault_views jsonb not null default '[]'::jsonb,
+  github_focus jsonb not null default '[]'::jsonb,
   updated_at timestamptz not null default timezone('utc', now())
 );
 
@@ -34,6 +40,13 @@ create table if not exists public.ops_tasks (
 create index if not exists idx_ops_tasks_project_id on public.ops_tasks(project_id);
 create index if not exists idx_ops_tasks_status on public.ops_tasks(status);
 
+alter table public.ops_projects add column if not exists sectors jsonb not null default '[]'::jsonb;
+alter table public.ops_projects add column if not exists checklist jsonb not null default '[]'::jsonb;
+alter table public.ops_projects add column if not exists operating_cadence jsonb not null default '[]'::jsonb;
+alter table public.ops_projects add column if not exists admin_surfaces jsonb not null default '[]'::jsonb;
+alter table public.ops_projects add column if not exists vault_views jsonb not null default '[]'::jsonb;
+alter table public.ops_projects add column if not exists github_focus jsonb not null default '[]'::jsonb;
+
 create table if not exists public.ops_notes (
   id text primary key,
   title text not null,
@@ -47,11 +60,14 @@ create table if not exists public.ops_notes (
   highlights jsonb not null default '[]'::jsonb,
   headings jsonb not null default '[]'::jsonb,
   preview jsonb not null default '[]'::jsonb,
+  links jsonb not null default '[]'::jsonb,
   raw_excerpt text not null
 );
 
 create index if not exists idx_ops_notes_type on public.ops_notes(type);
 create unique index if not exists idx_ops_notes_path on public.ops_notes(path);
+
+alter table public.ops_notes add column if not exists links jsonb not null default '[]'::jsonb;
 
 create table if not exists public.ops_sync_state (
   key text primary key,

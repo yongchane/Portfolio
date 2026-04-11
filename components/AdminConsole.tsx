@@ -147,6 +147,25 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
     };
   }, [selectedProject?.branch, selectedProjectReleases.length, selectedRepo]);
 
+  const releaseProjects = useMemo(() => {
+    return data?.projects.filter((project) => project.repo).map((project) => {
+      const repo = project.repo ? githubReposByName.get(project.repo) : undefined;
+      const releases = (data?.github.releases || []).filter((release) => release.repo === project.repo);
+      const latestRelease = releases[0];
+      const pushedAt = repo?.pushedAt ? new Date(repo.pushedAt).getTime() : 0;
+      const daysSincePush = pushedAt ? Math.floor((Date.now() - pushedAt) / (1000 * 60 * 60 * 24)) : null;
+      const branchAligned = !project.branch || !repo || project.branch === repo.defaultBranch;
+      return {
+        project,
+        repo,
+        releases,
+        latestRelease,
+        daysSincePush,
+        branchAligned,
+      };
+    }) || [];
+  }, [data?.github.releases, data?.projects, githubReposByName]);
+
   useEffect(() => {
     if (!filteredNotes.length) return;
     if (!filteredNotes.some((note) => note.id === selectedNoteId)) {
@@ -478,12 +497,14 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                     <span className={clsx("rounded-full px-3 py-1 text-sm font-semibold", projectStageMeta[selectedProject.stage].tone)}>{projectStageMeta[selectedProject.stage].label}</span>
                   </div>
 
-                  <div className="grid gap-4 text-sm text-white/75 md:grid-cols-2 xl:grid-cols-6">
+                  <div className="grid gap-4 text-sm text-white/75 md:grid-cols-2 xl:grid-cols-8">
                     <InfoTile label="Repository" value={selectedProject.repo || "-"} />
                     <InfoTile label="Branch" value={selectedProject.branch || "-"} />
                     <InfoTile label="Deploy" value={selectedProject.deployUrl || "-"} />
                     <InfoTile label="Docs" value={selectedProject.docs?.join(", ") || "-"} />
                     <InfoTile label="Linked notes" value={String(selectedProjectNotes.length)} />
+                    <InfoTile label="Connected tasks" value={String(projectTasks.length)} />
+                    <InfoTile label="Boards / releases" value={`${selectedProjectBoards.length} / ${selectedProjectReleases.length}`} />
                     <InfoTile label="Repo health" value={projectRepoHealth ? `${projectRepoHealth.score}/100` : "-"} />
                   </div>
 
@@ -584,6 +605,7 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                         )}
                         <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                           <p className="mb-3 text-sm font-semibold text-white/55">Linked vault notes</p>
+                          <p className="mb-3 text-xs text-white/45">{selectedProjectNotes.length}개 note · source {data.dataSource.mode} · vault mapped {data.vault.projectMappedCount}</p>
                           <div className="space-y-3">
                             {selectedProjectNotes.slice(0, 5).map((note) => {
                               const linkStats = vaultLinksByNoteId.get(note.id);
@@ -781,26 +803,62 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
               <header>
                 <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">Releases</p>
                 <h2 className="mb-3 text-4xl font-bold">릴리즈 관제</h2>
-                <p className="max-w-3xl text-white/70">프로젝트별 deploy 상태와 GitHub release 흔적을 함께 봅니다. 아직 write 동작은 없고 read-only 운영 관제용입니다.</p>
+                <p className="max-w-3xl text-white/70">프로젝트별 deploy 상태와 GitHub release 흔적을 함께 봅니다. 아직 write 동작은 없고 read-only 운영 관제용이지만, 이제 repo별 freshness / 브랜치 정렬 / release 부재까지 바로 읽을 수 있습니다.</p>
               </header>
+
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                <SummaryCard label="Tracked repos" value={String(releaseProjects.length)} />
+                <SummaryCard label="GitHub releases" value={String(data.github.releases.length)} />
+                <SummaryCard label="Verifying tasks" value={String(summary.verifyingTasks)} />
+                <SummaryCard label="Branch mismatches" value={String(releaseProjects.filter((item) => !item.branchAligned).length)} />
+                <SummaryCard label="No-release repos" value={String(releaseProjects.filter((item) => !item.releases.length).length)} />
+              </div>
+
               <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
                 <Panel title="Release checklist">
                   <div className="space-y-3">
-                    <ChecklistRow item={{ id: 'release-1', label: '현재 작업 브랜치와 보호 브랜치 규칙 확인', status: 'doing', note: 'Portfolio는 develop만 사용, main touch 금지' }} />
+                    <ChecklistRow item={{ id: 'release-1', label: '현재 작업 브랜치와 보호 브랜치 규칙 확인', status: releaseProjects.some((item) => !item.branchAligned) ? 'doing' : 'done', note: 'Portfolio는 develop만 사용, main touch 금지' }} />
                     <ChecklistRow item={{ id: 'release-2', label: '비로그인 public page smoke test', status: 'todo', note: 'build 후 route별 확인 필요' }} />
                     <ChecklistRow item={{ id: 'release-3', label: 'GitHub release / deploy 흔적 동기화', status: data.github.releases.length ? 'done' : 'doing', note: data.github.releases.length ? '최근 release cache 반영됨' : 'release가 없거나 아직 sync 전' }} />
                     <ChecklistRow item={{ id: 'release-4', label: '검증 대기 task 표시', status: summary.verifyingTasks ? 'doing' : 'todo', note: `${summary.verifyingTasks}개 task가 verifying 상태` }} />
+                    <ChecklistRow item={{ id: 'release-5', label: 'Source health 확인', status: data.dataSource.sourceHealth.supabaseConfigured ? (data.dataSource.sourceHealth.supabaseReachable ? 'done' : 'blocked') : 'doing', note: `${data.dataSource.sourceHealth.activeMode} / preferred ${data.dataSource.sourceHealth.preferredMode}` }} />
                   </div>
                 </Panel>
-                <Panel title="Recent releases from GitHub">
+                <Panel title="Repo readiness snapshot">
                   <div className="space-y-3">
-                    {data.github.releases.map((release) => (
-                      <ReleaseCard key={`${release.repo}-${release.id}`} release={release} />
+                    {releaseProjects.map(({ project, repo, releases, latestRelease, daysSincePush, branchAligned }) => (
+                      <div key={project.id} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/80">
+                        <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.2em] text-white/45">{project.name}</p>
+                            <strong>{project.repo}</strong>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <span className={clsx('rounded-full px-3 py-1 text-xs font-semibold', branchAligned ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}>{branchAligned ? 'branch aligned' : 'branch mismatch'}</span>
+                            <span className={clsx('rounded-full px-3 py-1 text-xs font-semibold', releases.length ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-700')}>{releases.length ? `${releases.length} releases` : 'no releases'}</span>
+                          </div>
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <InfoTile label="Latest push" value={formatDateTime(repo?.pushedAt)} />
+                          <InfoTile label="Days since push" value={daysSincePush != null ? String(daysSincePush) : '-'} />
+                          <InfoTile label="Default / tracked" value={`${repo?.defaultBranch || '-'} / ${project.branch || '-'}`} />
+                          <InfoTile label="Latest release" value={latestRelease ? `${latestRelease.tagName} · ${formatDateTime(latestRelease.publishedAt)}` : '없음'} />
+                        </div>
+                        {project.deployUrl && <p className="mt-3 text-xs text-white/45">deploy {project.deployUrl}</p>}
+                      </div>
                     ))}
-                    {!data.github.releases.length && <EmptyState title="GitHub release 없음" description="repo에 release가 없거나, 아직 GitHub sync를 실행하지 않았습니다." />}
                   </div>
                 </Panel>
               </div>
+
+              <Panel title="Recent releases from GitHub">
+                <div className="space-y-3">
+                  {data.github.releases.map((release) => (
+                    <ReleaseCard key={`${release.repo}-${release.id}`} release={release} />
+                  ))}
+                  {!data.github.releases.length && <EmptyState title="GitHub release 없음" description="repo에 release가 없거나, 아직 GitHub sync를 실행하지 않았습니다." />}
+                </div>
+              </Panel>
             </div>
           )}
 
@@ -818,7 +876,8 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                     <ChecklistRow item={{ id: 'settings-2', label: 'Portfolio main 브랜치 직접 작업/머지 금지', status: 'done' }} />
                     <ChecklistRow item={{ id: 'settings-3', label: 'notes live/export fallback 유지', status: 'done', note: `source ${data.dataSource.mode}` }} />
                     <ChecklistRow item={{ id: 'settings-4', label: 'GitHub sync cache 자동 생성', status: data.github.mode === 'live' ? 'done' : 'doing', note: `generated ${formatDateTime(data.github.generatedAt)}` }} />
-                    <ChecklistRow item={{ id: 'settings-5', label: '서버 기반 인증으로 전환', status: 'todo', note: '현재는 hardcoded access code MVP 보호' }} />
+                    <ChecklistRow item={{ id: 'settings-5', label: 'Supabase real connection path visibility', status: data.dataSource.sourceHealth.supabaseConfigured ? (data.dataSource.sourceHealth.supabaseReachable ? 'done' : 'blocked') : 'doing', note: `${data.dataSource.sourceHealth.activeMode} / preferred ${data.dataSource.sourceHealth.preferredMode}` }} />
+                    <ChecklistRow item={{ id: 'settings-6', label: '서버 기반 인증으로 전환', status: 'todo', note: '현재는 hardcoded access code MVP 보호' }} />
                   </div>
                 </Panel>
                 <div className="space-y-6">
@@ -832,7 +891,17 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                       <InfoTile label="Vault orphan notes" value={String(data.vault.orphanNoteIds.length)} />
                       <InfoTile label="GitHub account" value={data.github.account || 'unknown'} />
                       <InfoTile label="GitHub mode" value={`${data.github.mode} · repos ${data.github.repoSnapshots.length}`} />
+                      <InfoTile label="Source active/preferred" value={`${data.dataSource.sourceHealth.activeMode} / ${data.dataSource.sourceHealth.preferredMode}`} />
+                      <InfoTile label="Supabase" value={data.dataSource.sourceHealth.supabaseConfigured ? (data.dataSource.sourceHealth.supabaseReachable ? 'configured + reachable' : 'configured but unreachable') : 'not configured'} />
+                      <InfoTile label="Last sync status" value={data.dataSource.sourceHealth.lastSyncStatus || '-'} />
+                      <InfoTile label="Last sync at" value={formatDateTime(data.dataSource.sourceHealth.lastSyncAt)} />
                     </div>
+                    {data.dataSource.sourceHealth.lastSyncMessage && (
+                      <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
+                        <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">Source health note</p>
+                        <p>{data.dataSource.sourceHealth.lastSyncMessage}</p>
+                      </div>
+                    )}
                   </Panel>
                   <Panel title="GitHub sync warnings">
                     <div className="space-y-3 text-sm text-white/80">
