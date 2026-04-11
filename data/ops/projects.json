@@ -47,6 +47,23 @@
         "label": "배포 최종 검증",
         "status": "doing"
       }
+    ],
+    "adminSurfaces": [
+      {
+        "id": "tori-surface-admin",
+        "label": "Admin publish flow",
+        "kind": "console",
+        "status": "doing",
+        "summary": "direct DB publish 이후 생성→검수→게시 운영성 검증"
+      },
+      {
+        "id": "tori-surface-deploy",
+        "label": "Public deploy",
+        "kind": "deploy",
+        "status": "doing",
+        "summary": "배포본 smoke test와 legacy worker 정리 대기",
+        "href": "https://purrpurr-hub-public.vercel.app/"
+      }
     ]
   },
   {
@@ -95,6 +112,23 @@
         "id": "pawpong-check-3",
         "label": "전환 지표 정의",
         "status": "todo"
+      }
+    ],
+    "adminSurfaces": [
+      {
+        "id": "pawpong-surface-admin",
+        "label": "Admin funnel build",
+        "kind": "console",
+        "status": "doing",
+        "summary": "브리더 온보딩/상담 중심 운영 구조 구현 중"
+      },
+      {
+        "id": "pawpong-surface-github",
+        "label": "GitHub frontend repo",
+        "kind": "github",
+        "status": "doing",
+        "summary": "admin frontend 진행 상황과 open work 추적",
+        "href": "https://github.com/Pawpong/pawpong_admin_frontend"
       }
     ]
   },
@@ -160,6 +194,54 @@
         "status": "todo",
         "note": "현재 access code는 MVP 임시 보호"
       }
+    ],
+    "operatingCadence": [
+      "문제/결정은 vault note로 먼저 남기고 task와 연결",
+      "개발 중 상태는 develop 기준으로 추적하고 main은 ship 직전까지 잠금",
+      "GitHub repo 상태, 노트 근거, 다음 액션을 같은 화면에서 본다"
+    ],
+    "adminSurfaces": [
+      {
+        "id": "portfolio-surface-ops",
+        "label": "/ops console",
+        "kind": "console",
+        "status": "doing",
+        "summary": "개인 operating console. notes, projects, releases, settings를 한곳에서 본다",
+        "href": "/ops"
+      },
+      {
+        "id": "portfolio-surface-supabase",
+        "label": "Supabase ops tables",
+        "kind": "db",
+        "status": "doing",
+        "summary": "projects/tasks/notes를 JSON fallback에서 Supabase-backed mode로 올릴 준비",
+        "href": "https://supabase.com/dashboard"
+      },
+      {
+        "id": "portfolio-surface-github",
+        "label": "GitHub repo cache",
+        "kind": "github",
+        "status": "doing",
+        "summary": "repo/release/project cache를 읽어 project 운영 관제에 연결",
+        "href": "https://github.com/yongchane/Portfolio"
+      },
+      {
+        "id": "portfolio-surface-docs",
+        "label": "Vault + docs",
+        "kind": "docs",
+        "status": "done",
+        "summary": "Obsidian vault와 docs를 live/export source로 읽어 notes viewer를 운영 기반으로 사용"
+      }
+    ],
+    "vaultViews": [
+      "02 Projects/Portfolio Ops Console note를 기준 문서로 유지",
+      "daily log / aeyong debug / docs reference를 함께 조회",
+      "orphan note를 줄이고 task-linked note 비율을 높인다"
+    ],
+    "githubFocus": [
+      "repo default branch와 현재 운영 브랜치(develop) 차이를 항상 가시화",
+      "open issues / PRs / latest push 시각으로 운영 온도를 읽기",
+      "release 흔적이 없을 때도 deploy 검증 체크리스트를 유지"
     ]
   },
   {
@@ -208,6 +290,11 @@
         "label": "정기 health/status 점검",
         "status": "doing"
       }
+    ],
+    "operatingCadence": [
+      "문제는 investigate-first",
+      "gateway/config/channel 변경은 round-trip verification",
+      "재사용 가능한 결론은 docs + memory에 축적"
     ]
   }
 ]

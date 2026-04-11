@@ -111,8 +111,10 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
       notesCount: data?.notes.length || 0,
       githubRepos: data?.github.repoSnapshots.length || 0,
       githubBoards: data?.github.projectBoards.length || 0,
+      mappedNotes: data?.vault.projectMappedCount || 0,
+      orphanNotes: data?.vault.orphanNoteIds.length || 0,
     }),
-    [data?.projects.length, data?.tasks, data?.notes.length, data?.github.repoSnapshots.length, data?.github.projectBoards.length],
+    [data?.projects.length, data?.tasks, data?.notes.length, data?.github.repoSnapshots.length, data?.github.projectBoards.length, data?.vault.projectMappedCount, data?.vault.orphanNoteIds.length],
   );
 
   const attentionTasks = (data?.tasks || [])
@@ -124,6 +126,26 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
   const selectedProjectReleases = selectedRepo
     ? (data?.github.releases || []).filter((release) => release.repo === selectedRepo.repo).slice(0, 4)
     : [];
+  const selectedProjectNotes = useMemo(
+    () => (data?.notes || []).filter((note) => note.project === selectedProject?.name || note.project === selectedProject?.repo || note.path.toLowerCase().includes(selectedProject?.name.toLowerCase() || "")),
+    [data?.notes, selectedProject?.name, selectedProject?.repo],
+  );
+  const vaultLinksByNoteId = useMemo(() => new Map((data?.vault.links || []).map((entry) => [entry.noteId, entry])), [data?.vault.links]);
+  const projectRepoHealth = useMemo(() => {
+    if (!selectedRepo) return null;
+    const issuePressure = (selectedRepo.openIssuesCount ?? 0) + (selectedRepo.openPullRequestsCount ?? 0);
+    const pushedAt = selectedRepo.pushedAt ? new Date(selectedRepo.pushedAt).getTime() : 0;
+    const daysSincePush = pushedAt ? Math.floor((Date.now() - pushedAt) / (1000 * 60 * 60 * 24)) : null;
+    const branchAligned = !selectedProject?.branch || selectedProject.branch === selectedRepo.defaultBranch;
+    const score = Math.max(0, 100 - issuePressure * 8 - (daysSincePush && daysSincePush > 14 ? Math.min(35, daysSincePush - 14) : 0) - (branchAligned ? 0 : 12));
+    return {
+      score,
+      issuePressure,
+      daysSincePush,
+      branchAligned,
+      releaseCount: selectedProjectReleases.length,
+    };
+  }, [selectedProject?.branch, selectedProjectReleases.length, selectedRepo]);
 
   useEffect(() => {
     if (!filteredNotes.length) return;
@@ -280,11 +302,13 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                 <p className="max-w-3xl text-white/70">애옹 작업, 프로젝트 상태, synced notes snapshot, GitHub repo/project layer, 사용자 판단 필요 항목을 한 번에 보는 홈 화면입니다.</p>
               </header>
 
-              <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
+              <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-8">
                 <SummaryCard label="전체 프로젝트" value={String(summary.totalProjects)} />
                 <SummaryCard label="진행 중 작업" value={String(summary.activeTasks)} />
                 <SummaryCard label="검증 중 작업" value={String(summary.verifyingTasks)} />
                 <SummaryCard label="저장된 노트" value={String(summary.notesCount)} />
+                <SummaryCard label="Project-linked notes" value={String(summary.mappedNotes)} />
+                <SummaryCard label="Vault orphan" value={String(summary.orphanNotes)} />
                 <SummaryCard label="GitHub repos" value={String(summary.githubRepos)} />
                 <SummaryCard label="GitHub boards" value={String(summary.githubBoards)} />
               </div>
@@ -320,7 +344,31 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                 </Panel>
               </div>
 
-              <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+              <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+                <Panel title="Vault operating signals">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
+                      <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">Hot folders</p>
+                      <div className="space-y-2">
+                        {data.vault.folders.slice(0, 4).map((folder) => (
+                          <div key={folder.folder} className="flex items-center justify-between gap-3 rounded-2xl bg-white/5 px-3 py-2">
+                            <span className="truncate">{folder.folder}</span>
+                            <span className="text-xs text-white/45">{folder.count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
+                      <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">Tag clusters</p>
+                      <div className="flex flex-wrap gap-2">
+                        {data.vault.tags.slice(0, 8).map((tag) => (
+                          <span key={tag.tag} className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">#{tag.tag} · {tag.count}</span>
+                        ))}
+                        {!data.vault.tags.length && <EmptyLine message="아직 집계된 태그가 없습니다." />}
+                      </div>
+                    </div>
+                  </div>
+                </Panel>
                 <Panel title="GitHub 연결 현황">
                   <div className="grid gap-4 md:grid-cols-2">
                     {data.projects.filter((project) => project.repo).map((project) => (
@@ -430,11 +478,13 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                     <span className={clsx("rounded-full px-3 py-1 text-sm font-semibold", projectStageMeta[selectedProject.stage].tone)}>{projectStageMeta[selectedProject.stage].label}</span>
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 text-sm text-white/75">
+                  <div className="grid gap-4 text-sm text-white/75 md:grid-cols-2 xl:grid-cols-6">
                     <InfoTile label="Repository" value={selectedProject.repo || "-"} />
                     <InfoTile label="Branch" value={selectedProject.branch || "-"} />
                     <InfoTile label="Deploy" value={selectedProject.deployUrl || "-"} />
                     <InfoTile label="Docs" value={selectedProject.docs?.join(", ") || "-"} />
+                    <InfoTile label="Linked notes" value={String(selectedProjectNotes.length)} />
+                    <InfoTile label="Repo health" value={projectRepoHealth ? `${projectRepoHealth.score}/100` : "-"} />
                   </div>
 
                   <div className="grid gap-6 xl:grid-cols-2">
@@ -452,6 +502,40 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                     </Panel>
                   </div>
 
+                  <div className="grid gap-6 xl:grid-cols-3">
+                    <Panel title="Operating cadence">
+                      <div className="space-y-3">
+                        {(selectedProject.operatingCadence || []).map((item) => (
+                          <div key={item} className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80">{item}</div>
+                        ))}
+                        {!selectedProject.operatingCadence?.length && <EmptyLine message="운영 cadence가 아직 정의되지 않았습니다." />}
+                      </div>
+                    </Panel>
+                    <Panel title="Admin surfaces">
+                      <div className="space-y-3">
+                        {(selectedProject.adminSurfaces || []).map((surface) => (
+                          <a key={surface.id} href={surface.href || "#"} target={surface.href ? "_blank" : undefined} rel={surface.href ? "noreferrer" : undefined} className="block rounded-2xl border border-white/10 bg-black/20 p-4 text-sm transition hover:bg-white/10">
+                            <div className="mb-2 flex items-center justify-between gap-3">
+                              <strong>{surface.label}</strong>
+                              <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", progressMeta[surface.status].tone)}>{progressMeta[surface.status].label}</span>
+                            </div>
+                            <p className="text-white/70">{surface.summary}</p>
+                            <p className="mt-2 text-xs uppercase tracking-[0.18em] text-white/40">{surface.kind}</p>
+                          </a>
+                        ))}
+                        {!selectedProject.adminSurfaces?.length && <EmptyLine message="연결된 운영 surface가 없습니다." />}
+                      </div>
+                    </Panel>
+                    <Panel title="Vault views">
+                      <div className="space-y-3">
+                        {(selectedProject.vaultViews || []).map((view) => (
+                          <div key={view} className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80">{view}</div>
+                        ))}
+                        {!selectedProject.vaultViews?.length && <EmptyLine message="추천 vault view가 아직 없습니다." />}
+                      </div>
+                    </Panel>
+                  </div>
+
                   <div className="grid gap-6 xl:grid-cols-[1fr_0.95fr]">
                     <Panel title="Connected tasks">
                       <div className="space-y-4">
@@ -464,6 +548,22 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                     <Panel title="GitHub repo / project layer">
                       <div className="space-y-4">
                         {selectedRepo ? <GitHubRepoDetail repo={selectedRepo} /> : <EmptyLine message="이 프로젝트는 repo가 연결되지 않았습니다." />}
+                        {projectRepoHealth && (
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <InfoTile label="Health score" value={`${projectRepoHealth.score}/100`} />
+                            <InfoTile label="Branch alignment" value={projectRepoHealth.branchAligned ? "tracked branch aligned" : "project branch != repo default"} />
+                            <InfoTile label="Issue pressure" value={String(projectRepoHealth.issuePressure)} />
+                            <InfoTile label="Days since push" value={projectRepoHealth.daysSincePush != null ? String(projectRepoHealth.daysSincePush) : "-"} />
+                          </div>
+                        )}
+                        {!!selectedProject.githubFocus?.length && (
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/80">
+                            <p className="mb-3 text-sm font-semibold text-white/55">GitHub focus</p>
+                            <ul className="list-disc space-y-2 pl-4">
+                              {selectedProject.githubFocus.map((item) => <li key={item}>{item}</li>)}
+                            </ul>
+                          </div>
+                        )}
                         {selectedProjectBoards.length > 0 ? (
                           <div className="space-y-3">
                             <p className="text-sm font-semibold text-white/55">Project boards</p>
@@ -482,6 +582,27 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                             ))}
                           </div>
                         )}
+                        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                          <p className="mb-3 text-sm font-semibold text-white/55">Linked vault notes</p>
+                          <div className="space-y-3">
+                            {selectedProjectNotes.slice(0, 5).map((note) => {
+                              const linkStats = vaultLinksByNoteId.get(note.id);
+                              return (
+                                <button key={note.id} onClick={() => {
+                                  setSelectedNoteId(note.id);
+                                  setSection("notes");
+                                }} className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:bg-white/10">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <strong>{note.title}</strong>
+                                    <span className="text-xs text-white/45">↗ {linkStats?.linkedBy.length || 0} · → {linkStats?.linksTo.length || 0}</span>
+                                  </div>
+                                  <p className="mt-2 text-sm text-white/70">{note.summary}</p>
+                                </button>
+                              );
+                            })}
+                            {!selectedProjectNotes.length && <EmptyLine message="아직 project와 연결된 vault note가 부족합니다." />}
+                          </div>
+                        </div>
                       </div>
                     </Panel>
                   </div>
@@ -494,11 +615,19 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
             <div className="space-y-8">
               <header>
                 <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">Notes</p>
-                <h2 className="mb-3 text-4xl font-bold">Synced Notes Viewer</h2>
-                <p className="max-w-3xl text-white/70">Obsidian/문서 원본을 local live source로 읽거나, 배포 환경에서는 export snapshot으로 fallback합니다. 로컬 markdown authoring은 유지하고 `/ops`는 변경을 감지하면 자동 refresh됩니다.</p>
+                <h2 className="mb-3 text-4xl font-bold">Vault / Notes Console</h2>
+                <p className="max-w-3xl text-white/70">Obsidian/문서 원본을 live source로 읽고, note 간 링크/폴더/태그/작업 연결까지 함께 보여줍니다. 이제 `/ops`의 Notes는 단순 viewer가 아니라 vault operating layer 역할을 합니다.</p>
               </header>
-              <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+              <div className="grid gap-4 xl:grid-cols-[320px_360px_1fr]">
                 <div className="space-y-3 rounded-3xl border border-white/10 bg-white/5 p-4">
+                  <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/80">
+                    <p className="mb-3 text-xs uppercase tracking-[0.2em] text-white/45">Vault health</p>
+                    <div className="grid gap-3">
+                      <InfoTile label="Templates" value={String(data.vault.templatesCount)} />
+                      <InfoTile label="Project mapped" value={String(data.vault.projectMappedCount)} />
+                      <InfoTile label="Orphan notes" value={String(data.vault.orphanNoteIds.length)} />
+                    </div>
+                  </div>
                   <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                     <label className="mb-2 block text-xs uppercase tracking-[0.2em] text-white/45">노트 검색</label>
                     <input
@@ -536,6 +665,43 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                   </div>
                 </div>
 
+                <div className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-4">
+                  <Panel title="Folder buckets">
+                    <div className="space-y-3">
+                      {data.vault.folders.slice(0, 8).map((folder) => (
+                        <div key={folder.folder} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/80">
+                          <div className="flex items-center justify-between gap-3">
+                            <strong className="truncate">{folder.folder}</strong>
+                            <span className="text-xs text-white/45">{folder.count}</span>
+                          </div>
+                          <p className="mt-2 text-xs text-white/45">{folder.noteIds.slice(0, 3).join(", ")}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </Panel>
+                  <Panel title="Popular tags">
+                    <div className="flex flex-wrap gap-2">
+                      {data.vault.tags.map((tag) => (
+                        <button key={tag.tag} onClick={() => setNoteQuery(tag.tag)} className="rounded-full bg-black/20 px-3 py-2 text-xs text-white/75 transition hover:bg-white/10">#{tag.tag} · {tag.count}</button>
+                      ))}
+                    </div>
+                  </Panel>
+                  <Panel title="Orphan notes">
+                    <div className="space-y-2">
+                      {data.vault.orphanNoteIds.slice(0, 6).map((noteId) => {
+                        const note = notesById.get(noteId);
+                        if (!note) return null;
+                        return (
+                          <button key={noteId} onClick={() => setSelectedNoteId(noteId)} className="w-full rounded-2xl border border-white/10 bg-black/20 p-3 text-left text-sm text-white/75 transition hover:bg-white/10">
+                            {note.title}
+                          </button>
+                        );
+                      })}
+                      {!data.vault.orphanNoteIds.length && <EmptyLine message="모든 노트가 task/project/link 중 하나 이상에 연결되어 있습니다." />}
+                    </div>
+                  </Panel>
+                </div>
+
                 {selectedNote ? (
                   <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
                     <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -544,11 +710,13 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                     </div>
                     <p className="mb-4 text-sm text-white/45">{selectedNote.path} · {selectedNote.updatedAt}</p>
                     <p className="mb-6 text-white/75">{selectedNote.summary}</p>
-                    <div className="mb-6 grid gap-4 text-sm text-white/75 md:grid-cols-2">
+                    <div className="mb-6 grid gap-4 text-sm text-white/75 md:grid-cols-3">
                       <InfoTile label="Project" value={selectedNote.project || "-"} />
+                      <InfoTile label="Folder" value={selectedNote.folder} />
                       <InfoTile label="Tags" value={selectedNote.tags.length ? selectedNote.tags.join(", ") : "-"} />
                       <InfoTile label="Headings" value={selectedNote.headings.length ? selectedNote.headings.join(" · ") : "-"} />
                       <InfoTile label="Highlights" value={String(selectedNote.highlights.length)} />
+                      <InfoTile label="Vault graph" value={`out ${vaultLinksByNoteId.get(selectedNote.id)?.linksTo.length || 0} · in ${vaultLinksByNoteId.get(selectedNote.id)?.linkedBy.length || 0}`} />
                     </div>
                     <div className="mb-6 rounded-2xl border border-white/10 bg-black/20 p-5">
                       <p className="mb-3 text-sm font-semibold text-white/55">핵심 포인트</p>
@@ -557,6 +725,31 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                           <li key={item}>{item}</li>
                         ))}
                       </ul>
+                    </div>
+                    <div className="mb-6 rounded-2xl border border-white/10 bg-black/20 p-5">
+                      <p className="mb-3 text-sm font-semibold text-white/55">Vault links</p>
+                      <div className="grid gap-4 md:grid-cols-2 text-sm text-white/80">
+                        <div>
+                          <p className="mb-2 text-xs uppercase tracking-[0.18em] text-white/45">Outgoing</p>
+                          <div className="space-y-2">
+                            {(vaultLinksByNoteId.get(selectedNote.id)?.linksTo || []).map((noteId) => {
+                              const note = notesById.get(noteId);
+                              return note ? <button key={noteId} onClick={() => setSelectedNoteId(noteId)} className="block w-full rounded-2xl bg-white/5 px-3 py-2 text-left hover:bg-white/10">{note.title}</button> : null;
+                            })}
+                            {!(vaultLinksByNoteId.get(selectedNote.id)?.linksTo || []).length && <EmptyLine message="연결된 outgoing note가 없습니다." />}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="mb-2 text-xs uppercase tracking-[0.18em] text-white/45">Backlinks</p>
+                          <div className="space-y-2">
+                            {(vaultLinksByNoteId.get(selectedNote.id)?.linkedBy || []).map((noteId) => {
+                              const note = notesById.get(noteId);
+                              return note ? <button key={noteId} onClick={() => setSelectedNoteId(noteId)} className="block w-full rounded-2xl bg-white/5 px-3 py-2 text-left hover:bg-white/10">{note.title}</button> : null;
+                            })}
+                            {!(vaultLinksByNoteId.get(selectedNote.id)?.linkedBy || []).length && <EmptyLine message="아직 이 노트를 참조하는 backlink가 없습니다." />}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <div className="mb-6 rounded-2xl border border-white/10 bg-black/20 p-5">
                       <p className="mb-3 text-sm font-semibold text-white/55">원문 미리보기</p>
@@ -635,6 +828,8 @@ export default function AdminConsole({ authenticated, data }: { authenticated: b
                       <InfoTile label="Notes count" value={String(data.dataSource.notesCount)} />
                       <InfoTile label="Notes roots" value={data.dataSource.notesRoots.join(' | ') || '-'} />
                       <InfoTile label="Notes synced at" value={data.dataSource.generatedAt || '미기록'} />
+                      <InfoTile label="Vault folders" value={String(data.vault.folders.length)} />
+                      <InfoTile label="Vault orphan notes" value={String(data.vault.orphanNoteIds.length)} />
                       <InfoTile label="GitHub account" value={data.github.account || 'unknown'} />
                       <InfoTile label="GitHub mode" value={`${data.github.mode} · repos ${data.github.repoSnapshots.length}`} />
                     </div>

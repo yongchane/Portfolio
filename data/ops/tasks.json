@@ -10,12 +10,15 @@
       "develop 브랜치 생성",
       "초기 /ops MVP 추가",
       "Overview / Tasks / Projects / Docs / Releases / Settings IA 재설계",
-      "GitHub repo/project/release read-only cache layer 설계 착수"
+      "GitHub repo/project/release read-only cache layer 설계 착수",
+      "Vault summary layer 추가 (folders/tags/orphan/link graph 집계)",
+      "Projects 상세에 admin surfaces / operating cadence / linked vault notes 추가",
+      "GitHub-linked repo health, branch alignment, issue pressure 노출"
     ],
     "nextActions": [
-      "GitHub sync 결과를 /ops 카드·릴리즈·설정에 연결",
-      "Projects 상세에 sector/checklist/progress 블록 강화",
-      "MVP access code를 실제 auth로 교체할 서버 전략 결정"
+      "Supabase table schema에도 vault/admin metadata 반영",
+      "GitHub Project read:project scope 확보 시 real board data 노출",
+      "notes/task/project write path를 read-only에서 편집 가능한 운영 워크플로로 확장"
     ],
     "relatedCommits": [
       "d339ed6",
@@ -75,12 +78,13 @@
       "초기 노트 3종 작성 및 notes viewer 방향 정의",
       "live notes source fallback/export source 이중 경로 구현",
       "notes-version API + `/ops` 자동 refresh polling 추가",
-      "export watcher 스크립트와 build 전 sync 연결"
+      "export watcher 스크립트와 build 전 sync 연결",
+      "note 간 link/backlink 추적과 folder/tag/orphan 집계 추가"
     ],
     "nextActions": [
-      "Notes 섹션 UI 강화",
-      "대화 저장 정책 확정 후 자동 축적 시작",
-      "배포 환경용 외부 authoring sync 경로(webhook/git automation) 여부 결정"
+      "wikilink authoring 규칙 정리",
+      "project/frontmatter 누락 note 정리",
+      "vault write/create 흐름 설계"
     ],
     "relatedDocs": [
       "Obsidian for Aeyong Ops"

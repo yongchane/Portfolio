@@ -3,7 +3,7 @@ import "server-only";
 import { getOpsDataMode, getSupabaseAdminClient, isSupabaseOpsAvailable } from "@/lib/ops/supabase";
 import type { NoteItem, OpsConsoleData, Project, Task } from "@/lib/ops/types";
 
-type SupabaseOpsConsoleData = Omit<OpsConsoleData, "github">;
+type SupabaseOpsConsoleData = Omit<OpsConsoleData, "github" | "vault">;
 
 type SyncStateRow = {
   key: string;
@@ -136,6 +136,7 @@ function mapTaskRow(row: TaskRow): Task {
 }
 
 function mapNoteRow(row: NoteRow): NoteItem {
+  const normalizedPath = row.path.replace(/\\/g, "/");
   return {
     id: row.id,
     title: row.title,
@@ -143,8 +144,10 @@ function mapNoteRow(row: NoteRow): NoteItem {
     project: row.project ?? undefined,
     tags: row.tags ?? [],
     updatedAt: row.updated_at,
-    path: row.path,
+    path: normalizedPath,
     workspaceRootLabel: row.workspace_root_label,
+    folder: normalizedPath.split("/").slice(0, -1).join("/") || "(root)",
+    links: [],
     summary: row.summary,
     highlights: row.highlights ?? [],
     headings: row.headings ?? [],

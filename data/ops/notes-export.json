@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-04-11T07:56:11.828Z",
+  "generatedAt": "2026-04-11T11:09:44.187Z",
   "source": {
     "mode": "export",
     "workspaceRoot": "/Users/hyeon-yongchan/.openclaw/workspace",
@@ -33,6 +33,8 @@
       "updatedAt": "2026-04-11 15:52",
       "path": "obsidian-vault/02 Projects/Portfolio Ops Console.md",
       "workspaceRootLabel": "workspace",
+      "folder": "obsidian-vault/02 Projects",
+      "links": [],
       "summary": "Portfolio 안에 현용찬 x 애옹 개인 운영 콘솔을 구축하는 작업. 단순 포트폴리오 관리자 페이지가 아니라, 애옹 작업 관리 / 프로젝트 운영 / 문서 / 릴리즈 / 설정을 함께 다루는 GitHub형 개인 OS를 목표로 한다.",
       "highlights": [
         "`/ops` 초기 MVP 구현",
@@ -65,6 +67,8 @@
       "updatedAt": "2026-04-10 23:15",
       "path": "obsidian-vault/03 Aeyong/Aeyong Collaboration Notes.md",
       "workspaceRootLabel": "workspace",
+      "folder": "obsidian-vault/03 Aeyong",
+      "links": [],
       "summary": "현용찬은 애옹을 단순 챗봇이 아니라, 실제로 작업을 맡기고 결과와 과정까지 평가하는 운영 파트너로 사용한다.",
       "highlights": [
         "완료 보고보다 실제 근거",
@@ -91,6 +95,8 @@
       "updatedAt": "2026-04-10 23:15",
       "path": "obsidian-vault/README.md",
       "workspaceRootLabel": "workspace",
+      "folder": "obsidian-vault",
+      "links": [],
       "summary": "이 폴더는 현용찬 x 애옹 작업 기록, 프로젝트 운영 메모, 회고, 문제 분석을 위한 Obsidian 호환 vault입니다.",
       "highlights": [],
       "headings": [
@@ -114,6 +120,8 @@
       "updatedAt": "2026-04-10 23:15",
       "path": "obsidian-vault/Templates/Aeyong Debug Template.md",
       "workspaceRootLabel": "workspace",
+      "folder": "obsidian-vault/Templates",
+      "links": [],
       "summary": "상황 note",
       "highlights": [],
       "headings": [
@@ -135,6 +143,8 @@
       "updatedAt": "2026-04-10 23:15",
       "path": "obsidian-vault/Templates/Daily Chat Log Template.md",
       "workspaceRootLabel": "workspace",
+      "folder": "obsidian-vault/Templates",
+      "links": [],
       "summary": "오늘 대화 요약 note",
       "highlights": [],
       "headings": [
@@ -156,6 +166,8 @@
       "updatedAt": "2026-04-10 23:15",
       "path": "obsidian-vault/Templates/Project Operation Template.md",
       "workspaceRootLabel": "workspace",
+      "folder": "obsidian-vault/Templates",
+      "links": [],
       "summary": "프로젝트 요약 note",
       "highlights": [],
       "headings": [
@@ -179,6 +191,8 @@
       "updatedAt": "2026-04-10 23:15",
       "path": "obsidian-vault/Templates/Weekly Review Template.md",
       "workspaceRootLabel": "workspace",
+      "folder": "obsidian-vault/Templates",
+      "links": [],
       "summary": "실제 진척 note",
       "highlights": [],
       "headings": [
@@ -198,6 +212,8 @@
       "updatedAt": "2026-04-10 23:15",
       "path": "docs/obsidian-for-aeyong-ops.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "이 구조는 단순 메모장이 아니라 아래 4가지를 위한 개인 지식/운영 레이어다.",
       "highlights": [
         "GitHub는 코드와 커밋 추적에는 강하지만, 대화 문맥/오해/의사결정 회고에는 약함.",
@@ -230,6 +246,8 @@
       "updatedAt": "2026-04-10 15:01",
       "path": "docs/oauth-ops-playbook.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "장기 실행 경로에서 OAuth 세션 끊김을 완전히 막지는 못하더라도, 더 빨리 감지하고 영향 범위를 줄이기 위한 운영 규칙.",
       "highlights": [
         "현재 장기 cron은 `opscat / gpt-5.4-mini` 기반으로 비교적 안정적이다.",
@@ -267,6 +285,8 @@
       "updatedAt": "2026-04-10 09:00",
       "path": "obsidian-vault/01 Daily Notes/2026-04-10.md",
       "workspaceRootLabel": "workspace",
+      "folder": "obsidian-vault/01 Daily Notes",
+      "links": [],
       "summary": "Portfolio `develop` 브랜치에 `/ops` 개인 운영 콘솔을 만들고 개선했다.",
       "highlights": [
         "Portfolio `develop` 브랜치에 `/ops` 개인 운영 콘솔을 만들고 개선했다.",
@@ -292,6 +312,8 @@
       "updatedAt": "2026-04-08 18:03",
       "path": "docs/pawpong-filter-mvp-architecture.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "Pawpong contest entry에 사진 업로드 후 꾸미기 기능을 붙여 제출 전환율과 공유 가치를 높인다.",
       "highlights": [
         "실시간 AR 필터는 제외",
@@ -324,6 +346,8 @@
       "updatedAt": "2026-04-06 18:09",
       "path": "docs/async-work-registry.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "cron / wake / background worker / delegated sessions를 목적과 성공 조건 기준으로 추적한다.",
       "highlights": [
         "reminder",
@@ -356,6 +380,8 @@
       "updatedAt": "2026-04-06 18:09",
       "path": "docs/pawpong-contest-harness.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "Pawpong contest 기능을 사진 업로드, 심사, 공개 반영까지 이어지는 운영 시스템으로 설계하기 위한 상태 머신.",
       "highlights": [
         "contest",
@@ -388,6 +414,8 @@
       "updatedAt": "2026-04-06 18:09",
       "path": "docs/role-agent-contracts.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "pmcat / engcat / designcat / opscat이 어떤 입력을 받고 어떤 출력과 책임을 가져야 하는지 표준화한다.",
       "highlights": [
         "product idea",
@@ -420,6 +448,8 @@
       "updatedAt": "2026-04-06 18:08",
       "path": "docs/tori-harness-operations.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "Tori Admin / Tori의 집 운영 흐름을 direct DB publish 기준으로 정리한 하네스 문서.",
       "highlights": [
         "primary source of truth: `public.draft_posts`",
@@ -452,6 +482,8 @@
       "updatedAt": "2026-04-06 17:59",
       "path": "docs/done-criteria-and-approval-levels.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "작업 완료 기준과 승인 레벨을 표준화해, 케이스마다 완료 판단이 흔들리지 않게 한다.",
       "highlights": [
         "변경 파일이 명확하다",
@@ -484,6 +516,8 @@
       "updatedAt": "2026-04-06 17:59",
       "path": "docs/harness-engineering-system.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "OpenClaw를 단순 대화형 비서가 아니라, 반복 가능한 작업 시스템으로 운영하기 위한 공통 하네스 설계 문서.",
       "highlights": [
         "이 요청은 어디로 라우팅되는가",
@@ -516,6 +550,8 @@
       "updatedAt": "2026-04-06 17:59",
       "path": "docs/skill-routing-matrix.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "어떤 질문에 어떤 스킬을 우선 적용할지 빠르게 판단하기 위한 라우팅 기준.",
       "highlights": [
         "product-strategy",
@@ -547,6 +583,8 @@
       "updatedAt": "2026-03-31 17:04",
       "path": "docs/threads-ban-postmortem.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "The user repeatedly told the assistant to stop all Threads-related work, but the assistant still produced proposal/report messages that implied future Threads checks or attempted runs.",
       "highlights": [
         "The user explicitly banned Threads-related work multiple times.",
@@ -579,6 +617,8 @@
       "updatedAt": "2026-03-30 22:25",
       "path": "docs/tori-house-next-migration-plan.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "Migrate the public site `site/purrpurr-hub` from static-file generation into a stable Next.js app while preserving:",
       "highlights": [
         "current public information architecture",
@@ -611,6 +651,8 @@
       "updatedAt": "2026-03-30 22:00",
       "path": "docs/tori-architecture-mcp-plan.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "Design a stable architecture connecting:",
       "highlights": [
         "Public site: Tori's House",
@@ -643,6 +685,8 @@
       "updatedAt": "2026-03-30 17:34",
       "path": "docs/tori-admin-site-plan.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "Build an admin site for Tori's House where Tori can generate daily post drafts from logs/conversations/automation history, and the human can review, edit, approve, and publish them safely.",
       "highlights": [
         "Tori analyzes daily logs and working history",
@@ -675,6 +719,8 @@
       "updatedAt": "2026-03-30 15:12",
       "path": "docs/purrpurr-nextjs-migration-plan.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "Migrate the current static PurrPurr Hub into a Next.js app while preserving:",
       "highlights": [
         "warm, cat-like homepage feel",
@@ -704,6 +750,8 @@
       "updatedAt": "2026-03-30 14:35",
       "path": "docs/purrpurr-realtime-chat-plan.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "Add a lightweight anonymous realtime chat area to the PurrPurr Hub homepage so visitors can casually talk like an open chat room without sign-up friction.",
       "highlights": [
         "Keep it simple and obvious on the homepage",
@@ -734,6 +782,8 @@
       "updatedAt": "2026-03-27 22:32",
       "path": "docs/purrpurr-site-design-brief.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "PurrPurr is a lightweight, login-free web hub for people sharing real-world AI tool usage notes:",
       "highlights": [
         "trial-and-error findings",
@@ -766,6 +816,8 @@
       "updatedAt": "2026-03-27 22:31",
       "path": "docs/purrpurr-site-mvp-brief.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "A **login-free AI field-notes hub** for people who keep testing AI tools and want fast, experience-based answers like:",
       "highlights": [
         "\"Which model/tool is actually good for this?\"",
@@ -798,6 +850,8 @@
       "updatedAt": "2026-03-27 22:31",
       "path": "docs/purrpurr-site-vercel-checklist.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "Because the project directory does not currently exist in the workspace, this document is a **deployment-prep checklist** plus **Vercel notes** to use once the repo is placed at the expected path.",
       "highlights": [
         "Expected project path: `/Users/hyeon-yongchan/.openclaw/workspace/site/purrpurr-hub`",
@@ -830,6 +884,8 @@
       "updatedAt": "2026-03-27 18:10",
       "path": "docs/notion-ops-note.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "Before saying Notion is unavailable, check in this order:",
       "highlights": [
         "Notion is connected in this environment.",
@@ -860,6 +916,8 @@
       "updatedAt": "2026-03-27 14:12",
       "path": "docs/threads-tracker-system-design.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "Threads 계정 `@purrpurrmeow_cat`의 게시글 반응을 안전하게 추적하고,",
       "highlights": [
         "read-only만 허용",
@@ -892,6 +950,8 @@
       "updatedAt": "2026-03-26 22:34",
       "path": "docs/channel-safety-checklist.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "[ ] 이 작업이 읽기 전용 점검인지, 실제 변경인지 구분했는가",
       "highlights": [
         "[ ] 이 작업이 읽기 전용 점검인지, 실제 변경인지 구분했는가",
@@ -916,6 +976,8 @@
       "updatedAt": "2026-03-26 22:34",
       "path": "docs/model-routing-principles.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "PDF 21장, 22장, 부록 B의 모델 운영 원칙을 우리 환경에 맞게 정리한다.",
       "highlights": [
         "메인 모델: 최종 판단과 대화 품질",
@@ -948,6 +1010,8 @@
       "updatedAt": "2026-03-26 22:34",
       "path": "docs/openclaw-current-env-audit-against-pdf.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "작성일: 2026-03-26",
       "highlights": [
         "skills / playbook / checklist 운영 강화",
@@ -979,6 +1043,8 @@
       "updatedAt": "2026-03-26 22:34",
       "path": "docs/openclaw-operations-rules-from-pdf.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "작성일: 2026-03-26",
       "highlights": [
         "읽기 전용 점검과 실제 변경 명령을 구분한다.",
@@ -1011,6 +1077,8 @@
       "updatedAt": "2026-03-26 22:34",
       "path": "docs/openclaw-product-system-checklist.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "작성일: 2026-03-26",
       "highlights": [
         "[x] office-hours",
@@ -1040,6 +1108,8 @@
       "updatedAt": "2026-03-26 22:34",
       "path": "docs/security-input-handling-rules.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "외부 입력(웹 페이지, PDF, 이메일, 로그, webhook, pasted content)은 기본적으로 신뢰하지 않는다.",
       "highlights": [
         "필요한 사실만 추출",
@@ -1068,6 +1138,8 @@
       "updatedAt": "2026-03-26 22:34",
       "path": "docs/skills-progress-2026-03-26.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "스킬 시스템은 이제 \"초안 모음\" 단계를 넘어,",
       "highlights": [
         "핵심 product/system skills 10개 생성",
@@ -1100,6 +1172,8 @@
       "updatedAt": "2026-03-26 20:20",
       "path": "docs/memory-auto-append-rules.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "프로젝트/서비스 관련 중요한 정보를 어떤 조건에서 memory에 남길지 기준을 세분화한다.",
       "highlights": [
         "오늘의 핵심 의사결정",
@@ -1130,6 +1204,8 @@
       "updatedAt": "2026-03-26 20:20",
       "path": "docs/parallel-session-execution-playbook.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "실제 작업에서 `sessions_spawn`를 사용해 역할별 리뷰 세션을 병렬 실행하는 운영 가이드.",
       "highlights": [
         "office-hours",
@@ -1162,6 +1238,8 @@
       "updatedAt": "2026-03-26 19:52",
       "path": "docs/skill-evaluation-protocol.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "새로 만든 스킬이 실제로 잘 작동하는지 테스트할 때 따르는 공통 프로토콜.",
       "highlights": [
         "가상의 아이디어/버그/출시 상황을 넣고 출력 구조가 의도대로 나오는지 확인",
@@ -1194,6 +1272,8 @@
       "updatedAt": "2026-03-26 19:52",
       "path": "docs/skill-hardening-backlog.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "1. plan-eng-review",
       "highlights": [
         "office-hours: existing product audit 모드 추가",
@@ -1226,6 +1306,8 @@
       "updatedAt": "2026-03-26 19:36",
       "path": "docs/skills-audit-2026-03-26.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "gstack 분석을 바탕으로 만든 OpenClaw용 product/system skills가 실제 테스트에서 잘 작동했는지 확인하고, 부족한 부분을 보완한다.",
       "highlights": [
         "Pawpong 방향성 검토",
@@ -1258,6 +1340,8 @@
       "updatedAt": "2026-03-26 19:03",
       "path": "docs/skill-usage-cheatsheet.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "1. office-hours",
       "highlights": [
         "office-hours",
@@ -1290,6 +1374,8 @@
       "updatedAt": "2026-03-26 19:02",
       "path": "docs/parallel-review-run-template.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "서비스 아이디어나 큰 기능을 검토할 때, OpenClaw에서 역할별 리뷰를 병렬로 돌리기 위한 실전 템플릿.",
       "highlights": [
         "새 서비스 아이디어 검토",
@@ -1322,6 +1408,8 @@
       "updatedAt": "2026-03-26 18:54",
       "path": "docs/parallel-review-orchestration.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "OpenClaw의 `sessions_spawn`을 사용해 제품/설계 리뷰를 병렬로 돌리고, 메인 세션에서 결과를 합치는 운영 템플릿.",
       "highlights": [
         "메인 세션에서 공통 문제 정의 작성",
@@ -1354,6 +1442,8 @@
       "updatedAt": "2026-03-26 18:54",
       "path": "docs/project-memory-rules.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "프로젝트/서비스 관련 장기 기억을 더 구조적으로 남기기 위한 규칙.",
       "highlights": [
         "프로젝트 이름 / 목적",
@@ -1383,6 +1473,8 @@
       "updatedAt": "2026-03-26 18:54",
       "path": "docs/retro-cron-playbook.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "주간 회고를 OpenClaw cron으로 정기화하기 위한 운영 가이드.",
       "highlights": [
         "매주 금요일 저녁 또는 일요일 밤",
@@ -1413,6 +1505,8 @@
       "updatedAt": "2026-03-26 17:20",
       "path": "docs/gstack-openclaw-adaptation.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "작성일: 2026-03-26",
       "highlights": [
         "아이디어를 더 날카롭게 재정의",
@@ -1445,6 +1539,8 @@
       "updatedAt": "2026-03-26 17:20",
       "path": "docs/product-advisory-default-workflow.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "사용자가 서비스/기획/구현 관련 조언을 요청할 때 기본적으로 다음 순서를 우선 고려한다.",
       "highlights": [
         "사용자가 말한 기능 요청을 그대로 받지 말고, 진짜 문제와 사용자 pain을 먼저 확인한다.",
@@ -1477,6 +1573,8 @@
       "updatedAt": "2026-03-26 11:06",
       "path": "docs/threads_readonly_plan.md",
       "workspaceRootLabel": "workspace",
+      "folder": "docs",
+      "links": [],
       "summary": "```bash",
       "highlights": [
         "특정 Threads 계정의 최신 게시물을 로컬 브라우저 자동화로 읽는다.",

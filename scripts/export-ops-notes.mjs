@@ -123,15 +123,18 @@ async function buildNoteItem(sourceConfig, filePath) {
   const summary = preview[0] || bullets[0] || `${title} note`;
   const rawExcerpt = contentLines.slice(0, 18).join("\n");
 
+  const normalizedPath = relativePath.replace(/\\/g, "/");
   return {
-    id: `note-${slugify(relativePath.replace(/\\/g, "/").replace(/\.mdx?$/i, ""))}`,
+    id: `note-${slugify(normalizedPath.replace(/\.mdx?$/i, ""))}`,
     title,
     type: normalizeNoteType(parsed.data.type, relativePath),
     project: normalizeOptionalValue(parsed.data.project),
     tags: normalizeTags(parsed.data.tags),
     updatedAt: formatDateTime(parsed.data.date || stat.mtime.toISOString()),
-    path: relativePath.replace(/\\/g, "/"),
+    path: normalizedPath,
     workspaceRootLabel: path.basename(sourceConfig.workspaceRoot),
+    folder: path.posix.dirname(normalizedPath),
+    links: extractLinks(raw),
     summary,
     highlights: bullets,
     headings,
@@ -224,6 +227,21 @@ function normalizeNoteType(rawType, relativePath) {
   }
   if (relativePath.startsWith("docs/")) return "reference";
   return "project-ops";
+}
+
+function extractLinks(raw) {
+  const links = new Set();
+  for (const match of raw.matchAll(/\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|[^\]]+)?\]\]/g)) {
+    const target = match[1]?.trim();
+    if (target) links.add(target);
+  }
+  for (const match of raw.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
+    const target = match[1]?.trim();
+    if (target && !target.startsWith('http://') && !target.startsWith('https://')) {
+      links.add(target.replace(/^\.\//, ''));
+    }
+  }
+  return [...links];
 }
 
 function formatDateTime(value) {

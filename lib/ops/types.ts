@@ -35,6 +35,15 @@ export type ProjectChecklistItem = {
   note?: string;
 };
 
+export type ProjectAdminSurface = {
+  id: string;
+  label: string;
+  kind: "console" | "db" | "deploy" | "docs" | "github" | "automation";
+  status: ProgressState;
+  summary: string;
+  href?: string;
+};
+
 export type Project = {
   id: string;
   name: string;
@@ -46,6 +55,10 @@ export type Project = {
   docs?: string[];
   sectors?: ProjectSectorProgress[];
   checklist?: ProjectChecklistItem[];
+  operatingCadence?: string[];
+  adminSurfaces?: ProjectAdminSurface[];
+  vaultViews?: string[];
+  githubFocus?: string[];
 };
 
 export type NoteItem = {
@@ -57,11 +70,42 @@ export type NoteItem = {
   updatedAt: string;
   path: string;
   workspaceRootLabel: string;
+  folder: string;
+  links: string[];
   summary: string;
   highlights: string[];
   headings: string[];
   preview: string[];
   rawExcerpt: string;
+};
+
+export type VaultFolderStat = {
+  folder: string;
+  count: number;
+  noteIds: string[];
+};
+
+export type VaultTagStat = {
+  tag: string;
+  count: number;
+};
+
+export type VaultLinkStat = {
+  noteId: string;
+  title: string;
+  linksTo: string[];
+  linkedBy: string[];
+};
+
+export type VaultSummary = {
+  notesCount: number;
+  templatesCount: number;
+  rootCount: number;
+  projectMappedCount: number;
+  orphanNoteIds: string[];
+  folders: VaultFolderStat[];
+  tags: VaultTagStat[];
+  links: VaultLinkStat[];
 };
 
 export type ExportSourceRoot = {
@@ -130,6 +174,7 @@ export type OpsConsoleData = {
   tasks: Task[];
   notes: NoteItem[];
   github: GitHubCache;
+  vault: VaultSummary;
   dataSource: {
     mode: "live" | "export" | "supabase";
     generatedAt: string;
