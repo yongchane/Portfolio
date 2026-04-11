@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import type { NoteItem, OpsConsoleData, ProjectStage, Task, TaskStatus, NoteType } from "@/lib/ops/types";
 
@@ -42,12 +43,15 @@ const sidebarItems = [
 type SectionId = (typeof sidebarItems)[number]["id"];
 
 export default function AdminConsole({ data }: { data: OpsConsoleData }) {
+  const router = useRouter();
   const [input, setInput] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   const [section, setSection] = useState<SectionId>("overview");
   const [selectedProjectId, setSelectedProjectId] = useState<string>(data.projects[0]?.id ?? "");
   const [selectedNoteId, setSelectedNoteId] = useState<string>(data.notes[0]?.id ?? "");
   const [noteQuery, setNoteQuery] = useState("");
+  const [liveStatus, setLiveStatus] = useState<{ mode: string; generatedAt: string; notesCount: number } | null>(null);
+  const lastSeenGeneratedAt = useRef(data.dataSource.generatedAt);
 
   const selectedProject = data.projects.find((item) => item.id === selectedProjectId) || data.projects[0];
   const projectTasks = data.tasks.filter((task) => task.projectId === selectedProject?.id);
@@ -82,6 +86,42 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
       setSelectedNoteId(filteredNotes[0].id);
     }
   }, [filteredNotes, selectedNoteId]);
+
+  useEffect(() => {
+    lastSeenGeneratedAt.current = data.dataSource.generatedAt;
+    setLiveStatus({
+      mode: data.dataSource.mode,
+      generatedAt: data.dataSource.generatedAt,
+      notesCount: data.dataSource.notesCount,
+    });
+  }, [data.dataSource.generatedAt, data.dataSource.mode, data.dataSource.notesCount]);
+
+  useEffect(() => {
+    if (!unlocked) return;
+
+    let cancelled = false;
+    const interval = window.setInterval(async () => {
+      try {
+        const response = await fetch("/api/ops/notes-version", { cache: "no-store" });
+        if (!response.ok) return;
+        const payload = await response.json();
+        if (cancelled) return;
+
+        setLiveStatus(payload);
+        if (payload.generatedAt && payload.generatedAt !== lastSeenGeneratedAt.current) {
+          lastSeenGeneratedAt.current = payload.generatedAt;
+          router.refresh();
+        }
+      } catch {
+        // ignore transient polling failures
+      }
+    }, 4000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [router, unlocked]);
 
   const notesById = useMemo(() => new Map(data.notes.map((note) => [note.id, note])), [data.notes]);
   const summary = useMemo(
@@ -152,6 +192,13 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
               <li>완료와 검증을 분리</li>
               <li>작업 카드에 근거/다음 액션/판단 필요를 같이 둔다</li>
             </ul>
+          </div>
+
+          <div className="mt-4 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-emerald-200/70 mb-2">Notes Sync</p>
+            <p className="text-sm text-white/85">mode: <strong>{liveStatus?.mode || data.dataSource.mode}</strong></p>
+            <p className="mt-1 text-xs text-white/55">notes {liveStatus?.notesCount ?? data.dataSource.notesCount}개 · updated {liveStatus?.generatedAt || data.dataSource.generatedAt}</p>
+            <p className="mt-2 text-xs text-white/50">/ops가 주기적으로 source 변경을 확인하고, 노트가 바뀌면 화면을 자동 refresh합니다.</p>
           </div>
         </aside>
 
@@ -275,7 +322,7 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
               <header>
                 <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">Notes</p>
                 <h2 className="text-4xl font-bold mb-3">Synced Notes Viewer</h2>
-                <p className="text-white/70 max-w-3xl">Obsidian/문서 원본에서 export한 notes snapshot을 `/ops` 안에서 탐색합니다. 로컬 markdown authoring은 유지하고, 배포 웹은 synced data만 읽습니다.</p>
+                <p className="text-white/70 max-w-3xl">Obsidian/문서 원본을 local live source로 읽거나, 배포 환경에서는 export snapshot으로 fallback합니다. 로컬 markdown authoring은 유지하고 `/ops`는 변경을 감지하면 자동 refresh됩니다.</p>
               </header>
               <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
                 <div className="space-y-3 rounded-3xl border border-white/10 bg-white/5 p-4">

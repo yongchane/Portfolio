@@ -33,12 +33,35 @@
 npm install
 npm run dev
 ```
+
+### /ops 노트 자동 연동
+
+`/ops`는 로컬에서 Obsidian/문서 루트를 직접 읽을 수 있으면 live mode로 동작하고, 변경을 주기적으로 감지해 자동 새로고침합니다. 배포/빌드에서는 export JSON을 사용합니다.
+
+기본 탐색 경로:
+- `PORTFOLIO_OPS_WORKSPACE_ROOT/obsidian-vault`
+- `PORTFOLIO_OPS_WORKSPACE_ROOT/docs`
+- 미설정 시 `~/.openclaw/workspace`
+
+```bash
+# 예: 외부 Obsidian 워크스페이스를 직접 연결
+export PORTFOLIO_OPS_WORKSPACE_ROOT=/absolute/path/to/your/workspace
+npm run dev
+
+# 선택: export 파일도 자동 갱신하고 싶으면 watcher 실행
+npm run ops:watch-notes
+```
+
+특정 루트만 지정하고 싶다면 `PORTFOLIO_OPS_NOTE_ROOTS`에 경로 구분자(`:` on macOS/Linux)로 여러 경로를 넘길 수 있습니다.
+
 ### 빌드
 
 ```bash
 npm run build
 npm run start
 ```
+
+> `npm run build`는 배포용 snapshot을 맞추기 위해 먼저 `npm run ops:sync-notes`를 실행합니다.
 
 ### 린트
 

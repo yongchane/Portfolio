@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run ops:sync-notes && next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "ops:sync-notes": "node scripts/export-ops-notes.mjs",
+    "ops:watch-notes": "node scripts/watch-ops-notes.mjs",
     "ci": "npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {

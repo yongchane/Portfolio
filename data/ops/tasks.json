@@ -53,17 +53,20 @@
     "completedWork": [
       "workspace 내부 obsidian-vault 생성",
       "Daily / Project / Aeyong / Review 템플릿 생성",
-      "초기 노트 3종 작성 및 notes viewer 방향 정의"
+      "초기 노트 3종 작성 및 notes viewer 방향 정의",
+      "live notes source fallback/export source 이중 경로 구현",
+      "notes-version API + `/ops` 자동 refresh polling 추가",
+      "export watcher 스크립트와 build 전 sync 연결"
     ],
     "nextActions": [
       "Notes 섹션 UI 강화",
-      "md 파일 실연동 구조 추가",
-      "대화 저장 정책 확정 후 자동 축적 시작"
+      "대화 저장 정책 확정 후 자동 축적 시작",
+      "배포 환경용 외부 authoring sync 경로(webhook/git automation) 여부 결정"
     ],
     "relatedDocs": ["Obsidian for Aeyong Ops"],
     "noteIds": ["note-docs-obsidian-for-aeyong-ops", "note-obsidian-vault-01-daily-notes-2026-04-10"],
     "needsDecision": ["전체 대화 저장 vs 요약/문제 중심 저장 정책 결정"],
-    "updatedAt": "2026-04-10 23:15"
+    "updatedAt": "2026-04-11 15:58"
   },
   {
     "id": "task-tori-direct-publish",

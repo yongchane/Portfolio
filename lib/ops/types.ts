@@ -57,7 +57,7 @@ export type OpsConsoleData = {
   tasks: Task[];
   notes: NoteItem[];
   dataSource: {
-    mode: "export";
+    mode: "live" | "export";
     generatedAt: string;
     workspaceRoot?: string;
     notesRoots: string[];
