@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-04-11T06:51:37.816Z",
+  "generatedAt": "2026-04-11T07:32:52.676Z",
   "source": {
     "mode": "export",
     "workspaceRoot": "/Users/hyeon-yongchan/.openclaw/workspace",
@@ -30,7 +30,7 @@
         "portfolio",
         "ops-console"
       ],
-      "updatedAt": "2026-04-10 23:15",
+      "updatedAt": "2026-04-11 15:52",
       "path": "obsidian-vault/02 Projects/Portfolio Ops Console.md",
       "workspaceRootLabel": "workspace",
       "summary": "Portfolio 안에 현용찬 x 애옹 개인 운영 콘솔을 구축하는 작업. 단순 포트폴리오 관리자 페이지가 아니라, 애옹 작업 관리 / 프로젝트 운영 / 문서 / 릴리즈 / 설정을 함께 다루는 GitHub형 개인 OS를 목표로 한다.",
@@ -49,9 +49,10 @@
         "관련 문서 / 링크"
       ],
       "preview": [
-        "Portfolio 안에 현용찬 x 애옹 개인 운영 콘솔을 구축하는 작업. 단순 포트폴리오 관리자 페이지가 아니라, 애옹 작업 관리 / 프로젝트 운영 / 문서 / 릴리즈 / 설정을 함께 다루는 GitHub형 개인 OS를 목표로 한다."
+        "Portfolio 안에 현용찬 x 애옹 개인 운영 콘솔을 구축하는 작업. 단순 포트폴리오 관리자 페이지가 아니라, 애옹 작업 관리 / 프로젝트 운영 / 문서 / 릴리즈 / 설정을 함께 다루는 GitHub형 개인 OS를 목표로 한다.",
+        "<!-- auto-sync verification 2026-04-11T06:52:17Z -->"
       ],
-      "rawExcerpt": "# 프로젝트 요약\nPortfolio 안에 현용찬 x 애옹 개인 운영 콘솔을 구축하는 작업. 단순 포트폴리오 관리자 페이지가 아니라, 애옹 작업 관리 / 프로젝트 운영 / 문서 / 릴리즈 / 설정을 함께 다루는 GitHub형 개인 OS를 목표로 한다.\n# 최근 작업\n- `/ops` 초기 MVP 구현\n- task-driven dashboard로 업그레이드\n- Obsidian 호환 vault 구조 설계 시작\n# 현재 병목\n- 아직 실제 데이터 소스(JSON/GitHub/notes)가 연결되지 않음\n- UI는 생겼지만 운영용 깊이가 더 필요함\n# 다음 액션\n- 애옹 작업 관리 페이지 상세 기획\n- tasks/projects JSON 분리\n- GitHub 상태 연결\n- Obsidian note link 연결\n# 관련 문서 / 링크\n- `docs/obsidian-for-aeyong-ops.md`\n- Portfolio `/ops`"
+      "rawExcerpt": "# 프로젝트 요약\nPortfolio 안에 현용찬 x 애옹 개인 운영 콘솔을 구축하는 작업. 단순 포트폴리오 관리자 페이지가 아니라, 애옹 작업 관리 / 프로젝트 운영 / 문서 / 릴리즈 / 설정을 함께 다루는 GitHub형 개인 OS를 목표로 한다.\n# 최근 작업\n- `/ops` 초기 MVP 구현\n- task-driven dashboard로 업그레이드\n- Obsidian 호환 vault 구조 설계 시작\n# 현재 병목\n- 아직 실제 데이터 소스(JSON/GitHub/notes)가 연결되지 않음\n- UI는 생겼지만 운영용 깊이가 더 필요함\n# 다음 액션\n- 애옹 작업 관리 페이지 상세 기획\n- tasks/projects JSON 분리\n- GitHub 상태 연결\n- Obsidian note link 연결\n# 관련 문서 / 링크\n- `docs/obsidian-for-aeyong-ops.md`\n- Portfolio `/ops`\n<!-- auto-sync verification 2026-04-11T06:52:17Z -->"
     },
     {
       "id": "note-obsidian-vault-03-aeyong-aeyong-collaboration-notes",

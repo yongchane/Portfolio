@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
-import { getNotesSourceData } from "@/lib/ops/notes-source";
+import { getOpsConsoleData } from "@/lib/ops/data";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET() {
-  const data = await getNotesSourceData();
+  const data = await getOpsConsoleData();
 
   return NextResponse.json({
-    mode: data.mode,
-    generatedAt: data.generatedAt,
-    notesCount: data.notes.length,
-    workspaceRoot: data.workspaceRoot,
-    notesRoots: data.notesRoots,
+    mode: data.dataSource.mode,
+    generatedAt: data.dataSource.generatedAt,
+    notesCount: data.dataSource.notesCount,
+    workspaceRoot: data.dataSource.workspaceRoot,
+    notesRoots: data.dataSource.notesRoots,
   });
 }

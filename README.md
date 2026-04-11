@@ -38,6 +38,8 @@ npm run dev
 
 `/ops`는 로컬에서 Obsidian/문서 루트를 직접 읽을 수 있으면 live mode로 동작하고, 변경을 주기적으로 감지해 자동 새로고침합니다. 배포/빌드에서는 export JSON을 사용합니다.
 
+Supabase 기반으로 옮기려면 `docs/ops-supabase-sync.md`와 `supabase/ops-schema.sql`을 사용하세요. 현재는 **local/export fallback 유지 + Supabase optional** 구조입니다.
+
 기본 탐색 경로:
 - `PORTFOLIO_OPS_WORKSPACE_ROOT/obsidian-vault`
 - `PORTFOLIO_OPS_WORKSPACE_ROOT/docs`
