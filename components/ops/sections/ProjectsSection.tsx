@@ -1,8 +1,60 @@
+"use client";
+
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { EmptyLine, GitHubRepoDetail, InfoTile, Panel, ProjectBoardCard, ReleaseCard, TaskRow, SectorRow, ChecklistRow, projectStageMeta } from "@/components/ops/shared";
 import type { ProjectsSectionProps } from "@/components/ops/sections/types";
+import type { ProgressState, ProjectStage } from "@/lib/ops/types";
+
+function extractProjectBoardScopeWarning(warnings: string[] | undefined, owner?: string) {
+  return warnings?.find((warning) => warning.includes("read:project") && (!owner || warning.includes(`projects(${owner})`)));
+}
 
 export function ProjectsSection({ data, notesById, setSection, setSelectedProjectId, setSelectedNoteId, selectedProject, projectTasks, selectedRepo, selectedProjectBoards, selectedProjectReleases, selectedProjectNotes, projectRepoHealth, vaultLinksByNoteId }: ProjectsSectionProps) {
+  const router = useRouter();
+  const [summaryDraft, setSummaryDraft] = useState(selectedProject.summary);
+  const [stageDraft, setStageDraft] = useState<ProjectStage>(selectedProject.stage);
+  const [checklistDraft, setChecklistDraft] = useState<Record<string, ProgressState>>({});
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const checklistPayload = useMemo(() => (selectedProject.checklist || []).map((item) => ({
+    id: item.id,
+    status: checklistDraft[item.id] || item.status,
+  })), [selectedProject.checklist, checklistDraft]);
+
+  const boardScopeWarning = extractProjectBoardScopeWarning(data.github.warnings, selectedRepo?.owner);
+
+  useEffect(() => {
+    setSummaryDraft(selectedProject.summary);
+    setStageDraft(selectedProject.stage);
+    setChecklistDraft({});
+    setSaveMessage(null);
+  }, [selectedProject.id, selectedProject.stage, selectedProject.summary]);
+
+  async function saveProject() {
+    setSaveMessage(null);
+    const response = await fetch(`/api/ops/projects/${selectedProject.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        stage: stageDraft,
+        summary: summaryDraft,
+        checklist: checklistPayload,
+      }),
+    });
+
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) {
+      setSaveMessage(payload?.message || "프로젝트 저장에 실패했습니다.");
+      return;
+    }
+
+    setSaveMessage("projects.json에 반영했고 화면을 새로고침합니다.");
+    startTransition(() => router.refresh());
+  }
+
   return (
     <div className="space-y-8">
       <header>
@@ -50,10 +102,49 @@ export function ProjectsSection({ data, notesById, setSection, setSelectedProjec
           </div>
 
           <div className="grid gap-6 xl:grid-cols-2">
-            <Panel title="Sector progress">
-              <div className="space-y-3">
-                {(selectedProject.sectors || []).map((sector) => <SectorRow key={sector.id} sector={sector} />)}
-                {!selectedProject.sectors?.length && <EmptyLine message="아직 sector progress가 정의되지 않았습니다." />}
+            <Panel title="Project write path (MVP)">
+              <div className="space-y-4 text-sm text-white/80">
+                <div className="rounded-2xl border border-emerald-300/20 bg-emerald-500/10 p-4 text-xs leading-6 text-emerald-50/90">
+                  현재는 인증된 `/ops`에서만 project stage / summary / checklist 상태를 로컬 `data/ops/projects.json`에 반영합니다. 구조는 실용 MVP이고, 이후 Supabase write path와 충돌하지 않게 서버 액션/API 경유로 확장 가능합니다.
+                </div>
+                <label className="block">
+                  <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-white/45">Stage</span>
+                  <select value={stageDraft} onChange={(event) => setStageDraft(event.target.value as ProjectStage)} className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 outline-none">
+                    <option value="idea">idea</option>
+                    <option value="planning">planning</option>
+                    <option value="building">building</option>
+                    <option value="verifying">verifying</option>
+                    <option value="live">live</option>
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-white/45">Summary</span>
+                  <textarea value={summaryDraft} onChange={(event) => setSummaryDraft(event.target.value)} rows={5} className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 outline-none" />
+                </label>
+                <div>
+                  <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">Checklist quick updates</p>
+                  <div className="space-y-3">
+                    {(selectedProject.checklist || []).map((item) => {
+                      const value = checklistDraft[item.id] || item.status;
+                      return (
+                        <div key={item.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                          <div className="mb-2 flex items-start justify-between gap-3">
+                            <strong>{item.label}</strong>
+                            <select value={value} onChange={(event) => setChecklistDraft((current) => ({ ...current, [item.id]: event.target.value as ProgressState }))} className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs outline-none">
+                              <option value="todo">todo</option>
+                              <option value="doing">doing</option>
+                              <option value="done">done</option>
+                              <option value="blocked">blocked</option>
+                            </select>
+                          </div>
+                          {item.note && <p className="text-xs text-white/55">{item.note}</p>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <button onClick={() => void saveProject()} disabled={isPending} className="w-full rounded-2xl bg-white px-4 py-3 font-semibold text-black disabled:opacity-60">{isPending ? "저장 후 새로고침 중..." : "프로젝트 저장"}</button>
+                {saveMessage && <p className="text-xs text-white/60">{saveMessage}</p>}
               </div>
             </Panel>
             <Panel title="Spec checklist">
@@ -65,6 +156,12 @@ export function ProjectsSection({ data, notesById, setSection, setSelectedProjec
           </div>
 
           <div className="grid gap-6 xl:grid-cols-3">
+            <Panel title="Sector progress">
+              <div className="space-y-3">
+                {(selectedProject.sectors || []).map((sector) => <SectorRow key={sector.id} sector={sector} />)}
+                {!selectedProject.sectors?.length && <EmptyLine message="아직 sector progress가 정의되지 않았습니다." />}
+              </div>
+            </Panel>
             <Panel title="Operating cadence">
               <div className="space-y-3">
                 {(selectedProject.operatingCadence || []).map((item) => (
@@ -86,14 +183,6 @@ export function ProjectsSection({ data, notesById, setSection, setSelectedProjec
                   </a>
                 ))}
                 {!selectedProject.adminSurfaces?.length && <EmptyLine message="연결된 운영 surface가 없습니다." />}
-              </div>
-            </Panel>
-            <Panel title="Vault views">
-              <div className="space-y-3">
-                {(selectedProject.vaultViews || []).map((view) => (
-                  <div key={view} className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80">{view}</div>
-                ))}
-                {!selectedProject.vaultViews?.length && <EmptyLine message="추천 vault view가 아직 없습니다." />}
               </div>
             </Panel>
           </div>
@@ -134,16 +223,36 @@ export function ProjectsSection({ data, notesById, setSection, setSelectedProjec
                     ))}
                   </div>
                 ) : (
-                  <EmptyLine message={selectedRepo ? "조회 가능한 GitHub Project board가 없거나 권한 범위 밖입니다." : "repo 연결 후 project board를 표시합니다."} />
-                )}
-                {selectedProjectReleases.length > 0 && (
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold text-white/55">Recent releases</p>
-                    {selectedProjectReleases.map((release) => (
-                      <ReleaseCard key={release.id} release={release} compact />
-                    ))}
+                  <div className="rounded-2xl border border-amber-300/20 bg-amber-500/10 p-4 text-sm text-amber-50/90">
+                    <p className="font-semibold">GitHub Project board real data unavailable</p>
+                    <p className="mt-2 text-xs leading-6 text-amber-100/85">
+                      {boardScopeWarning
+                        ? "현재 GitHub token에 `read:project` scope가 없어 board API 응답이 차단됩니다. repo/release 데이터는 계속 실데이터로 읽고 있고, board는 권한 확보 전까지 explicit blocked 상태로 남깁니다."
+                        : selectedRepo
+                          ? "조회 가능한 GitHub Project board가 없거나 해당 owner에 board가 없습니다."
+                          : "repo 연결 후 project board를 표시합니다."}
+                    </p>
                   </div>
                 )}
+                <div className="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-white/55">Release signal</p>
+                    <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", selectedProjectReleases.length ? "bg-sky-100 text-sky-700" : "bg-amber-100 text-amber-700")}>{selectedProjectReleases.length ? `${selectedProjectReleases.length} GitHub releases` : "no GitHub releases"}</span>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <InfoTile label="Default / tracked branch" value={`${selectedRepo?.defaultBranch || "-"} / ${selectedProject.branch || "-"}`} />
+                    <InfoTile label="Latest push" value={selectedRepo?.pushedAt || "미기록"} />
+                    <InfoTile label="Deploy URL" value={selectedProject.deployUrl || "-"} />
+                    <InfoTile label="Real-data mode" value={`${data.github.mode} cache @ ${data.github.generatedAt}`} />
+                  </div>
+                  {selectedProjectReleases.length > 0 ? (
+                    selectedProjectReleases.map((release) => (
+                      <ReleaseCard key={release.id} release={release} compact />
+                    ))
+                  ) : (
+                    <p className="text-xs text-white/55">릴리즈가 없더라도 마지막 push, branch alignment, deploy target, verifying task를 함께 보여줘서 배포 판단에 필요한 실제 운영 신호는 유지합니다.</p>
+                  )}
+                </div>
                 <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                   <p className="mb-3 text-sm font-semibold text-white/55">Linked vault notes</p>
                   <p className="mb-3 text-xs text-white/45">{selectedProjectNotes.length}개 note · source {data.dataSource.mode} · vault mapped {data.vault.projectMappedCount}</p>

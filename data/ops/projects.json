@@ -180,13 +180,19 @@
         "id": "portfolio-check-2",
         "label": "GitHub repo/release/project read-only sync 연결",
         "status": "doing",
-        "note": "gh auth 있으면 live cache 생성, 없으면 fallback 유지"
+        "note": "repo/release 실데이터 패널은 강화됨. project board는 read:project scope 없으면 blocked로 명시"
       },
       {
         "id": "portfolio-check-3",
         "label": "Releases/Settings를 운영 페이지답게 강화",
-        "status": "doing",
-        "note": "GitHub sync 상태, branch rule, source roots, warning 노출"
+        "status": "done",
+        "note": "GitHub sync 상태, branch rule, source roots, warning, release signal 노출"
+      },
+      {
+        "id": "portfolio-check-5",
+        "label": "Tasks/Projects write path MVP 추가",
+        "status": "done",
+        "note": "인증된 /ops에서 로컬 JSON 기준으로 task/project 상태와 요약 수정 가능"
       },
       {
         "id": "portfolio-check-4",

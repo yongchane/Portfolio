@@ -1,8 +1,37 @@
+"use client";
+
 import clsx from "clsx";
 import { EmptyLine, EmptyState, InfoTile, Panel, noteTypeMeta } from "@/components/ops/shared";
 import type { NotesSectionProps } from "@/components/ops/sections/types";
 
+function buildNoteSections(rawExcerpt: string) {
+  const lines = rawExcerpt.split("\n");
+  const sections: Array<{ heading: string; lines: string[] }> = [];
+  let current = { heading: "Overview", lines: [] as string[] };
+
+  for (const line of lines) {
+    if (line.startsWith("#")) {
+      if (current.lines.length || sections.length === 0) sections.push(current);
+      current = { heading: line.replace(/^#+\s*/, "").trim() || "Untitled", lines: [] };
+      continue;
+    }
+    if (line.trim()) current.lines.push(line.trim());
+  }
+
+  if (current.lines.length) sections.push(current);
+  return sections.filter((section) => section.lines.length);
+}
+
+function findRelatedNotes(noteId: string, vaultLinksByNoteId: NotesSectionProps["vaultLinksByNoteId"], notesById: NotesSectionProps["notesById"]) {
+  const stats = vaultLinksByNoteId.get(noteId);
+  const ids = [...(stats?.linksTo || []), ...(stats?.linkedBy || [])];
+  return [...new Set(ids)].map((id) => notesById.get(id)).filter(Boolean);
+}
+
 export function NotesSection({ data, notesById, setSection, setSelectedNoteId, filteredNotes, selectedNote, noteQuery, setNoteQuery, vaultLinksByNoteId }: NotesSectionProps) {
+  const noteSections = selectedNote ? buildNoteSections(selectedNote.rawExcerpt) : [];
+  const relatedNotes = selectedNote ? findRelatedNotes(selectedNote.id, vaultLinksByNoteId, notesById) : [];
+
   return (
     <div className="space-y-8">
       <header>
@@ -44,13 +73,13 @@ export function NotesSection({ data, notesById, setSection, setSelectedNoteId, f
                   <strong>{note.title}</strong>
                   <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", noteTypeMeta[note.type].tone)}>{noteTypeMeta[note.type].label}</span>
                 </div>
-                <p className="mb-2 text-sm text-white/70">{note.summary}</p>
+                <p className="mb-2 line-clamp-3 text-sm text-white/70">{note.summary}</p>
                 <div className="mb-2 flex flex-wrap gap-2">
                   {note.tags.map((tag) => (
                     <span key={tag} className="rounded-full bg-white/10 px-2 py-1 text-xs text-white/70">#{tag}</span>
                   ))}
                 </div>
-                <p className="text-xs text-white/45">{note.path}</p>
+                <p className="truncate text-xs text-white/45">{note.path}</p>
               </button>
             ))}
             {!filteredNotes.length && <div className="rounded-3xl border border-dashed border-white/10 bg-black/20 p-5 text-sm text-white/60">검색 조건에 맞는 노트가 없습니다. 다른 키워드를 시도해 주세요.</div>}
@@ -95,14 +124,15 @@ export function NotesSection({ data, notesById, setSection, setSelectedNoteId, f
         </div>
 
         {selectedNote ? (
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-            <div className="mb-4 flex flex-wrap items-center gap-3">
+          <div className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-6">
+            <div className="mb-1 flex flex-wrap items-center gap-3">
               <h3 className="text-3xl font-bold">{selectedNote.title}</h3>
               <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", noteTypeMeta[selectedNote.type].tone)}>{noteTypeMeta[selectedNote.type].label}</span>
             </div>
-            <p className="mb-4 text-sm text-white/45">{selectedNote.path} · {selectedNote.updatedAt}</p>
-            <p className="mb-6 text-white/75">{selectedNote.summary}</p>
-            <div className="mb-6 grid gap-4 text-sm text-white/75 md:grid-cols-3">
+            <p className="text-sm text-white/45">{selectedNote.path} · {selectedNote.updatedAt}</p>
+            <p className="text-white/75">{selectedNote.summary}</p>
+
+            <div className="grid gap-4 text-sm text-white/75 md:grid-cols-3">
               <InfoTile label="Project" value={selectedNote.project || "-"} />
               <InfoTile label="Folder" value={selectedNote.folder} />
               <InfoTile label="Tags" value={selectedNote.tags.length ? selectedNote.tags.join(", ") : "-"} />
@@ -110,15 +140,74 @@ export function NotesSection({ data, notesById, setSection, setSelectedNoteId, f
               <InfoTile label="Highlights" value={String(selectedNote.highlights.length)} />
               <InfoTile label="Vault graph" value={`out ${vaultLinksByNoteId.get(selectedNote.id)?.linksTo.length || 0} · in ${vaultLinksByNoteId.get(selectedNote.id)?.linkedBy.length || 0}`} />
             </div>
-            <div className="mb-6 rounded-2xl border border-white/10 bg-black/20 p-5">
-              <p className="mb-3 text-sm font-semibold text-white/55">핵심 포인트</p>
-              <ul className="list-disc space-y-2 pl-4 text-sm text-white/80">
-                {(selectedNote.highlights.length ? selectedNote.highlights : selectedNote.preview).map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+
+            <div className="grid gap-4 xl:grid-cols-[220px_1fr]">
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <p className="mb-3 text-sm font-semibold text-white/55">Reading map</p>
+                <div className="space-y-2 text-sm text-white/80">
+                  {noteSections.map((section) => (
+                    <a key={section.heading} href={`#note-section-${encodeURIComponent(section.heading)}`} className="block rounded-xl bg-white/5 px-3 py-2 transition hover:bg-white/10">
+                      {section.heading}
+                    </a>
+                  ))}
+                  {!noteSections.length && <EmptyLine message="섹션으로 나눌 heading이 없습니다." />}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+                <p className="mb-3 text-sm font-semibold text-white/55">핵심 포인트</p>
+                <ul className="list-disc space-y-2 pl-4 text-sm text-white/80">
+                  {(selectedNote.highlights.length ? selectedNote.highlights : selectedNote.preview).map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            <div className="mb-6 rounded-2xl border border-white/10 bg-black/20 p-5">
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+                <p className="mb-3 text-sm font-semibold text-white/55">Related notes</p>
+                <div className="space-y-2">
+                  {relatedNotes.slice(0, 8).map((note) => note ? (
+                    <button key={note.id} onClick={() => setSelectedNoteId(note.id)} className="block w-full rounded-2xl bg-white/5 px-3 py-3 text-left text-sm hover:bg-white/10">
+                      <strong>{note.title}</strong>
+                      <p className="mt-1 text-xs text-white/50">{note.path}</p>
+                    </button>
+                  ) : null)}
+                  {!relatedNotes.length && <EmptyLine message="그래프상 직접 연결된 note가 없습니다." />}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+                <p className="mb-3 text-sm font-semibold text-white/55">연결된 작업</p>
+                <div className="space-y-3">
+                  {data.tasks.filter((task) => task.noteIds?.includes(selectedNote.id)).map((task) => (
+                    <button key={task.id} onClick={() => setSection("tasks")} className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:bg-white/10">
+                      <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">{data.projects.find((project) => project.id === task.projectId)?.name || "-"}</p>
+                      <strong>{task.title}</strong>
+                      <p className="mt-2 text-sm text-white/70">{task.summary}</p>
+                    </button>
+                  ))}
+                  {!data.tasks.some((task) => task.noteIds?.includes(selectedNote.id)) && <p className="text-sm text-white/55">아직 연결된 작업이 없습니다.</p>}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+              <p className="mb-4 text-sm font-semibold text-white/55">Structured detail view</p>
+              <div className="space-y-5 text-sm leading-7 text-white/80">
+                {noteSections.length ? noteSections.map((section) => (
+                  <section key={section.heading} id={`note-section-${encodeURIComponent(section.heading)}`} className="scroll-mt-24 rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <h4 className="mb-3 text-lg font-semibold text-white">{section.heading}</h4>
+                    <div className="space-y-2">
+                      {section.lines.map((line) => (
+                        <p key={`${section.heading}-${line}`}>{line.startsWith("-") ? `• ${line.replace(/^-\s*/, "")}` : line}</p>
+                      ))}
+                    </div>
+                  </section>
+                )) : <pre className="whitespace-pre-wrap font-sans text-sm leading-7 text-white/80">{selectedNote.rawExcerpt}</pre>}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
               <p className="mb-3 text-sm font-semibold text-white/55">Vault links</p>
               <div className="grid gap-4 text-sm text-white/80 md:grid-cols-2">
                 <div>
@@ -141,23 +230,6 @@ export function NotesSection({ data, notesById, setSection, setSelectedNoteId, f
                     {!(vaultLinksByNoteId.get(selectedNote.id)?.linkedBy || []).length && <EmptyLine message="아직 이 노트를 참조하는 backlink가 없습니다." />}
                   </div>
                 </div>
-              </div>
-            </div>
-            <div className="mb-6 rounded-2xl border border-white/10 bg-black/20 p-5">
-              <p className="mb-3 text-sm font-semibold text-white/55">원문 미리보기</p>
-              <pre className="whitespace-pre-wrap font-sans text-sm leading-7 text-white/80">{selectedNote.rawExcerpt}</pre>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-              <p className="mb-3 text-sm font-semibold text-white/55">연결된 작업</p>
-              <div className="space-y-3">
-                {data.tasks.filter((task) => task.noteIds?.includes(selectedNote.id)).map((task) => (
-                  <button key={task.id} onClick={() => setSection("tasks")} className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:bg-white/10">
-                    <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">{data.projects.find((project) => project.id === task.projectId)?.name || "-"}</p>
-                    <strong>{task.title}</strong>
-                    <p className="mt-2 text-sm text-white/70">{task.summary}</p>
-                  </button>
-                ))}
-                {!data.tasks.some((task) => task.noteIds?.includes(selectedNote.id)) && <p className="text-sm text-white/55">아직 연결된 작업이 없습니다.</p>}
               </div>
             </div>
           </div>

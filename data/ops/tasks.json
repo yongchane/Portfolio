@@ -13,12 +13,15 @@
       "GitHub repo/project/release read-only cache layer 설계 착수",
       "Vault summary layer 추가 (folders/tags/orphan/link graph 집계)",
       "Projects 상세에 admin surfaces / operating cadence / linked vault notes 추가",
-      "GitHub-linked repo health, branch alignment, issue pressure 노출"
+      "GitHub-linked repo health, branch alignment, issue pressure 노출",
+      "인증된 /ops 내부에서 tasks/projects 로컬 JSON write path MVP 추가",
+      "GitHub board scope 부족 시 blocked 상태를 명시하고 release signal 실데이터 패널 강화",
+      "Notes detail을 structured reading map / related notes / section view 중심으로 개선"
     ],
     "nextActions": [
       "Supabase table schema에도 vault/admin metadata 반영",
       "GitHub Project read:project scope 확보 시 real board data 노출",
-      "notes/task/project write path를 read-only에서 편집 가능한 운영 워크플로로 확장"
+      "로컬 JSON write path를 Supabase-backed write path와 충돌 없이 승격"
     ],
     "relatedCommits": [
       "d339ed6",
