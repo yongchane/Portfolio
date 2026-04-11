@@ -47,14 +47,21 @@ export type NoteItem = {
   rawExcerpt: string;
 };
 
+export type ExportSourceRoot = {
+  label: string;
+  path: string;
+};
+
 export type OpsConsoleData = {
   projects: Project[];
   tasks: Task[];
   notes: NoteItem[];
   dataSource: {
+    mode: "export";
+    generatedAt: string;
     workspaceRoot?: string;
     notesRoots: string[];
-    attemptedWorkspaceRoots: string[];
+    resolvedRoots: ExportSourceRoot[];
     notesCount: number;
   };
 };

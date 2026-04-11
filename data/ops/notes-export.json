@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "generatedAt": "2026-04-11T05:22:28.794Z",
+  "source": {
+    "mode": "export",
+    "workspaceRoot": "external-obsidian-workspace",
+    "roots": [
+      "obsidian-vault",
+      "docs"
+    ],
+    "resolvedRoots": [
+      {
+        "label": "obsidian-vault",
+        "path": "external-obsidian-workspace/obsidian-vault"
+      },
+      {
+        "label": "docs",
+        "path": "external-obsidian-workspace/docs"
+      }
+    ]
+  },
+  "notes": [
+    {
+      "id": "note-obsidian-vault-01-daily-notes-2026-04-10",
+      "title": "Daily Notes 2026-04-10",
+      "type": "daily-chat-log",
+      "project": "portfolio",
+      "tags": [
+        "ops",
+        "daily",
+        "portfolio"
+      ],
+      "updatedAt": "2026-04-10 22:10",
+      "path": "obsidian-vault/01-daily-notes/2026-04-10.md",
+      "workspaceRootLabel": "external-obsidian-workspace",
+      "summary": "Portfolio /ops 흐름과 Obsidian 노트 연결 방향을 정리했다.",
+      "highlights": [
+        "Portfolio /ops에서 작업 카드와 노트 연결을 먼저 보여주기",
+        "배포 가능한 notes export 레이어가 필요함",
+        "workspace 직접 스캔은 로컬 전용으로만 남겨야 함"
+      ],
+      "headings": [
+        "Daily Notes 2026-04-10",
+        "핵심 정리"
+      ],
+      "preview": [
+        "Portfolio /ops 흐름과 Obsidian 노트 연결 방향을 정리했다."
+      ],
+      "rawExcerpt": "# Daily Notes 2026-04-10\nPortfolio /ops 흐름과 Obsidian 노트 연결 방향을 정리했다.\n## 핵심 정리\n- Portfolio /ops에서 작업 카드와 노트 연결을 먼저 보여주기\n- 배포 가능한 notes export 레이어가 필요함\n- workspace 직접 스캔은 로컬 전용으로만 남겨야 함"
+    },
+    {
+      "id": "note-obsidian-vault-02-projects-portfolio-ops-console",
+      "title": "Portfolio Ops Console",
+      "type": "project-ops",
+      "project": "portfolio",
+      "tags": [
+        "portfolio",
+        "ops",
+        "dashboard"
+      ],
+      "updatedAt": "2026-04-10 21:30",
+      "path": "obsidian-vault/02-projects/portfolio-ops-console.md",
+      "workspaceRootLabel": "external-obsidian-workspace",
+      "summary": "운영 콘솔은 task 상태만 아니라 linked note context까지 같이 봐야 한다.",
+      "highlights": [
+        "Overview에서 attention task와 recent notes를 함께 보여주기",
+        "Notes viewer에서 linked task 역추적 지원",
+        "사용자-facing flow에서는 local path dependency를 노출하지 않기"
+      ],
+      "headings": [
+        "Portfolio Ops Console",
+        "제품 방향"
+      ],
+      "preview": [
+        "운영 콘솔은 task 상태만 아니라 linked note context까지 같이 봐야 한다."
+      ],
+      "rawExcerpt": "# Portfolio Ops Console\n운영 콘솔은 task 상태만 아니라 linked note context까지 같이 봐야 한다.\n## 제품 방향\n- Overview에서 attention task와 recent notes를 함께 보여주기\n- Notes viewer에서 linked task 역추적 지원\n- 사용자-facing flow에서는 local path dependency를 노출하지 않기"
+    },
+    {
+      "id": "note-obsidian-vault-03-aeyong-aeyong-collaboration-notes",
+      "title": "Aeyong Collaboration Notes",
+      "type": "aeyong-debug",
+      "project": "aeyong",
+      "tags": [
+        "aeyong",
+        "collaboration",
+        "ops"
+      ],
+      "updatedAt": "2026-04-09 19:50",
+      "path": "obsidian-vault/03-aeyong/aeyong-collaboration-notes.md",
+      "workspaceRootLabel": "external-obsidian-workspace",
+      "summary": "애옹 작업 로그는 결과만 아니라 왜 그렇게 판단했는지도 남겨야 한다.",
+      "highlights": [
+        "완료와 검증을 분리해 기록",
+        "판단 필요 항목을 작업 카드에 같이 둔다"
+      ],
+      "headings": [
+        "Aeyong Collaboration Notes"
+      ],
+      "preview": [
+        "애옹 작업 로그는 결과만 아니라 왜 그렇게 판단했는지도 남겨야 한다."
+      ],
+      "rawExcerpt": "# Aeyong Collaboration Notes\n애옹 작업 로그는 결과만 아니라 왜 그렇게 판단했는지도 남겨야 한다.\n- 완료와 검증을 분리해 기록\n- 판단 필요 항목을 작업 카드에 같이 둔다"
+    },
+    {
+      "id": "note-docs-obsidian-for-aeyong-ops",
+      "title": "Obsidian for Aeyong Ops",
+      "type": "reference",
+      "project": "portfolio",
+      "tags": [
+        "docs",
+        "ops",
+        "obsidian"
+      ],
+      "updatedAt": "2026-04-08 18:20",
+      "path": "docs/obsidian-for-aeyong-ops.md",
+      "workspaceRootLabel": "external-obsidian-workspace",
+      "summary": "로컬 작성용 vault와 deploy용 export snapshot을 분리한다.",
+      "highlights": [
+        "Obsidian authoring은 local markdown을 유지",
+        "배포 웹은 generated JSON snapshot만 읽는다",
+        "sync script를 build/deploy 전에 실행한다"
+      ],
+      "headings": [
+        "Obsidian for Aeyong Ops",
+        "권장 구조"
+      ],
+      "preview": [
+        "로컬 작성용 vault와 deploy용 export snapshot을 분리한다."
+      ],
+      "rawExcerpt": "# Obsidian for Aeyong Ops\n로컬 작성용 vault와 deploy용 export snapshot을 분리한다.\n## 권장 구조\n- Obsidian authoring은 local markdown을 유지\n- 배포 웹은 generated JSON snapshot만 읽는다\n- sync script를 build/deploy 전에 실행한다"
+    }
+  ]
+}

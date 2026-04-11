@@ -161,7 +161,7 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
               <header>
                 <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">Overview</p>
                 <h2 className="text-4xl font-bold mb-3">오늘의 운영 상황</h2>
-                <p className="text-white/70 max-w-3xl">애옹 작업, 프로젝트 상태, Obsidian notes, 사용자 판단 필요 항목을 한 번에 보는 홈 화면입니다.</p>
+                <p className="text-white/70 max-w-3xl">애옹 작업, 프로젝트 상태, synced notes snapshot, 사용자 판단 필요 항목을 한 번에 보는 홈 화면입니다.</p>
               </header>
               <div className="grid gap-4 md:grid-cols-4">
                 <SummaryCard label="전체 프로젝트" value={String(summary.totalProjects)} />
@@ -177,7 +177,7 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
                     ))}
                   </div>
                 </Panel>
-                <Panel title="최근 워크스페이스 노트">
+                <Panel title="최근 synced 노트">
                   <div className="space-y-3">
                     {data.notes.slice(0, 4).map((note) => (
                       <button key={note.id} onClick={() => { setSelectedNoteId(note.id); setSection("notes"); }} className="w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-left hover:bg-white/10 transition">
@@ -274,8 +274,8 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
             <div className="space-y-8">
               <header>
                 <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">Notes</p>
-                <h2 className="text-4xl font-bold mb-3">Workspace Notes Viewer</h2>
-                <p className="text-white/70 max-w-3xl">Obsidian 앱을 따로 열지 않아도 `/ops` 안에서 작업 기록과 대화 요약, 프로젝트 운영 문서를 실제 markdown 파일 기준으로 탐색합니다.</p>
+                <h2 className="text-4xl font-bold mb-3">Synced Notes Viewer</h2>
+                <p className="text-white/70 max-w-3xl">Obsidian/문서 원본에서 export한 notes snapshot을 `/ops` 안에서 탐색합니다. 로컬 markdown authoring은 유지하고, 배포 웹은 synced data만 읽습니다.</p>
               </header>
               <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
                 <div className="space-y-3 rounded-3xl border border-white/10 bg-white/5 p-4">
@@ -287,7 +287,7 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
                       placeholder="제목, 태그, 경로, 내용 검색"
                       className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-white/30"
                     />
-                    <p className="mt-2 text-xs text-white/45">{filteredNotes.length} / {data.notes.length}개 노트 표시 · root {data.dataSource.workspaceRoot || "미탐지"}</p>
+                    <p className="mt-2 text-xs text-white/45">{filteredNotes.length} / {data.notes.length}개 노트 표시 · synced {data.dataSource.generatedAt || "미기록"}</p>
                   </div>
                   <div className="max-h-[62vh] space-y-3 overflow-auto pr-1">
                     {filteredNotes.map((note) => (
@@ -360,7 +360,7 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
                 ) : (
                   <EmptyState
                     title="노트를 찾지 못했습니다"
-                    description={`워크스페이스 루트 또는 markdown note scan 결과를 확인해 주세요. 현재 root: ${data.dataSource.workspaceRoot || "미탐지"} · note count: ${data.dataSource.notesCount} · attempted: ${data.dataSource.attemptedWorkspaceRoots.join(" | ") || "없음"}`}
+                    description={`notes export snapshot을 확인해 주세요. 현재 generated: ${data.dataSource.generatedAt || "미기록"} · root: ${data.dataSource.workspaceRoot || "미설정"} · note count: ${data.dataSource.notesCount}`}
                   />
                 )}
               </div>
@@ -387,10 +387,10 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
               bullets={[
                 "보고 템플릿: 3줄 요약 / 작업 간단 설명 / 앞으로 해야할 작업",
                 "Portfolio main 브랜치 직접 작업/머지 금지",
-                `워크스페이스 루트: ${data.dataSource.workspaceRoot || "미탐지"}`,
+                `작성 워크스페이스: ${data.dataSource.workspaceRoot || "미설정"}`,
                 `노트 개수: ${data.dataSource.notesCount}개`,
-                `노트 스캔 루트: ${data.dataSource.notesRoots.join(" | ")}`,
-                `탐색한 workspace 후보: ${data.dataSource.attemptedWorkspaceRoots.slice(0, 4).join(" | ")}${data.dataSource.attemptedWorkspaceRoots.length > 4 ? " ..." : ""}`,
+                `노트 source roots: ${data.dataSource.notesRoots.join(" | ")}`,
+                `synced at: ${data.dataSource.generatedAt || "미기록"}`,
               ]}
             />
           )}
