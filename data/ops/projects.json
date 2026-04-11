@@ -7,7 +7,47 @@
     "repo": "yongchane/tori-admin",
     "branch": "master",
     "deployUrl": "https://purrpurr-hub-public.vercel.app/",
-    "docs": ["Tori Harness", "MCP Plan"]
+    "docs": [
+      "Tori Harness",
+      "MCP Plan"
+    ],
+    "sectors": [
+      {
+        "id": "tori-product",
+        "label": "Content workflow",
+        "status": "doing",
+        "summary": "초안 생성→검수→게시 운영성 다듬는 중"
+      },
+      {
+        "id": "tori-engineering",
+        "label": "Publishing infra",
+        "status": "done",
+        "summary": "direct DB publish 전환 완료"
+      },
+      {
+        "id": "tori-release",
+        "label": "Release verification",
+        "status": "doing",
+        "summary": "배포본 검증 및 legacy worker 정리 대기"
+      }
+    ],
+    "checklist": [
+      {
+        "id": "tori-check-1",
+        "label": "게시 API direct DB publish",
+        "status": "done"
+      },
+      {
+        "id": "tori-check-2",
+        "label": "published_at 반영",
+        "status": "done"
+      },
+      {
+        "id": "tori-check-3",
+        "label": "배포 최종 검증",
+        "status": "doing"
+      }
+    ]
   },
   {
     "id": "pawpong",
@@ -16,7 +56,47 @@
     "summary": "브리더 온보딩·상담·신뢰를 중심으로 재설계 중인 반려동물 플랫폼",
     "repo": "Pawpong/pawpong_admin_frontend",
     "branch": "main",
-    "docs": ["Pawpong Contest Harness", "Admin IA/AARRR"]
+    "docs": [
+      "Pawpong Contest Harness",
+      "Admin IA/AARRR"
+    ],
+    "sectors": [
+      {
+        "id": "pawpong-product",
+        "label": "Breeder funnel",
+        "status": "doing",
+        "summary": "신뢰/상담 중심 UX 재정리"
+      },
+      {
+        "id": "pawpong-engineering",
+        "label": "Admin build",
+        "status": "doing",
+        "summary": "온보딩/상담 플로우 구현 진행 중"
+      },
+      {
+        "id": "pawpong-release",
+        "label": "Readiness",
+        "status": "todo",
+        "summary": "launch 전 QA/measure 정의 필요"
+      }
+    ],
+    "checklist": [
+      {
+        "id": "pawpong-check-1",
+        "label": "브리더 온보딩 IA 정리",
+        "status": "doing"
+      },
+      {
+        "id": "pawpong-check-2",
+        "label": "상담/신뢰 신호 설계",
+        "status": "doing"
+      },
+      {
+        "id": "pawpong-check-3",
+        "label": "전환 지표 정의",
+        "status": "todo"
+      }
+    ]
   },
   {
     "id": "portfolio",
@@ -25,13 +105,109 @@
     "summary": "애옹 작업, 프로젝트 상태, 문서/릴리즈를 한곳에서 관리하기 위한 개인 운영 콘솔",
     "repo": "yongchane/Portfolio",
     "branch": "develop",
-    "docs": ["Obsidian for Aeyong Ops", "Ops Console UI Plan"]
+    "docs": [
+      "Obsidian for Aeyong Ops",
+      "Ops Console UI Plan"
+    ],
+    "sectors": [
+      {
+        "id": "portfolio-product",
+        "label": "Product / IA",
+        "status": "doing",
+        "summary": "GitHub형 개인 운영 콘솔 구조와 운영 흐름 정교화"
+      },
+      {
+        "id": "portfolio-engineering",
+        "label": "Engineering",
+        "status": "doing",
+        "summary": "notes + GitHub cache + 실제 데이터 레이어 연결"
+      },
+      {
+        "id": "portfolio-release",
+        "label": "Release",
+        "status": "todo",
+        "summary": "배포 전 인증/보호/검증 루틴 보강 필요"
+      },
+      {
+        "id": "portfolio-ops",
+        "label": "Ops",
+        "status": "doing",
+        "summary": "작업/릴리즈/설정 페이지에 운영 근거와 체크리스트 가시화"
+      }
+    ],
+    "checklist": [
+      {
+        "id": "portfolio-check-1",
+        "label": "Tasks를 실제 실행 추적형 카드로 확장",
+        "status": "done",
+        "note": "증거/다음 액션/판단 필요 구조 반영"
+      },
+      {
+        "id": "portfolio-check-2",
+        "label": "GitHub repo/release/project read-only sync 연결",
+        "status": "doing",
+        "note": "gh auth 있으면 live cache 생성, 없으면 fallback 유지"
+      },
+      {
+        "id": "portfolio-check-3",
+        "label": "Releases/Settings를 운영 페이지답게 강화",
+        "status": "doing",
+        "note": "GitHub sync 상태, branch rule, source roots, warning 노출"
+      },
+      {
+        "id": "portfolio-check-4",
+        "label": "서버 기반 인증으로 교체",
+        "status": "todo",
+        "note": "현재 access code는 MVP 임시 보호"
+      }
+    ]
   },
   {
     "id": "openclaw",
     "name": "OpenClaw 운영",
     "stage": "live",
     "summary": "role agent, harness docs, OAuth health check를 포함한 작업 운영 레이어",
-    "docs": ["Harness Engineering", "Async Registry", "OAuth Ops"]
+    "docs": [
+      "Harness Engineering",
+      "Async Registry",
+      "OAuth Ops"
+    ],
+    "sectors": [
+      {
+        "id": "openclaw-ops",
+        "label": "Harness ops",
+        "status": "doing",
+        "summary": "role agent / docs / health patterns 운영"
+      },
+      {
+        "id": "openclaw-docs",
+        "label": "System docs",
+        "status": "doing",
+        "summary": "routing, done criteria, async registry 축적"
+      },
+      {
+        "id": "openclaw-risk",
+        "label": "Risk management",
+        "status": "doing",
+        "summary": "OAuth fragile path 점검과 대체 경로 관리"
+      }
+    ],
+    "checklist": [
+      {
+        "id": "openclaw-check-1",
+        "label": "role agent contracts 정리",
+        "status": "done"
+      },
+      {
+        "id": "openclaw-check-2",
+        "label": "OAuth ops playbook 유지",
+        "status": "doing"
+      },
+      {
+        "id": "openclaw-check-3",
+        "label": "정기 health/status 점검",
+        "status": "doing"
+      }
+    ]
   }
 ]

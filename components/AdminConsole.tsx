@@ -3,7 +3,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import type { NoteItem, OpsConsoleData, ProjectStage, Task, TaskStatus, NoteType } from "@/lib/ops/types";
+import type {
+  GitHubProjectBoardSnapshot,
+  GitHubReleaseSnapshot,
+  GitHubRepoSnapshot,
+  NoteItem,
+  OpsConsoleData,
+  ProgressState,
+  Project,
+  ProjectChecklistItem,
+  ProjectSectorProgress,
+  ProjectStage,
+  Task,
+  TaskStatus,
+  NoteType,
+} from "@/lib/ops/types";
 
 const ACCESS_CODE = "hy-ops-0408";
 
@@ -31,6 +45,13 @@ const noteTypeMeta: Record<NoteType, { label: string; tone: string }> = {
   reference: { label: "Docs", tone: "bg-violet-100 text-violet-700" },
 };
 
+const progressMeta: Record<ProgressState, { label: string; tone: string; bar: string }> = {
+  todo: { label: "대기", tone: "bg-slate-100 text-slate-700", bar: "bg-slate-500" },
+  doing: { label: "진행 중", tone: "bg-amber-100 text-amber-700", bar: "bg-amber-400" },
+  done: { label: "완료", tone: "bg-emerald-100 text-emerald-700", bar: "bg-emerald-400" },
+  blocked: { label: "막힘", tone: "bg-rose-100 text-rose-700", bar: "bg-rose-400" },
+};
+
 const sidebarItems = [
   { id: "overview", label: "Overview" },
   { id: "tasks", label: "Tasks" },
@@ -55,30 +76,54 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
 
   const selectedProject = data.projects.find((item) => item.id === selectedProjectId) || data.projects[0];
   const projectTasks = data.tasks.filter((task) => task.projectId === selectedProject?.id);
+  const notesById = useMemo(() => new Map(data.notes.map((note) => [note.id, note])), [data.notes]);
+  const githubReposByName = useMemo(() => new Map(data.github.repoSnapshots.map((repo) => [repo.repo, repo])), [data.github.repoSnapshots]);
+  const projectBoardsByOwner = useMemo(() => {
+    const map = new Map<string, GitHubProjectBoardSnapshot[]>();
+    for (const board of data.github.projectBoards) {
+      const list = map.get(board.owner) || [];
+      list.push(board);
+      map.set(board.owner, list);
+    }
+    return map;
+  }, [data.github.projectBoards]);
 
   const filteredNotes = useMemo(() => {
     const query = noteQuery.trim().toLowerCase();
     if (!query) return data.notes;
 
     return data.notes.filter((note) => {
-      const haystack = [
-        note.title,
-        note.summary,
-        note.path,
-        note.project,
-        note.tags.join(" "),
-        note.headings.join(" "),
-        note.rawExcerpt,
-      ]
+      const haystack = [note.title, note.summary, note.path, note.project, note.tags.join(" "), note.headings.join(" "), note.rawExcerpt]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
-
       return haystack.includes(query);
     });
   }, [data.notes, noteQuery]);
 
   const selectedNote = filteredNotes.find((item) => item.id === selectedNoteId) || filteredNotes[0] || data.notes[0];
+
+  const summary = useMemo(
+    () => ({
+      totalProjects: data.projects.length,
+      activeTasks: data.tasks.filter((task) => task.status === "doing").length,
+      verifyingTasks: data.tasks.filter((task) => task.status === "verifying").length,
+      notesCount: data.notes.length,
+      githubRepos: data.github.repoSnapshots.length,
+      githubBoards: data.github.projectBoards.length,
+    }),
+    [data.projects.length, data.tasks, data.notes.length, data.github.repoSnapshots.length, data.github.projectBoards.length],
+  );
+
+  const attentionTasks = data.tasks
+    .filter((task) => task.status === "blocked" || task.status === "verifying" || (task.needsDecision?.length ?? 0) > 0)
+    .slice(0, 4);
+
+  const selectedRepo = selectedProject?.repo ? githubReposByName.get(selectedProject.repo) : undefined;
+  const selectedProjectBoards = selectedRepo ? projectBoardsByOwner.get(selectedRepo.owner) || [] : [];
+  const selectedProjectReleases = selectedRepo
+    ? data.github.releases.filter((release) => release.repo === selectedRepo.repo).slice(0, 4)
+    : [];
 
   useEffect(() => {
     if (!filteredNotes.length) return;
@@ -89,16 +134,11 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
 
   useEffect(() => {
     lastSeenGeneratedAt.current = data.dataSource.generatedAt;
-    setLiveStatus({
-      mode: data.dataSource.mode,
-      generatedAt: data.dataSource.generatedAt,
-      notesCount: data.dataSource.notesCount,
-    });
+    setLiveStatus({ mode: data.dataSource.mode, generatedAt: data.dataSource.generatedAt, notesCount: data.dataSource.notesCount });
   }, [data.dataSource.generatedAt, data.dataSource.mode, data.dataSource.notesCount]);
 
   useEffect(() => {
     if (!unlocked) return;
-
     let cancelled = false;
     const interval = window.setInterval(async () => {
       try {
@@ -106,7 +146,6 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
         if (!response.ok) return;
         const payload = await response.json();
         if (cancelled) return;
-
         setLiveStatus(payload);
         if (payload.generatedAt && payload.generatedAt !== lastSeenGeneratedAt.current) {
           lastSeenGeneratedAt.current = payload.generatedAt;
@@ -123,38 +162,20 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
     };
   }, [router, unlocked]);
 
-  const notesById = useMemo(() => new Map(data.notes.map((note) => [note.id, note])), [data.notes]);
-  const summary = useMemo(
-    () => ({
-      totalProjects: data.projects.length,
-      activeTasks: data.tasks.filter((task) => task.status === "doing").length,
-      verifyingTasks: data.tasks.filter((task) => task.status === "verifying").length,
-      notesCount: data.notes.length,
-    }),
-    [data.projects.length, data.tasks, data.notes.length],
-  );
-
-  const attentionTasks = data.tasks
-    .filter((task) => task.status === "blocked" || task.status === "verifying" || (task.needsDecision?.length ?? 0) > 0)
-    .slice(0, 3);
-
   if (!unlocked) {
     return (
-      <section className="min-h-screen bg-[#0b1020] text-white px-6 py-24">
-        <div className="max-w-xl mx-auto rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl">
-          <p className="text-sm uppercase tracking-[0.24em] text-white/50 mb-3">Private Ops Console</p>
-          <h1 className="text-3xl font-bold mb-3">운영 콘솔 접근</h1>
-          <p className="text-white/70 mb-6">개인 관리자 페이지입니다. 접근 코드를 입력해 주세요.</p>
+      <section className="min-h-screen bg-[#0b1020] px-6 py-24 text-white">
+        <div className="mx-auto max-w-xl rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl">
+          <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/50">Private Ops Console</p>
+          <h1 className="mb-3 text-3xl font-bold">운영 콘솔 접근</h1>
+          <p className="mb-6 text-white/70">개인 관리자 페이지입니다. 접근 코드를 입력해 주세요.</p>
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="access code"
             className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 outline-none"
           />
-          <button
-            onClick={() => setUnlocked(input === ACCESS_CODE)}
-            className="mt-4 w-full rounded-2xl bg-white text-black px-4 py-3 font-semibold"
-          >
+          <button onClick={() => setUnlocked(input === ACCESS_CODE)} className="mt-4 w-full rounded-2xl bg-white px-4 py-3 font-semibold text-black">
             입장하기
           </button>
           <p className="mt-3 text-xs text-white/40">임시 MVP 보호 방식입니다. 실제 운영 시에는 서버 기반 인증으로 교체 권장.</p>
@@ -167,9 +188,9 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
     <section className="min-h-screen bg-[#0b1020] text-white">
       <div className="grid min-h-screen lg:grid-cols-[240px_1fr]">
         <aside className="border-r border-white/10 bg-black/20 p-6">
-          <p className="text-xs uppercase tracking-[0.28em] text-white/40 mb-3">Aeyong OS</p>
-          <h1 className="text-2xl font-bold mb-8">현용찬 운영 콘솔</h1>
-          <nav className="space-y-2 mb-8">
+          <p className="mb-3 text-xs uppercase tracking-[0.28em] text-white/40">Aeyong OS</p>
+          <h1 className="mb-8 text-2xl font-bold">현용찬 운영 콘솔</h1>
+          <nav className="mb-8 space-y-2">
             {sidebarItems.map((item) => (
               <button
                 key={item.id}
@@ -184,21 +205,31 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
             ))}
           </nav>
 
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
-            <p className="text-sm font-semibold text-white/60 mb-3">운영 원칙</p>
-            <ul className="space-y-2 text-sm text-white/80 list-disc pl-4">
+          <Panel title="운영 원칙">
+            <ul className="list-disc space-y-2 pl-4 text-sm text-white/80">
               <li>결론 먼저 보고</li>
               <li>main 브랜치는 명시 허락 전 금지</li>
               <li>완료와 검증을 분리</li>
               <li>작업 카드에 근거/다음 액션/판단 필요를 같이 둔다</li>
             </ul>
-          </div>
+          </Panel>
 
           <div className="mt-4 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-emerald-200/70 mb-2">Notes Sync</p>
-            <p className="text-sm text-white/85">mode: <strong>{liveStatus?.mode || data.dataSource.mode}</strong></p>
+            <p className="mb-2 text-xs uppercase tracking-[0.2em] text-emerald-200/70">Notes Sync</p>
+            <p className="text-sm text-white/85">
+              mode: <strong>{liveStatus?.mode || data.dataSource.mode}</strong>
+            </p>
             <p className="mt-1 text-xs text-white/55">notes {liveStatus?.notesCount ?? data.dataSource.notesCount}개 · updated {liveStatus?.generatedAt || data.dataSource.generatedAt}</p>
             <p className="mt-2 text-xs text-white/50">/ops가 주기적으로 source 변경을 확인하고, 노트가 바뀌면 화면을 자동 refresh합니다.</p>
+          </div>
+
+          <div className="mt-4 rounded-3xl border border-violet-400/20 bg-violet-500/10 p-4">
+            <p className="mb-2 text-xs uppercase tracking-[0.2em] text-violet-100/70">GitHub Sync</p>
+            <p className="text-sm text-white/85">
+              {data.github.mode === "live" ? "read-only live cache" : "fallback cache"} · {data.github.account || "unknown"}
+            </p>
+            <p className="mt-1 text-xs text-white/55">repos {data.github.repoSnapshots.length} · boards {data.github.projectBoards.length} · releases {data.github.releases.length}</p>
+            <p className="mt-2 text-xs text-white/50">generated {formatDateTime(data.github.generatedAt)}</p>
           </div>
         </aside>
 
@@ -206,17 +237,21 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
           {section === "overview" && (
             <div className="space-y-8">
               <header>
-                <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">Overview</p>
-                <h2 className="text-4xl font-bold mb-3">오늘의 운영 상황</h2>
-                <p className="text-white/70 max-w-3xl">애옹 작업, 프로젝트 상태, synced notes snapshot, 사용자 판단 필요 항목을 한 번에 보는 홈 화면입니다.</p>
+                <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">Overview</p>
+                <h2 className="mb-3 text-4xl font-bold">오늘의 운영 상황</h2>
+                <p className="max-w-3xl text-white/70">애옹 작업, 프로젝트 상태, synced notes snapshot, GitHub repo/project layer, 사용자 판단 필요 항목을 한 번에 보는 홈 화면입니다.</p>
               </header>
-              <div className="grid gap-4 md:grid-cols-4">
+
+              <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
                 <SummaryCard label="전체 프로젝트" value={String(summary.totalProjects)} />
                 <SummaryCard label="진행 중 작업" value={String(summary.activeTasks)} />
                 <SummaryCard label="검증 중 작업" value={String(summary.verifyingTasks)} />
                 <SummaryCard label="저장된 노트" value={String(summary.notesCount)} />
+                <SummaryCard label="GitHub repos" value={String(summary.githubRepos)} />
+                <SummaryCard label="GitHub boards" value={String(summary.githubBoards)} />
               </div>
-              <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+
+              <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
                 <Panel title="사용자 판단 필요">
                   <div className="space-y-4">
                     {attentionTasks.map((task) => (
@@ -227,15 +262,43 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
                 <Panel title="최근 synced 노트">
                   <div className="space-y-3">
                     {data.notes.slice(0, 4).map((note) => (
-                      <button key={note.id} onClick={() => { setSelectedNoteId(note.id); setSection("notes"); }} className="w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-left hover:bg-white/10 transition">
-                        <div className="flex items-center justify-between gap-3 mb-2">
+                      <button
+                        key={note.id}
+                        onClick={() => {
+                          setSelectedNoteId(note.id);
+                          setSection("notes");
+                        }}
+                        className="w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-left transition hover:bg-white/10"
+                      >
+                        <div className="mb-2 flex items-center justify-between gap-3">
                           <strong>{note.title}</strong>
                           <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", noteTypeMeta[note.type].tone)}>{noteTypeMeta[note.type].label}</span>
                         </div>
-                        <p className="text-sm text-white/70 mb-2">{note.summary}</p>
+                        <p className="mb-2 text-sm text-white/70">{note.summary}</p>
                         <p className="text-xs text-white/45">{note.path}</p>
                       </button>
                     ))}
+                  </div>
+                </Panel>
+              </div>
+
+              <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+                <Panel title="GitHub 연결 현황">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {data.projects.filter((project) => project.repo).map((project) => (
+                      <GitHubRepoCard key={project.id} project={project} repo={project.repo ? githubReposByName.get(project.repo) : undefined} onOpen={() => {
+                        setSelectedProjectId(project.id);
+                        setSection("projects");
+                      }} />
+                    ))}
+                  </div>
+                </Panel>
+                <Panel title="최근 GitHub 릴리즈">
+                  <div className="space-y-3">
+                    {data.github.releases.slice(0, 5).map((release) => (
+                      <ReleaseCard key={release.id} release={release} compact />
+                    ))}
+                    {!data.github.releases.length && <EmptyLine message="릴리즈 데이터가 아직 없습니다. sync 후 이곳에 최신 release가 표시됩니다." />}
                   </div>
                 </Panel>
               </div>
@@ -245,24 +308,51 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
           {section === "tasks" && (
             <div className="space-y-8">
               <header>
-                <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">Tasks</p>
-                <h2 className="text-4xl font-bold mb-3">애옹 작업 관리</h2>
-                <p className="text-white/70 max-w-3xl">상태 요약이 아니라, 실제 한 일 / 다음 액션 / 판단 필요 / 노트 근거까지 함께 보는 실행 추적 화면입니다.</p>
+                <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">Tasks</p>
+                <h2 className="mb-3 text-4xl font-bold">애옹 작업 관리</h2>
+                <p className="max-w-3xl text-white/70">상태 요약이 아니라, 실제 한 일 / 다음 액션 / 판단 필요 / 노트 근거 / 연결된 GitHub repo 상태까지 함께 보는 실행 추적 화면입니다.</p>
               </header>
-              <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+              <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
                 <div className="space-y-4">
                   {data.tasks.map((task) => (
-                    <TaskRow key={task.id} task={task} projectName={data.projects.find((p) => p.id === task.projectId)?.name || "-"} notesById={notesById} />
+                    <TaskRow
+                      key={task.id}
+                      task={task}
+                      projectName={data.projects.find((p) => p.id === task.projectId)?.name || "-"}
+                      notesById={notesById}
+                      repo={data.projects.find((p) => p.id === task.projectId)?.repo ? githubReposByName.get(data.projects.find((p) => p.id === task.projectId)?.repo || "") : undefined}
+                    />
                   ))}
                 </div>
-                <Panel title="왜 이 페이지가 중요한가">
-                  <ul className="space-y-3 text-sm text-white/80 list-disc pl-4">
-                    <li>애옹이 무슨 작업을 했는지 추적</li>
-                    <li>완료와 검증을 분리해서 보기</li>
-                    <li>문제/오해/판단 필요를 빠르게 찾기</li>
-                    <li>작업을 워크스페이스 노트와 연결해 협업 자산으로 축적</li>
-                  </ul>
-                </Panel>
+                <div className="space-y-6">
+                  <Panel title="왜 이 페이지가 중요한가">
+                    <ul className="list-disc space-y-3 pl-4 text-sm text-white/80">
+                      <li>애옹이 무슨 작업을 했는지 추적</li>
+                      <li>완료와 검증을 분리해서 보기</li>
+                      <li>문제/오해/판단 필요를 빠르게 찾기</li>
+                      <li>작업을 노트와 GitHub 근거에 연결해 협업 자산으로 축적</li>
+                    </ul>
+                  </Panel>
+                  <Panel title="GitHub attention">
+                    <div className="space-y-3 text-sm text-white/80">
+                      {data.projects.filter((project) => project.repo).map((project) => {
+                        const repo = project.repo ? githubReposByName.get(project.repo) : undefined;
+                        if (!repo) return null;
+                        return (
+                          <button key={project.id} onClick={() => {
+                            setSelectedProjectId(project.id);
+                            setSection("projects");
+                          }} className="w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-left transition hover:bg-white/10">
+                            <p className="mb-1 text-xs uppercase tracking-[0.2em] text-white/45">{project.name}</p>
+                            <strong>{repo.repo}</strong>
+                            <p className="mt-2 text-white/70">open issues {repo.openIssuesCount ?? 0} · open PRs {repo.openPullRequestsCount ?? 0}</p>
+                            <p className="mt-1 text-xs text-white/45">default {repo.defaultBranch} · pushed {formatDateTime(repo.pushedAt)}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </Panel>
+                </div>
               </div>
             </div>
           )}
@@ -270,11 +360,11 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
           {section === "projects" && selectedProject && (
             <div className="space-y-8">
               <header>
-                <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">Projects</p>
-                <h2 className="text-4xl font-bold mb-3">프로젝트 운영 관리</h2>
-                <p className="text-white/70 max-w-3xl">기획 → 개발 → 배포 → 운영 흐름을 프로젝트 단위로 관리합니다.</p>
+                <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">Projects</p>
+                <h2 className="mb-3 text-4xl font-bold">프로젝트 운영 관리</h2>
+                <p className="max-w-3xl text-white/70">기획 → 개발 → 배포 → 운영 흐름을 프로젝트 단위로 관리합니다. sector progress, spec checklist, GitHub repo 상태를 한 화면에서 봅니다.</p>
               </header>
-              <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+              <div className="grid gap-6 xl:grid-cols-[300px_1fr]">
                 <div className="space-y-3">
                   {data.projects.map((project) => (
                     <button
@@ -285,7 +375,7 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
                         selectedProject.id === project.id ? "border-white/30 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10",
                       )}
                     >
-                      <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="mb-2 flex items-start justify-between gap-3">
                         <strong className="text-lg">{project.name}</strong>
                         <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", projectStageMeta[project.stage].tone)}>{projectStageMeta[project.stage].label}</span>
                       </div>
@@ -293,24 +383,69 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
                     </button>
                   ))}
                 </div>
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-                  <div className="flex items-start justify-between gap-3 mb-4">
+                <div className="space-y-6 rounded-3xl border border-white/10 bg-white/5 p-6">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div>
                       <h3 className="text-3xl font-bold">{selectedProject.name}</h3>
-                      <p className="text-white/70 mt-2 max-w-3xl">{selectedProject.summary}</p>
+                      <p className="mt-2 max-w-3xl text-white/70">{selectedProject.summary}</p>
                     </div>
                     <span className={clsx("rounded-full px-3 py-1 text-sm font-semibold", projectStageMeta[selectedProject.stage].tone)}>{projectStageMeta[selectedProject.stage].label}</span>
                   </div>
-                  <div className="grid gap-4 md:grid-cols-2 mb-6 text-sm text-white/75">
+
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 text-sm text-white/75">
                     <InfoTile label="Repository" value={selectedProject.repo || "-"} />
                     <InfoTile label="Branch" value={selectedProject.branch || "-"} />
                     <InfoTile label="Deploy" value={selectedProject.deployUrl || "-"} />
                     <InfoTile label="Docs" value={selectedProject.docs?.join(", ") || "-"} />
                   </div>
-                  <div className="space-y-4">
-                    {projectTasks.map((task) => (
-                      <TaskRow key={task.id} task={task} projectName={selectedProject.name} notesById={notesById} compact />
-                    ))}
+
+                  <div className="grid gap-6 xl:grid-cols-2">
+                    <Panel title="Sector progress">
+                      <div className="space-y-3">
+                        {(selectedProject.sectors || []).map((sector) => <SectorRow key={sector.id} sector={sector} />)}
+                        {!selectedProject.sectors?.length && <EmptyLine message="아직 sector progress가 정의되지 않았습니다." />}
+                      </div>
+                    </Panel>
+                    <Panel title="Spec checklist">
+                      <div className="space-y-3">
+                        {(selectedProject.checklist || []).map((item) => <ChecklistRow key={item.id} item={item} />)}
+                        {!selectedProject.checklist?.length && <EmptyLine message="아직 checklist가 정의되지 않았습니다." />}
+                      </div>
+                    </Panel>
+                  </div>
+
+                  <div className="grid gap-6 xl:grid-cols-[1fr_0.95fr]">
+                    <Panel title="Connected tasks">
+                      <div className="space-y-4">
+                        {projectTasks.map((task) => (
+                          <TaskRow key={task.id} task={task} projectName={selectedProject.name} notesById={notesById} compact repo={selectedRepo} />
+                        ))}
+                        {!projectTasks.length && <EmptyLine message="연결된 task가 없습니다." />}
+                      </div>
+                    </Panel>
+                    <Panel title="GitHub repo / project layer">
+                      <div className="space-y-4">
+                        {selectedRepo ? <GitHubRepoDetail repo={selectedRepo} /> : <EmptyLine message="이 프로젝트는 repo가 연결되지 않았습니다." />}
+                        {selectedProjectBoards.length > 0 ? (
+                          <div className="space-y-3">
+                            <p className="text-sm font-semibold text-white/55">Project boards</p>
+                            {selectedProjectBoards.slice(0, 4).map((board) => (
+                              <ProjectBoardCard key={board.id} board={board} />
+                            ))}
+                          </div>
+                        ) : (
+                          <EmptyLine message={selectedRepo ? "조회 가능한 GitHub Project board가 없거나 권한 범위 밖입니다." : "repo 연결 후 project board를 표시합니다."} />
+                        )}
+                        {selectedProjectReleases.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-sm font-semibold text-white/55">Recent releases</p>
+                            {selectedProjectReleases.map((release) => (
+                              <ReleaseCard key={release.id} release={release} compact />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </Panel>
                   </div>
                 </div>
               </div>
@@ -320,14 +455,14 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
           {section === "notes" && (
             <div className="space-y-8">
               <header>
-                <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">Notes</p>
-                <h2 className="text-4xl font-bold mb-3">Synced Notes Viewer</h2>
-                <p className="text-white/70 max-w-3xl">Obsidian/문서 원본을 local live source로 읽거나, 배포 환경에서는 export snapshot으로 fallback합니다. 로컬 markdown authoring은 유지하고 `/ops`는 변경을 감지하면 자동 refresh됩니다.</p>
+                <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">Notes</p>
+                <h2 className="mb-3 text-4xl font-bold">Synced Notes Viewer</h2>
+                <p className="max-w-3xl text-white/70">Obsidian/문서 원본을 local live source로 읽거나, 배포 환경에서는 export snapshot으로 fallback합니다. 로컬 markdown authoring은 유지하고 `/ops`는 변경을 감지하면 자동 refresh됩니다.</p>
               </header>
               <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
                 <div className="space-y-3 rounded-3xl border border-white/10 bg-white/5 p-4">
                   <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                    <label className="block text-xs uppercase tracking-[0.2em] text-white/45 mb-2">노트 검색</label>
+                    <label className="mb-2 block text-xs uppercase tracking-[0.2em] text-white/45">노트 검색</label>
                     <input
                       value={noteQuery}
                       onChange={(event) => setNoteQuery(event.target.value)}
@@ -338,66 +473,65 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
                   </div>
                   <div className="max-h-[62vh] space-y-3 overflow-auto pr-1">
                     {filteredNotes.map((note) => (
-                    <button
-                      key={note.id}
-                      onClick={() => setSelectedNoteId(note.id)}
-                      className={clsx(
-                        "w-full rounded-3xl border p-4 text-left transition",
-                        selectedNote?.id === note.id ? "border-white/30 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10",
-                      )}
-                    >
-                      <div className="flex items-center justify-between gap-3 mb-2">
-                        <strong>{note.title}</strong>
-                        <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", noteTypeMeta[note.type].tone)}>{noteTypeMeta[note.type].label}</span>
-                      </div>
-                      <p className="text-sm text-white/70 mb-2">{note.summary}</p>
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {note.tags.map((tag) => <span key={tag} className="rounded-full bg-white/10 px-2 py-1 text-xs text-white/70">#{tag}</span>)}
-                      </div>
-                      <p className="text-xs text-white/45">{note.path}</p>
-                    </button>
-                  ))}
-
-                  {!filteredNotes.length && (
-                    <div className="rounded-3xl border border-dashed border-white/10 bg-black/20 p-5 text-sm text-white/60">
-                      검색 조건에 맞는 노트가 없습니다. 다른 키워드를 시도해 주세요.
-                    </div>
-                  )}
-                </div>
+                      <button
+                        key={note.id}
+                        onClick={() => setSelectedNoteId(note.id)}
+                        className={clsx(
+                          "w-full rounded-3xl border p-4 text-left transition",
+                          selectedNote?.id === note.id ? "border-white/30 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10",
+                        )}
+                      >
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <strong>{note.title}</strong>
+                          <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", noteTypeMeta[note.type].tone)}>{noteTypeMeta[note.type].label}</span>
+                        </div>
+                        <p className="mb-2 text-sm text-white/70">{note.summary}</p>
+                        <div className="mb-2 flex flex-wrap gap-2">
+                          {note.tags.map((tag) => (
+                            <span key={tag} className="rounded-full bg-white/10 px-2 py-1 text-xs text-white/70">#{tag}</span>
+                          ))}
+                        </div>
+                        <p className="text-xs text-white/45">{note.path}</p>
+                      </button>
+                    ))}
+                    {!filteredNotes.length && <div className="rounded-3xl border border-dashed border-white/10 bg-black/20 p-5 text-sm text-white/60">검색 조건에 맞는 노트가 없습니다. 다른 키워드를 시도해 주세요.</div>}
+                  </div>
                 </div>
 
                 {selectedNote ? (
                   <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-                    <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <div className="mb-4 flex flex-wrap items-center gap-3">
                       <h3 className="text-3xl font-bold">{selectedNote.title}</h3>
                       <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", noteTypeMeta[selectedNote.type].tone)}>{noteTypeMeta[selectedNote.type].label}</span>
                     </div>
-                    <p className="text-sm text-white/45 mb-4">{selectedNote.path} · {selectedNote.updatedAt}</p>
-                    <p className="text-white/75 mb-6">{selectedNote.summary}</p>
-                    <div className="grid gap-4 md:grid-cols-2 mb-6 text-sm text-white/75">
+                    <p className="mb-4 text-sm text-white/45">{selectedNote.path} · {selectedNote.updatedAt}</p>
+                    <p className="mb-6 text-white/75">{selectedNote.summary}</p>
+                    <div className="mb-6 grid gap-4 text-sm text-white/75 md:grid-cols-2">
                       <InfoTile label="Project" value={selectedNote.project || "-"} />
                       <InfoTile label="Tags" value={selectedNote.tags.length ? selectedNote.tags.join(", ") : "-"} />
                       <InfoTile label="Headings" value={selectedNote.headings.length ? selectedNote.headings.join(" · ") : "-"} />
                       <InfoTile label="Highlights" value={String(selectedNote.highlights.length)} />
                     </div>
-                    <div className="rounded-2xl border border-white/10 bg-black/20 p-5 mb-6">
-                      <p className="text-sm font-semibold text-white/55 mb-3">핵심 포인트</p>
-                      <ul className="space-y-2 text-sm text-white/80 list-disc pl-4">
-                        {(selectedNote.highlights.length ? selectedNote.highlights : selectedNote.preview).map((item) => <li key={item}>{item}</li>)}
+                    <div className="mb-6 rounded-2xl border border-white/10 bg-black/20 p-5">
+                      <p className="mb-3 text-sm font-semibold text-white/55">핵심 포인트</p>
+                      <ul className="list-disc space-y-2 pl-4 text-sm text-white/80">
+                        {(selectedNote.highlights.length ? selectedNote.highlights : selectedNote.preview).map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
                       </ul>
                     </div>
-                    <div className="rounded-2xl border border-white/10 bg-black/20 p-5 mb-6">
-                      <p className="text-sm font-semibold text-white/55 mb-3">원문 미리보기</p>
-                      <pre className="whitespace-pre-wrap text-sm text-white/80 font-sans leading-7">{selectedNote.rawExcerpt}</pre>
+                    <div className="mb-6 rounded-2xl border border-white/10 bg-black/20 p-5">
+                      <p className="mb-3 text-sm font-semibold text-white/55">원문 미리보기</p>
+                      <pre className="whitespace-pre-wrap font-sans text-sm leading-7 text-white/80">{selectedNote.rawExcerpt}</pre>
                     </div>
                     <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-                      <p className="text-sm font-semibold text-white/55 mb-3">연결된 작업</p>
+                      <p className="mb-3 text-sm font-semibold text-white/55">연결된 작업</p>
                       <div className="space-y-3">
                         {data.tasks.filter((task) => task.noteIds?.includes(selectedNote.id)).map((task) => (
-                          <button key={task.id} onClick={() => setSection("tasks")} className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:bg-white/10 transition">
-                            <p className="text-xs uppercase tracking-[0.2em] text-white/45 mb-2">{data.projects.find((project) => project.id === task.projectId)?.name || "-"}</p>
+                          <button key={task.id} onClick={() => setSection("tasks")} className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:bg-white/10">
+                            <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">{data.projects.find((project) => project.id === task.projectId)?.name || "-"}</p>
                             <strong>{task.title}</strong>
-                            <p className="text-sm text-white/70 mt-2">{task.summary}</p>
+                            <p className="mt-2 text-sm text-white/70">{task.summary}</p>
                           </button>
                         ))}
                         {!data.tasks.some((task) => task.noteIds?.includes(selectedNote.id)) && <p className="text-sm text-white/55">아직 연결된 작업이 없습니다.</p>}
@@ -405,41 +539,82 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
                     </div>
                   </div>
                 ) : (
-                  <EmptyState
-                    title="노트를 찾지 못했습니다"
-                    description={`notes export snapshot을 확인해 주세요. 현재 generated: ${data.dataSource.generatedAt || "미기록"} · root: ${data.dataSource.workspaceRoot || "미설정"} · note count: ${data.dataSource.notesCount}`}
-                  />
+                  <EmptyState title="노트를 찾지 못했습니다" description={`notes export snapshot을 확인해 주세요. 현재 generated: ${data.dataSource.generatedAt || "미기록"} · root: ${data.dataSource.workspaceRoot || "미설정"} · note count: ${data.dataSource.notesCount}`} />
                 )}
               </div>
             </div>
           )}
 
           {section === "releases" && (
-            <SimpleSection
-              title="Releases"
-              description="프로젝트별 배포 상태, 브랜치, 검증 여부를 보는 릴리즈 관제 공간"
-              bullets={[
-                "프로젝트별 deploy URL",
-                "현재 작업 브랜치와 최근 커밋",
-                "비로그인 public 200 검증 여부",
-                "배포 후 검증 대기 작업 표시",
-              ]}
-            />
+            <div className="space-y-8">
+              <header>
+                <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">Releases</p>
+                <h2 className="mb-3 text-4xl font-bold">릴리즈 관제</h2>
+                <p className="max-w-3xl text-white/70">프로젝트별 deploy 상태와 GitHub release 흔적을 함께 봅니다. 아직 write 동작은 없고 read-only 운영 관제용입니다.</p>
+              </header>
+              <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+                <Panel title="Release checklist">
+                  <div className="space-y-3">
+                    <ChecklistRow item={{ id: 'release-1', label: '현재 작업 브랜치와 보호 브랜치 규칙 확인', status: 'doing', note: 'Portfolio는 develop만 사용, main touch 금지' }} />
+                    <ChecklistRow item={{ id: 'release-2', label: '비로그인 public page smoke test', status: 'todo', note: 'build 후 route별 확인 필요' }} />
+                    <ChecklistRow item={{ id: 'release-3', label: 'GitHub release / deploy 흔적 동기화', status: data.github.releases.length ? 'done' : 'doing', note: data.github.releases.length ? '최근 release cache 반영됨' : 'release가 없거나 아직 sync 전' }} />
+                    <ChecklistRow item={{ id: 'release-4', label: '검증 대기 task 표시', status: summary.verifyingTasks ? 'doing' : 'todo', note: `${summary.verifyingTasks}개 task가 verifying 상태` }} />
+                  </div>
+                </Panel>
+                <Panel title="Recent releases from GitHub">
+                  <div className="space-y-3">
+                    {data.github.releases.map((release) => (
+                      <ReleaseCard key={`${release.repo}-${release.id}`} release={release} />
+                    ))}
+                    {!data.github.releases.length && <EmptyState title="GitHub release 없음" description="repo에 release가 없거나, 아직 GitHub sync를 실행하지 않았습니다." />}
+                  </div>
+                </Panel>
+              </div>
+            </div>
           )}
 
           {section === "settings" && (
-            <SimpleSection
-              title="Settings"
-              description="애옹 보고 방식, 보호 브랜치 규칙, 연동 상태, 운영 규칙을 관리하는 공간"
-              bullets={[
-                "보고 템플릿: 3줄 요약 / 작업 간단 설명 / 앞으로 해야할 작업",
-                "Portfolio main 브랜치 직접 작업/머지 금지",
-                `작성 워크스페이스: ${data.dataSource.workspaceRoot || "미설정"}`,
-                `노트 개수: ${data.dataSource.notesCount}개`,
-                `노트 source roots: ${data.dataSource.notesRoots.join(" | ")}`,
-                `synced at: ${data.dataSource.generatedAt || "미기록"}`,
-              ]}
-            />
+            <div className="space-y-8">
+              <header>
+                <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">Settings</p>
+                <h2 className="mb-3 text-4xl font-bold">운영 설정 / 연동 상태</h2>
+                <p className="max-w-3xl text-white/70">애옹 보고 방식, 보호 브랜치 규칙, note source, GitHub sync 상태를 같이 보는 운영 설정 화면입니다.</p>
+              </header>
+              <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+                <Panel title="운영 규칙 / spec">
+                  <div className="space-y-3">
+                    <ChecklistRow item={{ id: 'settings-1', label: '보고 템플릿: 3줄 요약 / 작업 설명 / 다음 액션', status: 'done' }} />
+                    <ChecklistRow item={{ id: 'settings-2', label: 'Portfolio main 브랜치 직접 작업/머지 금지', status: 'done' }} />
+                    <ChecklistRow item={{ id: 'settings-3', label: 'notes live/export fallback 유지', status: 'done', note: `source ${data.dataSource.mode}` }} />
+                    <ChecklistRow item={{ id: 'settings-4', label: 'GitHub sync cache 자동 생성', status: data.github.mode === 'live' ? 'done' : 'doing', note: `generated ${formatDateTime(data.github.generatedAt)}` }} />
+                    <ChecklistRow item={{ id: 'settings-5', label: '서버 기반 인증으로 전환', status: 'todo', note: '현재는 hardcoded access code MVP 보호' }} />
+                  </div>
+                </Panel>
+                <div className="space-y-6">
+                  <Panel title="Source metadata">
+                    <div className="grid gap-4 text-sm text-white/75 md:grid-cols-2">
+                      <InfoTile label="Workspace" value={data.dataSource.workspaceRoot || '미설정'} />
+                      <InfoTile label="Notes count" value={String(data.dataSource.notesCount)} />
+                      <InfoTile label="Notes roots" value={data.dataSource.notesRoots.join(' | ') || '-'} />
+                      <InfoTile label="Notes synced at" value={data.dataSource.generatedAt || '미기록'} />
+                      <InfoTile label="GitHub account" value={data.github.account || 'unknown'} />
+                      <InfoTile label="GitHub mode" value={`${data.github.mode} · repos ${data.github.repoSnapshots.length}`} />
+                    </div>
+                  </Panel>
+                  <Panel title="GitHub sync warnings">
+                    <div className="space-y-3 text-sm text-white/80">
+                      {(data.github.warnings || []).length ? (
+                        data.github.warnings?.map((warning) => (
+                          <div key={warning} className="rounded-2xl border border-amber-300/20 bg-amber-500/10 p-4 text-amber-50/90">{warning}</div>
+                        ))
+                      ) : (
+                        <div className="rounded-2xl border border-emerald-300/20 bg-emerald-500/10 p-4 text-emerald-50/90">경고 없음. 현재 read-only GitHub cache가 생성되어 있습니다.</div>
+                      )}
+                    </div>
+                  </Panel>
+                </div>
+              </div>
+            </div>
           )}
         </main>
       </div>
@@ -450,7 +625,7 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl">
-      <p className="text-sm text-white/55 mb-2">{label}</p>
+      <p className="mb-2 text-sm text-white/55">{label}</p>
       <strong className="text-3xl font-bold">{value}</strong>
     </div>
   );
@@ -459,7 +634,7 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl">
-      <p className="text-sm uppercase tracking-[0.2em] text-white/45 mb-4">{title}</p>
+      <p className="mb-4 text-sm uppercase tracking-[0.2em] text-white/45">{title}</p>
       {children}
     </div>
   );
@@ -468,49 +643,50 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 function InfoTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-      <p className="text-xs uppercase tracking-[0.2em] text-white/45 mb-2">{label}</p>
+      <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">{label}</p>
       <p className="break-all">{value}</p>
     </div>
   );
 }
 
-function TaskRow({ task, projectName, notesById, compact = false }: { task: Task; projectName: string; notesById: Map<string, NoteItem>; compact?: boolean }) {
+function TaskRow({ task, projectName, notesById, compact = false, repo }: { task: Task; projectName: string; notesById: Map<string, NoteItem>; compact?: boolean; repo?: GitHubRepoSnapshot; }) {
   const linkedNotes = (task.noteIds || []).map((noteId) => notesById.get(noteId)).filter((note): note is NoteItem => Boolean(note));
 
   return (
     <article className="rounded-3xl border border-white/10 bg-black/20 p-5">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between mb-3">
+      <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-white/45 mb-2">{projectName} · {task.category}</p>
+          <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">{projectName} · {task.category}</p>
           <h3 className={clsx(compact ? "text-xl" : "text-2xl", "font-semibold")}>{task.title}</h3>
-          <p className="text-white/70 mt-2 text-sm">{task.summary}</p>
+          <p className="mt-2 text-sm text-white/70">{task.summary}</p>
         </div>
-        <div className="flex flex-col items-start md:items-end gap-2">
+        <div className="flex flex-col items-start gap-2 md:items-end">
           <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", taskStatusMeta[task.status].tone)}>{taskStatusMeta[task.status].label}</span>
           <span className="text-xs text-white/45">{task.updatedAt}</span>
         </div>
       </div>
-      <div className={clsx("grid gap-4", compact ? "md:grid-cols-2" : "md:grid-cols-[1fr_1fr_0.9fr]")}>
+      <div className={clsx("grid gap-4", compact ? "md:grid-cols-2" : "md:grid-cols-[1fr_1fr_0.95fr]")}>
         <div>
-          <p className="text-sm font-semibold text-white/55 mb-2">완료된 작업</p>
-          <ul className="space-y-2 text-sm text-white/80 list-disc pl-4">
+          <p className="mb-2 text-sm font-semibold text-white/55">완료된 작업</p>
+          <ul className="list-disc space-y-2 pl-4 text-sm text-white/80">
             {task.completedWork.map((item) => <li key={item}>{item}</li>)}
           </ul>
         </div>
         <div>
-          <p className="text-sm font-semibold text-white/55 mb-2">다음 액션</p>
-          <ul className="space-y-2 text-sm text-white/80 list-disc pl-4">
+          <p className="mb-2 text-sm font-semibold text-white/55">다음 액션</p>
+          <ul className="list-disc space-y-2 pl-4 text-sm text-white/80">
             {task.nextActions.map((item) => <li key={item}>{item}</li>)}
           </ul>
         </div>
         {!compact && (
           <div>
-            <p className="text-sm font-semibold text-white/55 mb-2">판단 / 근거</p>
+            <p className="mb-2 text-sm font-semibold text-white/55">판단 / 근거</p>
             <div className="space-y-2 text-sm text-white/75">
               <p>Docs: {task.relatedDocs?.join(", ") || "-"}</p>
               <p>Commits: {task.relatedCommits?.join(", ") || "-"}</p>
               <p>Linked notes: {linkedNotes.length || 0}개</p>
               <p>Decision: {task.needsDecision?.join(" / ") || "-"}</p>
+              {repo && <p>GitHub: issues {repo.openIssuesCount ?? 0} · PRs {repo.openPullRequestsCount ?? 0} · pushed {formatDateTime(repo.pushedAt)}</p>}
               {linkedNotes.length > 0 && (
                 <div className="flex flex-wrap gap-2 pt-1">
                   {linkedNotes.map((note) => (
@@ -526,28 +702,125 @@ function TaskRow({ task, projectName, notesById, compact = false }: { task: Task
   );
 }
 
-function SimpleSection({ title, description, bullets }: { title: string; description: string; bullets: string[] }) {
+function SectorRow({ sector }: { sector: ProjectSectorProgress }) {
   return (
-    <div className="space-y-8">
-      <header>
-        <p className="text-sm uppercase tracking-[0.24em] text-white/45 mb-3">{title}</p>
-        <h2 className="text-4xl font-bold mb-3">{title}</h2>
-        <p className="text-white/70 max-w-3xl">{description}</p>
-      </header>
-      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl">
-        <ul className="space-y-3 text-white/80 list-disc pl-4">
-          {bullets.map((item) => <li key={item}>{item}</li>)}
-        </ul>
+    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <strong>{sector.label}</strong>
+        <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", progressMeta[sector.status].tone)}>{progressMeta[sector.status].label}</span>
+      </div>
+      <div className="mb-3 h-2 rounded-full bg-white/10">
+        <div className={clsx("h-2 rounded-full", progressMeta[sector.status].bar, sector.status === 'todo' ? 'w-1/4' : sector.status === 'doing' ? 'w-2/3' : sector.status === 'blocked' ? 'w-1/3' : 'w-full')} />
+      </div>
+      <p className="text-sm text-white/70">{sector.summary}</p>
+    </div>
+  );
+}
+
+function ChecklistRow({ item }: { item: ProjectChecklistItem }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <strong>{item.label}</strong>
+          {item.note && <p className="mt-2 text-sm text-white/70">{item.note}</p>}
+        </div>
+        <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", progressMeta[item.status].tone)}>{progressMeta[item.status].label}</span>
       </div>
     </div>
+  );
+}
+
+function GitHubRepoCard({ project, repo, onOpen }: { project: Project; repo?: GitHubRepoSnapshot; onOpen: () => void }) {
+  return (
+    <button onClick={onOpen} className="rounded-3xl border border-white/10 bg-black/20 p-5 text-left transition hover:bg-white/10">
+      <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">{project.name}</p>
+      <strong className="text-lg">{project.repo || 'repo 미연결'}</strong>
+      <p className="mt-2 text-sm text-white/70">{repo?.description || project.summary}</p>
+      <div className="mt-4 grid gap-2 text-xs text-white/55 md:grid-cols-2">
+        <span>issues {repo?.openIssuesCount ?? 0}</span>
+        <span>PRs {repo?.openPullRequestsCount ?? 0}</span>
+        <span>branch {repo?.defaultBranch || project.branch || '-'}</span>
+        <span>updated {formatDateTime(repo?.updatedAt)}</span>
+      </div>
+    </button>
+  );
+}
+
+function GitHubRepoDetail({ repo }: { repo: GitHubRepoSnapshot }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/80">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <strong className="text-base">{repo.repo}</strong>
+        <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">{repo.visibility}</span>
+        {repo.primaryLanguage && <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">{repo.primaryLanguage}</span>}
+      </div>
+      <p className="mb-4 text-white/70">{repo.description || '설명 없음'}</p>
+      <div className="grid gap-3 md:grid-cols-2">
+        <InfoTile label="Default branch" value={repo.defaultBranch} />
+        <InfoTile label="Open issues / PRs" value={`${repo.openIssuesCount ?? 0} / ${repo.openPullRequestsCount ?? 0}`} />
+        <InfoTile label="Stars / Forks / Watchers" value={`${repo.stargazerCount ?? 0} / ${repo.forkCount ?? 0} / ${repo.watchersCount ?? 0}`} />
+        <InfoTile label="Pushed at" value={formatDateTime(repo.pushedAt)} />
+      </div>
+      {!!repo.topics?.length && <p className="mt-3 text-xs text-white/50">topics: {repo.topics.join(' · ')}</p>}
+    </div>
+  );
+}
+
+function ProjectBoardCard({ board }: { board: GitHubProjectBoardSnapshot }) {
+  return (
+    <a href={board.url} target="_blank" rel="noreferrer" className="block rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:bg-white/10">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <strong>{board.title}</strong>
+        <span className={clsx("rounded-full px-3 py-1 text-xs font-semibold", board.closed ? "bg-slate-100 text-slate-700" : "bg-emerald-100 text-emerald-700")}>{board.closed ? 'closed' : 'active'}</span>
+      </div>
+      <p className="text-sm text-white/70">{board.owner} · #{board.number} · items {board.itemCount ?? 0}</p>
+      {!!board.fieldNames?.length && <p className="mt-2 text-xs text-white/50">fields: {board.fieldNames.slice(0, 6).join(' · ')}</p>}
+    </a>
+  );
+}
+
+function ReleaseCard({ release, compact = false }: { release: GitHubReleaseSnapshot; compact?: boolean }) {
+  return (
+    <a href={release.url} target="_blank" rel="noreferrer" className="block rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:bg-white/10">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="mb-1 text-xs uppercase tracking-[0.2em] text-white/45">{release.repo}</p>
+          <strong>{release.name}</strong>
+          <p className="mt-1 text-sm text-white/65">{release.tagName} · {formatDateTime(release.publishedAt)}</p>
+          {!compact && release.description && <p className="mt-3 text-sm text-white/75">{release.description}</p>}
+        </div>
+        <div className="flex gap-2">
+          {release.isPrerelease && <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">pre</span>}
+          {release.isDraft && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">draft</span>}
+        </div>
+      </div>
+    </a>
   );
 }
 
 function EmptyState({ title, description }: { title: string; description: string }) {
   return (
     <div className="rounded-3xl border border-dashed border-white/15 bg-white/5 p-8">
-      <h3 className="text-2xl font-semibold mb-2">{title}</h3>
+      <h3 className="mb-2 text-2xl font-semibold">{title}</h3>
       <p className="text-white/70">{description}</p>
     </div>
   );
+}
+
+function EmptyLine({ message }: { message: string }) {
+  return <p className="text-sm text-white/55">{message}</p>;
+}
+
+function formatDateTime(value?: string) {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
 }

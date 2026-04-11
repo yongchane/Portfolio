@@ -9,17 +9,28 @@
     "completedWork": [
       "develop 브랜치 생성",
       "초기 /ops MVP 추가",
-      "Overview / Tasks / Projects / Docs / Releases / Settings IA 재설계"
+      "Overview / Tasks / Projects / Docs / Releases / Settings IA 재설계",
+      "GitHub repo/project/release read-only cache layer 설계 착수"
     ],
     "nextActions": [
-      "프로젝트 상세 화면 추가",
-      "JSON 데이터 분리",
-      "GitHub 상태 반자동 연동"
+      "GitHub sync 결과를 /ops 카드·릴리즈·설정에 연결",
+      "Projects 상세에 sector/checklist/progress 블록 강화",
+      "MVP access code를 실제 auth로 교체할 서버 전략 결정"
     ],
-    "relatedCommits": ["d339ed6", "182dd78"],
-    "noteIds": ["note-obsidian-vault-01-daily-notes-2026-04-10", "note-obsidian-vault-02-projects-portfolio-ops-console"],
-    "needsDecision": ["데이터 저장 구조(JSON vs DB) 확정", "공개/비공개 노트 노출 범위 결정"],
-    "updatedAt": "2026-04-10 22:50"
+    "relatedCommits": [
+      "d339ed6",
+      "182dd78"
+    ],
+    "noteIds": [
+      "note-obsidian-vault-01-daily-notes-2026-04-10",
+      "note-obsidian-vault-02-projects-portfolio-ops-console"
+    ],
+    "needsDecision": [
+      "데이터 저장 구조(JSON vs DB) 확정",
+      "공개/비공개 노트 노출 범위 결정",
+      "GitHub live fetch를 runtime으로 확장할지 build/cache 중심으로 유지할지 결정"
+    ],
+    "updatedAt": "2026-04-11 16:55"
   },
   {
     "id": "task-aeyong-task-page",
@@ -31,17 +42,25 @@
     "completedWork": [
       "사용자 성향 기준으로 작업 관리 페이지 목적 재정의",
       "상태/증거/다음 액션/판단 필요 항목 구조화",
-      "Obsidian notes를 작업 카드와 연결하는 방향 반영"
+      "Obsidian notes를 작업 카드와 연결하는 방향 반영",
+      "sector/spec 진행도 블록과 체크리스트 연결 방향 정의"
     ],
     "nextActions": [
       "필터/정렬 UX 추가",
-      "사용자 판단 필요 패널 강화",
-      "작업 상세 화면 확장"
+      "GitHub 상태와 task attention 연결",
+      "작업 상세 drill-down 확장"
     ],
-    "relatedDocs": ["Aeyong task planning"],
-    "noteIds": ["note-obsidian-vault-03-aeyong-aeyong-collaboration-notes", "note-obsidian-vault-01-daily-notes-2026-04-10"],
-    "needsDecision": ["작업 카드 정보 밀도 최종 조정"],
-    "updatedAt": "2026-04-10 23:18"
+    "relatedDocs": [
+      "Aeyong task planning"
+    ],
+    "noteIds": [
+      "note-obsidian-vault-03-aeyong-aeyong-collaboration-notes",
+      "note-obsidian-vault-01-daily-notes-2026-04-10"
+    ],
+    "needsDecision": [
+      "작업 카드 정보 밀도 최종 조정"
+    ],
+    "updatedAt": "2026-04-11 16:55"
   },
   {
     "id": "task-obsidian-ops",
@@ -63,9 +82,16 @@
       "대화 저장 정책 확정 후 자동 축적 시작",
       "배포 환경용 외부 authoring sync 경로(webhook/git automation) 여부 결정"
     ],
-    "relatedDocs": ["Obsidian for Aeyong Ops"],
-    "noteIds": ["note-docs-obsidian-for-aeyong-ops", "note-obsidian-vault-01-daily-notes-2026-04-10"],
-    "needsDecision": ["전체 대화 저장 vs 요약/문제 중심 저장 정책 결정"],
+    "relatedDocs": [
+      "Obsidian for Aeyong Ops"
+    ],
+    "noteIds": [
+      "note-docs-obsidian-for-aeyong-ops",
+      "note-obsidian-vault-01-daily-notes-2026-04-10"
+    ],
+    "needsDecision": [
+      "전체 대화 저장 vs 요약/문제 중심 저장 정책 결정"
+    ],
     "updatedAt": "2026-04-11 15:58"
   },
   {
@@ -85,7 +111,10 @@
       "legacy worker 코드 정리",
       "운영 로그 화면 정리"
     ],
-    "relatedCommits": ["7f1e64d", "6d3b01c"],
+    "relatedCommits": [
+      "7f1e64d",
+      "6d3b01c"
+    ],
     "updatedAt": "2026-04-06 15:57"
   }
 ]

@@ -40,6 +40,8 @@ npm run dev
 
 Supabase 기반으로 옮기려면 `docs/ops-supabase-sync.md`와 `supabase/ops-schema.sql`을 사용하세요. 현재는 **local/export fallback 유지 + Supabase optional** 구조입니다.
 
+추가로 `/ops`는 GitHub read-only cache도 지원합니다. `gh auth`가 살아 있거나 `GITHUB_TOKEN`이 있으면 repo/issue/PR/release metadata를 cache로 생성하고, GitHub Project는 `read:project` scope가 있을 때만 읽습니다.
+
 기본 탐색 경로:
 - `PORTFOLIO_OPS_WORKSPACE_ROOT/obsidian-vault`
 - `PORTFOLIO_OPS_WORKSPACE_ROOT/docs`
@@ -63,7 +65,7 @@ npm run build
 npm run start
 ```
 
-> `npm run build`는 배포용 snapshot을 맞추기 위해 먼저 `npm run ops:sync-notes`를 실행합니다.
+> `npm run build`는 배포용 snapshot을 맞추기 위해 먼저 `npm run ops:sync-notes`와 `npm run ops:sync-github`를 실행합니다. GitHub token에 `read:project` scope가 없으면 repo/release data만 읽고 project board는 warning으로 남깁니다.
 
 ### 린트
 

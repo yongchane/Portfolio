@@ -1,0 +1,73 @@
+{
+  "generatedAt": "2026-04-11T07:50:47.970Z",
+  "mode": "live",
+  "account": "yongchane",
+  "repoSnapshots": [
+    {
+      "repo": "yongchane/tori-admin",
+      "name": "tori-admin",
+      "owner": "yongchane",
+      "url": "https://github.com/yongchane/tori-admin",
+      "description": "",
+      "visibility": "private",
+      "defaultBranch": "master",
+      "pushedAt": "2026-04-06T06:57:48Z",
+      "updatedAt": "2026-04-06T06:57:52Z",
+      "stargazerCount": 0,
+      "forkCount": 0,
+      "openIssuesCount": 0,
+      "openPullRequestsCount": 0,
+      "watchersCount": 0,
+      "primaryLanguage": "JavaScript",
+      "topics": [],
+      "hasProjectsEnabled": true,
+      "isArchived": false
+    },
+    {
+      "repo": "Pawpong/pawpong_admin_frontend",
+      "name": "pawpong_admin_frontend",
+      "owner": "Pawpong",
+      "url": "https://github.com/Pawpong/pawpong_admin_frontend",
+      "description": "",
+      "visibility": "public",
+      "defaultBranch": "main",
+      "pushedAt": "2026-03-30T12:08:00Z",
+      "updatedAt": "2026-03-30T12:08:04Z",
+      "stargazerCount": 0,
+      "forkCount": 0,
+      "openIssuesCount": 0,
+      "openPullRequestsCount": 0,
+      "watchersCount": 0,
+      "primaryLanguage": "TypeScript",
+      "topics": [],
+      "hasProjectsEnabled": true,
+      "isArchived": false
+    },
+    {
+      "repo": "yongchane/Portfolio",
+      "name": "Portfolio",
+      "owner": "yongchane",
+      "url": "https://github.com/yongchane/Portfolio",
+      "description": "",
+      "visibility": "public",
+      "defaultBranch": "main",
+      "pushedAt": "2026-04-11T07:33:11Z",
+      "updatedAt": "2026-02-23T10:29:34Z",
+      "stargazerCount": 0,
+      "forkCount": 0,
+      "openIssuesCount": 0,
+      "openPullRequestsCount": 0,
+      "watchersCount": 0,
+      "primaryLanguage": "TypeScript",
+      "topics": [],
+      "hasProjectsEnabled": true,
+      "isArchived": false
+    }
+  ],
+  "releases": [],
+  "projectBoards": [],
+  "warnings": [
+    "projects(yongchane): Command failed: gh api graphql -f query=query($login:String!) {\n  user(login:$login) {\n    projectsV2(first:10, orderBy:{field:UPDATED_AT, direction:DESC}) {\n      nodes {\n        id\n        title\n        number\n        url\n        updatedAt\n        closed\n        items(first:1) { totalCount }\n        fields(first:20) {\n          nodes {\n            ... on ProjectV2FieldCommon {\n              name\n            }\n          }\n        }\n      }\n    }\n  }\n} -F login=yongchane\ngh: Your token has not been granted the required scopes to execute this query. The 'id' field requires one of the following scopes: ['read:project'], but your token has only been granted the: ['gist', 'read:org', 'repo', 'workflow'] scopes. Please modify your token's scopes at: https://github.com/settings/tokens.\nYour token has not been granted the required scopes to execute this query. The 'title' field requires one of the following scopes: ['read:project'], but your token has only been granted the: ['gist', 'read:org', 'repo', 'workflow'] scopes. Please modify your token's scopes at: https://github.com/settings/tokens.\nYour token has not been granted the required scopes to execute this query. The 'number' field requires one of the following scopes: ['read:project'], but your token has only been granted the: ['gist', 'read:org', 'repo', 'workflow'] scopes. Please modify your token's scopes at: https://github.com/settings/tokens.\nYour token has not been granted the required scopes to execute this query. The 'url' field requires one of the following scopes: ['read:project'], but your token has only been granted the: ['gist', 'read:org', 'repo', 'workflow'] scopes. Please modify your token's scopes at: https://github.com/settings/tokens.\nYour token has not been granted the required scopes to execute this query. The 'updatedAt' field requires one of the following scopes: ['read:project'], but your token has only been granted the: ['gist', 'read:org', 'repo', 'workflow'] scopes. Please modify your token's scopes at: https://github.com/settings/tokens.\nYour token has not been granted the required scopes to execute this query. The 'closed' field requires one of the following scopes: ['read:project'], but your token has only been granted the: ['gist', 'read:org', 'repo', 'workflow'] scopes. Please modify your token's scopes at: https://github.com/settings/tokens.\n",
+    "projects(Pawpong): Command failed: gh api graphql -f query=query($login:String!) {\n  organization(login:$login) {\n    projectsV2(first:10, orderBy:{field:UPDATED_AT, direction:DESC}) {\n      nodes {\n        id\n        title\n        number\n        url\n        updatedAt\n        closed\n        items(first:1) { totalCount }\n        fields(first:20) {\n          nodes {\n            ... on ProjectV2FieldCommon {\n              name\n            }\n          }\n        }\n      }\n    }\n  }\n} -F login=Pawpong\ngh: Your token has not been granted the required scopes to execute this query. The 'id' field requires one of the following scopes: ['read:project'], but your token has only been granted the: ['gist', 'read:org', 'repo', 'workflow'] scopes. Please modify your token's scopes at: https://github.com/settings/tokens.\nYour token has not been granted the required scopes to execute this query. The 'title' field requires one of the following scopes: ['read:project'], but your token has only been granted the: ['gist', 'read:org', 'repo', 'workflow'] scopes. Please modify your token's scopes at: https://github.com/settings/tokens.\nYour token has not been granted the required scopes to execute this query. The 'number' field requires one of the following scopes: ['read:project'], but your token has only been granted the: ['gist', 'read:org', 'repo', 'workflow'] scopes. Please modify your token's scopes at: https://github.com/settings/tokens.\nYour token has not been granted the required scopes to execute this query. The 'url' field requires one of the following scopes: ['read:project'], but your token has only been granted the: ['gist', 'read:org', 'repo', 'workflow'] scopes. Please modify your token's scopes at: https://github.com/settings/tokens.\nYour token has not been granted the required scopes to execute this query. The 'updatedAt' field requires one of the following scopes: ['read:project'], but your token has only been granted the: ['gist', 'read:org', 'repo', 'workflow'] scopes. Please modify your token's scopes at: https://github.com/settings/tokens.\nYour token has not been granted the required scopes to execute this query. The 'closed' field requires one of the following scopes: ['read:project'], but your token has only been granted the: ['gist', 'read:org', 'repo', 'workflow'] scopes. Please modify your token's scopes at: https://github.com/settings/tokens.\n"
+  ]
+}

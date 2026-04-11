@@ -4,14 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run ops:sync-notes && next build",
+    "build": "npm run ops:sync-notes && npm run ops:sync-github && next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "ops:sync-notes": "node scripts/export-ops-notes.mjs",
     "ops:watch-notes": "node scripts/watch-ops-notes.mjs",
     "ops:sync-supabase": "node scripts/sync-ops-supabase.mjs",
-    "ci": "npm run lint && npm run typecheck && npm run build"
+    "ci": "npm run lint && npm run typecheck && npm run build",
+    "ops:sync-github": "node scripts/sync-ops-github.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",

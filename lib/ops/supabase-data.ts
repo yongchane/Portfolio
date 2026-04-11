@@ -3,6 +3,8 @@ import "server-only";
 import { getOpsDataMode, getSupabaseAdminClient, isSupabaseOpsAvailable } from "@/lib/ops/supabase";
 import type { NoteItem, OpsConsoleData, Project, Task } from "@/lib/ops/types";
 
+type SupabaseOpsConsoleData = Omit<OpsConsoleData, "github">;
+
 type SyncStateRow = {
   key: string;
   value: string | null;
@@ -52,7 +54,7 @@ type NoteRow = {
   raw_excerpt: string;
 };
 
-export async function getSupabaseOpsConsoleData(): Promise<OpsConsoleData | null> {
+export async function getSupabaseOpsConsoleData(): Promise<SupabaseOpsConsoleData | null> {
   const mode = getOpsDataMode();
   if (mode === "local") return null;
 
