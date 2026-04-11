@@ -19,8 +19,6 @@ import type {
   NoteType,
 } from "@/lib/ops/types";
 
-const ACCESS_CODE = "hy-ops-0408";
-
 const taskStatusMeta: Record<TaskStatus, { label: string; tone: string }> = {
   planned: { label: "예정", tone: "bg-slate-100 text-slate-700" },
   doing: { label: "진행 중", tone: "bg-amber-100 text-amber-700" },
@@ -63,66 +61,68 @@ const sidebarItems = [
 
 type SectionId = (typeof sidebarItems)[number]["id"];
 
-export default function AdminConsole({ data }: { data: OpsConsoleData }) {
+export default function AdminConsole({ authenticated, data }: { authenticated: boolean; data: OpsConsoleData | null }) {
   const router = useRouter();
   const [input, setInput] = useState("");
-  const [unlocked, setUnlocked] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [section, setSection] = useState<SectionId>("overview");
-  const [selectedProjectId, setSelectedProjectId] = useState<string>(data.projects[0]?.id ?? "");
-  const [selectedNoteId, setSelectedNoteId] = useState<string>(data.notes[0]?.id ?? "");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(data?.projects[0]?.id ?? "");
+  const [selectedNoteId, setSelectedNoteId] = useState<string>(data?.notes[0]?.id ?? "");
   const [noteQuery, setNoteQuery] = useState("");
   const [liveStatus, setLiveStatus] = useState<{ mode: string; generatedAt: string; notesCount: number } | null>(null);
-  const lastSeenGeneratedAt = useRef(data.dataSource.generatedAt);
+  const lastSeenGeneratedAt = useRef(data?.dataSource.generatedAt ?? "");
 
-  const selectedProject = data.projects.find((item) => item.id === selectedProjectId) || data.projects[0];
-  const projectTasks = data.tasks.filter((task) => task.projectId === selectedProject?.id);
-  const notesById = useMemo(() => new Map(data.notes.map((note) => [note.id, note])), [data.notes]);
-  const githubReposByName = useMemo(() => new Map(data.github.repoSnapshots.map((repo) => [repo.repo, repo])), [data.github.repoSnapshots]);
+  const selectedProject = data?.projects.find((item) => item.id === selectedProjectId) || data?.projects[0];
+  const projectTasks = data?.tasks.filter((task) => task.projectId === selectedProject?.id) || [];
+  const notesById = useMemo(() => new Map((data?.notes || []).map((note) => [note.id, note])), [data?.notes]);
+  const githubReposByName = useMemo(() => new Map((data?.github.repoSnapshots || []).map((repo) => [repo.repo, repo])), [data?.github.repoSnapshots]);
   const projectBoardsByOwner = useMemo(() => {
     const map = new Map<string, GitHubProjectBoardSnapshot[]>();
-    for (const board of data.github.projectBoards) {
+    for (const board of data?.github.projectBoards || []) {
       const list = map.get(board.owner) || [];
       list.push(board);
       map.set(board.owner, list);
     }
     return map;
-  }, [data.github.projectBoards]);
+  }, [data?.github.projectBoards]);
 
   const filteredNotes = useMemo(() => {
+    const notes = data?.notes || [];
     const query = noteQuery.trim().toLowerCase();
-    if (!query) return data.notes;
+    if (!query) return notes;
 
-    return data.notes.filter((note) => {
+    return notes.filter((note) => {
       const haystack = [note.title, note.summary, note.path, note.project, note.tags.join(" "), note.headings.join(" "), note.rawExcerpt]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
       return haystack.includes(query);
     });
-  }, [data.notes, noteQuery]);
+  }, [data?.notes, noteQuery]);
 
-  const selectedNote = filteredNotes.find((item) => item.id === selectedNoteId) || filteredNotes[0] || data.notes[0];
+  const selectedNote = filteredNotes.find((item) => item.id === selectedNoteId) || filteredNotes[0] || data?.notes[0];
 
   const summary = useMemo(
     () => ({
-      totalProjects: data.projects.length,
-      activeTasks: data.tasks.filter((task) => task.status === "doing").length,
-      verifyingTasks: data.tasks.filter((task) => task.status === "verifying").length,
-      notesCount: data.notes.length,
-      githubRepos: data.github.repoSnapshots.length,
-      githubBoards: data.github.projectBoards.length,
+      totalProjects: data?.projects.length || 0,
+      activeTasks: data?.tasks.filter((task) => task.status === "doing").length || 0,
+      verifyingTasks: data?.tasks.filter((task) => task.status === "verifying").length || 0,
+      notesCount: data?.notes.length || 0,
+      githubRepos: data?.github.repoSnapshots.length || 0,
+      githubBoards: data?.github.projectBoards.length || 0,
     }),
-    [data.projects.length, data.tasks, data.notes.length, data.github.repoSnapshots.length, data.github.projectBoards.length],
+    [data?.projects.length, data?.tasks, data?.notes.length, data?.github.repoSnapshots.length, data?.github.projectBoards.length],
   );
 
-  const attentionTasks = data.tasks
+  const attentionTasks = (data?.tasks || [])
     .filter((task) => task.status === "blocked" || task.status === "verifying" || (task.needsDecision?.length ?? 0) > 0)
     .slice(0, 4);
 
   const selectedRepo = selectedProject?.repo ? githubReposByName.get(selectedProject.repo) : undefined;
   const selectedProjectBoards = selectedRepo ? projectBoardsByOwner.get(selectedRepo.owner) || [] : [];
   const selectedProjectReleases = selectedRepo
-    ? data.github.releases.filter((release) => release.repo === selectedRepo.repo).slice(0, 4)
+    ? (data?.github.releases || []).filter((release) => release.repo === selectedRepo.repo).slice(0, 4)
     : [];
 
   useEffect(() => {
@@ -133,12 +133,13 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
   }, [filteredNotes, selectedNoteId]);
 
   useEffect(() => {
+    if (!data) return;
     lastSeenGeneratedAt.current = data.dataSource.generatedAt;
     setLiveStatus({ mode: data.dataSource.mode, generatedAt: data.dataSource.generatedAt, notesCount: data.dataSource.notesCount });
-  }, [data.dataSource.generatedAt, data.dataSource.mode, data.dataSource.notesCount]);
+  }, [data]);
 
   useEffect(() => {
-    if (!unlocked) return;
+    if (!authenticated) return;
     let cancelled = false;
     const interval = window.setInterval(async () => {
       try {
@@ -160,9 +161,34 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [router, unlocked]);
+  }, [authenticated, router]);
 
-  if (!unlocked) {
+  async function handleUnlock() {
+    setIsSubmitting(true);
+    setAuthError(null);
+
+    try {
+      const response = await fetch("/api/ops/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessCode: input }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        setAuthError(payload?.message || "접근 코드 확인에 실패했습니다.");
+        return;
+      }
+
+      router.refresh();
+    } catch {
+      setAuthError("잠시 후 다시 시도해 주세요.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  if (!authenticated || !data) {
     return (
       <section className="min-h-screen bg-[#0b1020] px-6 py-24 text-white">
         <div className="mx-auto max-w-xl rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl">
@@ -172,13 +198,25 @@ export default function AdminConsole({ data }: { data: OpsConsoleData }) {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !isSubmitting) {
+                void handleUnlock();
+              }
+            }}
             placeholder="access code"
+            type="password"
+            autoComplete="current-password"
             className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 outline-none"
           />
-          <button onClick={() => setUnlocked(input === ACCESS_CODE)} className="mt-4 w-full rounded-2xl bg-white px-4 py-3 font-semibold text-black">
-            입장하기
+          <button
+            onClick={() => void handleUnlock()}
+            disabled={isSubmitting || !input.trim()}
+            className="mt-4 w-full rounded-2xl bg-white px-4 py-3 font-semibold text-black disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? "확인 중..." : "입장하기"}
           </button>
-          <p className="mt-3 text-xs text-white/40">임시 MVP 보호 방식입니다. 실제 운영 시에는 서버 기반 인증으로 교체 권장.</p>
+          {authError && <p className="mt-3 text-sm text-rose-300">{authError}</p>}
+          <p className="mt-3 text-xs text-white/40">이제 잠금 화면에서는 운영 데이터가 서버 응답에 포함되지 않습니다.</p>
         </div>
       </section>
     );
