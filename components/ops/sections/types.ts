@@ -1,5 +1,5 @@
 import type { SectionId } from "@/components/ops/config";
-import type { GitHubProjectBoardSnapshot, GitHubRepoSnapshot, NoteItem, OpsConsoleData, Project, Task } from "@/lib/ops/types";
+import type { GitHubProjectBoardSnapshot, GitHubRepoSnapshot, NoteItem, OpsConsoleData, OpsVersionSnapshot, Project, Task } from "@/lib/ops/types";
 import type { OpsSummary } from "@/lib/ops/selectors";
 
 export type OpsSectionBaseProps = {
@@ -14,7 +14,7 @@ export type OpsSectionBaseProps = {
 
 export type OverviewSectionProps = OpsSectionBaseProps & {
   attentionTasks: Task[];
-  liveStatus: { mode: string; generatedAt: string; notesCount: number } | null;
+  liveStatus: OpsVersionSnapshot | null;
 };
 
 export type TasksSectionProps = OpsSectionBaseProps;

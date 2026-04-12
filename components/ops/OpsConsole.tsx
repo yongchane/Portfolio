@@ -29,7 +29,8 @@ import {
   getSelectedProjectNotes,
   getSelectedRepo,
 } from "@/lib/ops/selectors";
-import type { OpsConsoleData } from "@/lib/ops/types";
+import type { OpsConsoleData, OpsVersionSnapshot } from "@/lib/ops/types";
+import { buildOpsVersionSnapshot } from "@/lib/ops/version";
 
 export default function OpsConsole({ authenticated, data }: { authenticated: boolean; data: OpsConsoleData | null }) {
   const router = useRouter();
@@ -40,8 +41,8 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
   const [selectedProjectId, setSelectedProjectId] = useState<string>(data?.projects[0]?.id ?? "");
   const [selectedNoteId, setSelectedNoteId] = useState<string>(data?.notes[0]?.id ?? "");
   const [noteQuery, setNoteQuery] = useState("");
-  const [liveStatus, setLiveStatus] = useState<{ mode: string; generatedAt: string; notesCount: number } | null>(null);
-  const lastSeenGeneratedAt = useRef(data?.dataSource.generatedAt ?? "");
+  const [liveStatus, setLiveStatus] = useState<OpsVersionSnapshot | null>(null);
+  const lastSeenSignature = useRef(data ? buildOpsVersionSnapshot(data).signature : "");
 
   const safeData = data ?? null;
   const notesById = useMemo(() => createNotesById(safeData?.notes || []), [safeData?.notes]);
@@ -70,8 +71,9 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
 
   useEffect(() => {
     if (!data) return;
-    lastSeenGeneratedAt.current = data.dataSource.generatedAt;
-    setLiveStatus({ mode: data.dataSource.mode, generatedAt: data.dataSource.generatedAt, notesCount: data.dataSource.notesCount });
+    const snapshot = buildOpsVersionSnapshot(data);
+    lastSeenSignature.current = snapshot.signature;
+    setLiveStatus(snapshot);
   }, [data]);
 
   useEffect(() => {
@@ -81,11 +83,11 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
       try {
         const response = await fetch("/api/ops/notes-version", { cache: "no-store" });
         if (!response.ok) return;
-        const payload = await response.json();
+        const payload = (await response.json()) as OpsVersionSnapshot;
         if (cancelled) return;
         setLiveStatus(payload);
-        if (payload.generatedAt && payload.generatedAt !== lastSeenGeneratedAt.current) {
-          lastSeenGeneratedAt.current = payload.generatedAt;
+        if (payload.signature && payload.signature !== lastSeenSignature.current) {
+          lastSeenSignature.current = payload.signature;
           router.refresh();
         }
       } catch {
@@ -159,12 +161,17 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
           </Panel>
 
           <div className="mt-4 rounded-3xl border border-emerald-400/20 bg-emerald-500/10 p-4">
-            <p className="mb-2 text-xs uppercase tracking-[0.2em] text-emerald-200/70">Notes Sync</p>
+            <p className="mb-2 text-xs uppercase tracking-[0.2em] text-emerald-200/70">Ops data source</p>
             <p className="text-sm text-white/85">
-              mode: <strong>{liveStatus?.mode || safeData.dataSource.mode}</strong>
+              mode: <strong>{liveStatus?.mode || safeData.dataSource.mode}</strong> · preferred <strong>{safeData.dataSource.sourceHealth.preferredMode}</strong>
             </p>
-            <p className="mt-1 text-xs text-white/55">notes {liveStatus?.notesCount ?? safeData.dataSource.notesCount}개 · updated {liveStatus?.generatedAt || safeData.dataSource.generatedAt}</p>
-            <p className="mt-2 text-xs text-white/50">/ops가 주기적으로 source 변경을 확인하고, 노트가 바뀌면 화면을 자동 refresh합니다.</p>
+            <p className="mt-1 text-xs text-white/55">
+              notes {liveStatus?.notesCount ?? safeData.dataSource.notesCount}개 · projects {liveStatus?.projectsCount ?? safeData.projects.length} · tasks {liveStatus?.tasksCount ?? safeData.tasks.length}
+            </p>
+            <p className="mt-1 text-xs text-white/55">
+              sync {safeData.dataSource.sourceHealth.lastSyncStatus || "-"} · updated {liveStatus?.generatedAt || safeData.dataSource.generatedAt}
+            </p>
+            <p className="mt-2 text-xs text-white/50">/ops가 source mode / sync state / row count 변화를 함께 감지해서 화면을 자동 refresh합니다.</p>
           </div>
 
           <div className="mt-4 rounded-3xl border border-violet-400/20 bg-violet-500/10 p-4">

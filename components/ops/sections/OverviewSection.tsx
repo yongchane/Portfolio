@@ -1,8 +1,9 @@
 import clsx from "clsx";
 import { EmptyLine, GitHubRepoCard, noteTypeMeta, Panel, ReleaseCard, SummaryCard, TaskRow } from "@/components/ops/shared";
 import type { OverviewSectionProps } from "@/components/ops/sections/types";
+import { formatDateTime } from "@/components/ops/utils";
 
-export function OverviewSection({ data, summary, notesById, githubReposByName, setSection, setSelectedProjectId, setSelectedNoteId, attentionTasks }: OverviewSectionProps) {
+export function OverviewSection({ data, summary, notesById, githubReposByName, setSection, setSelectedProjectId, setSelectedNoteId, attentionTasks, liveStatus }: OverviewSectionProps) {
   return (
     <div className="space-y-8">
       <header>
@@ -54,6 +55,32 @@ export function OverviewSection({ data, summary, notesById, githubReposByName, s
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+        <Panel title="Data source verification">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
+              <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">Active source</p>
+              <p className="text-lg font-semibold text-white">{liveStatus?.mode || data.dataSource.mode}</p>
+              <p className="mt-2 text-xs text-white/55">
+                preferred {data.dataSource.sourceHealth.preferredMode} · notes {liveStatus?.notesCount ?? data.dataSource.notesCount} · projects {liveStatus?.projectsCount ?? data.projects.length} · tasks {liveStatus?.tasksCount ?? data.tasks.length}
+              </p>
+              <p className="mt-2 text-xs text-white/50">updated {formatDateTime(liveStatus?.generatedAt || data.dataSource.generatedAt)}</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
+              <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">Supabase health</p>
+              <p className="text-lg font-semibold text-white">
+                {data.dataSource.sourceHealth.supabaseConfigured
+                  ? (data.dataSource.sourceHealth.supabaseReachable ? "configured + reachable" : "configured but unreachable")
+                  : "not configured"}
+              </p>
+              <p className="mt-2 text-xs text-white/55">
+                last sync {data.dataSource.sourceHealth.lastSyncStatus || "-"} · {formatDateTime(data.dataSource.sourceHealth.lastSyncAt)}
+              </p>
+              {data.dataSource.sourceHealth.lastSyncMessage && (
+                <p className="mt-2 text-xs text-white/50">{data.dataSource.sourceHealth.lastSyncMessage}</p>
+              )}
+            </div>
+          </div>
+        </Panel>
         <Panel title="Vault operating signals">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">

@@ -180,6 +180,19 @@ export type GitHubCache = {
   warnings?: string[];
 };
 
+export type OpsVersionSnapshot = {
+  mode: "live" | "export" | "supabase";
+  generatedAt: string;
+  notesCount: number;
+  projectsCount: number;
+  tasksCount: number;
+  workspaceRoot?: string;
+  notesRoots: string[];
+  resolvedRoots: ExportSourceRoot[];
+  sourceHealth: OpsSourceHealth;
+  signature: string;
+};
+
 export type OpsConsoleData = {
   projects: Project[];
   tasks: Task[];

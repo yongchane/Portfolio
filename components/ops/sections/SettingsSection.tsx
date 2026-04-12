@@ -25,15 +25,17 @@ export function SettingsSection({ data }: SettingsSectionProps) {
           <Panel title="Source metadata">
             <div className="grid gap-4 text-sm text-white/75 md:grid-cols-2">
               <InfoTile label="Workspace" value={data.dataSource.workspaceRoot || "미설정"} />
-              <InfoTile label="Notes count" value={String(data.dataSource.notesCount)} />
+              <InfoTile label="Source mode" value={data.dataSource.mode} />
+              <InfoTile label="Source active/preferred" value={`${data.dataSource.sourceHealth.activeMode} / ${data.dataSource.sourceHealth.preferredMode}`} />
+              <InfoTile label="Supabase" value={data.dataSource.sourceHealth.supabaseConfigured ? (data.dataSource.sourceHealth.supabaseReachable ? "configured + reachable" : "configured but unreachable") : "not configured"} />
+              <InfoTile label="Projects / Tasks / Notes" value={`${data.projects.length} / ${data.tasks.length} / ${data.dataSource.notesCount}`} />
+              <InfoTile label="Notes synced at" value={formatDateTime(data.dataSource.generatedAt) || "미기록"} />
               <InfoTile label="Notes roots" value={data.dataSource.notesRoots.join(" | ") || "-"} />
-              <InfoTile label="Notes synced at" value={data.dataSource.generatedAt || "미기록"} />
+              <InfoTile label="Resolved roots" value={data.dataSource.resolvedRoots.map((root) => `${root.label}: ${root.path}`).join(" | ") || "-"} />
               <InfoTile label="Vault folders" value={String(data.vault.folders.length)} />
               <InfoTile label="Vault orphan notes" value={String(data.vault.orphanNoteIds.length)} />
               <InfoTile label="GitHub account" value={data.github.account || "unknown"} />
               <InfoTile label="GitHub mode" value={`${data.github.mode} · repos ${data.github.repoSnapshots.length}`} />
-              <InfoTile label="Source active/preferred" value={`${data.dataSource.sourceHealth.activeMode} / ${data.dataSource.sourceHealth.preferredMode}`} />
-              <InfoTile label="Supabase" value={data.dataSource.sourceHealth.supabaseConfigured ? (data.dataSource.sourceHealth.supabaseReachable ? "configured + reachable" : "configured but unreachable") : "not configured"} />
               <InfoTile label="Last sync status" value={data.dataSource.sourceHealth.lastSyncStatus || "-"} />
               <InfoTile label="Last sync at" value={formatDateTime(data.dataSource.sourceHealth.lastSyncAt)} />
             </div>
