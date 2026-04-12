@@ -36,9 +36,9 @@ npm run dev
 
 ### /ops 노트 자동 연동
 
-`/ops`는 로컬에서 Obsidian/문서 루트를 직접 읽을 수 있으면 live mode로 동작하고, 변경을 주기적으로 감지해 자동 새로고침합니다. 배포/빌드에서는 export JSON을 사용합니다.
+`/ops`의 런타임 기본 경로는 이제 **Supabase-first**입니다. Supabase가 연결되면 projects / tasks / notes / worklogs / artifacts를 직접 읽고, Supabase가 없을 때만 로컬 Obsidian/문서 루트를 직접 읽는 workspace fallback으로 동작합니다. `data/ops/notes-export.json`은 더 이상 `/ops`의 active runtime source가 아닙니다.
 
-Supabase 기반으로 옮기려면 `docs/ops-supabase-sync.md`와 `supabase/ops-schema.sql`을 사용하세요. 현재는 **local/export fallback 유지 + Supabase optional** 구조입니다.
+Supabase 기반 운영은 `docs/ops-supabase-sync.md`와 `supabase/ops-schema.sql`을 사용하세요. 현재 구조는 **Supabase-first + direct workspace fallback**입니다.
 
 추가로 `/ops`는 GitHub read-only cache도 지원합니다. `gh auth`가 살아 있거나 `GITHUB_TOKEN`이 있으면 repo/issue/PR/release metadata를 cache로 생성하고, GitHub Project는 `read:project` scope가 있을 때만 읽습니다.
 
@@ -52,8 +52,7 @@ Supabase 기반으로 옮기려면 `docs/ops-supabase-sync.md`와 `supabase/ops-
 export PORTFOLIO_OPS_WORKSPACE_ROOT=/absolute/path/to/your/workspace
 npm run dev
 
-# 선택: export 파일도 자동 갱신하고 싶으면 watcher 실행
-npm run ops:watch-notes
+# 선택: Supabase sync/watch 경로를 직접 돌리고 싶으면
 npm run ops:source-sync
 npm run ops:watch-source
 
@@ -75,7 +74,7 @@ npm run build
 npm run start
 ```
 
-> `npm run build`는 배포용 snapshot을 맞추기 위해 먼저 `npm run ops:sync-notes`와 `npm run ops:sync-github`를 실행합니다. GitHub token에 `read:project` scope가 없으면 repo/release data만 읽고 project board는 warning으로 남깁니다.
+> `npm run build`는 GitHub cache만 갱신한 뒤 Next build를 수행합니다. `/ops` note data는 빌드 시 `notes-export.json`에 의존하지 않고, 런타임에 Supabase 또는 direct workspace fallback에서 읽습니다. GitHub token에 `read:project` scope가 없으면 repo/release data만 읽고 project board는 warning으로 남깁니다.
 
 ### 린트
 

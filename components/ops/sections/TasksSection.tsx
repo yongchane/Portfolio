@@ -45,7 +45,7 @@ export function TasksSection({ data, notesById, githubReposByName, setSection, s
       return;
     }
 
-    setSaveMessage("tasks.json에 저장했고 화면을 새로고침합니다.");
+    setSaveMessage(data.dataSource.mode === "supabase" ? "Supabase에 저장했고 화면을 새로고침합니다." : "로컬 fallback source에 저장했고 화면을 새로고침합니다.");
     startTransition(() => router.refresh());
   }
 
@@ -80,7 +80,7 @@ export function TasksSection({ data, notesById, githubReposByName, setSection, s
                   <p className="mt-1 text-white/60">{activeProject?.name || "-"} · updated {activeTask.updatedAt}</p>
                 </div>
                 <div className="rounded-2xl border border-emerald-300/20 bg-emerald-500/10 p-4 text-xs leading-6 text-emerald-50/90">
-                  인증된 `/ops`에서만 동작하는 로컬 JSON write path입니다. 현재는 `data/ops/tasks.json`을 수정하는 MVP라서 다중 사용자 동시 편집이나 Supabase sync write는 아직 아닙니다.
+                  인증된 `/ops`에서만 동작합니다. Supabase가 연결되면 `ops_tasks`에 직접 저장하고, 미연결 환경에서만 로컬 fallback source를 수정합니다.
                 </div>
                 <label className="block">
                   <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-white/45">상태</span>

@@ -256,7 +256,7 @@ export function NotesSection({ data, notesById, setSection, setSelectedNoteId, f
             </div>
           </div>
         ) : (
-          <EmptyState title="노트를 찾지 못했습니다" description={`notes export snapshot을 확인해 주세요. 현재 generated: ${data.dataSource.generatedAt || "미기록"} · root: ${data.dataSource.workspaceRoot || "미설정"} · note count: ${data.dataSource.notesCount}`} />
+          <EmptyState title="노트를 찾지 못했습니다" description={`Supabase sync 또는 workspace note roots를 확인해 주세요. 현재 generated: ${data.dataSource.generatedAt || "미기록"} · root: ${data.dataSource.workspaceRoot || "미설정"} · note count: ${data.dataSource.notesCount}`} />
         )}
       </div>
     </div>

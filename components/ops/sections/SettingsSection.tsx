@@ -15,7 +15,7 @@ export function SettingsSection({ data }: SettingsSectionProps) {
           <div className="space-y-3">
             <ChecklistRow item={{ id: "settings-1", label: "보고 템플릿: 3줄 요약 / 작업 설명 / 다음 액션", status: "done" }} />
             <ChecklistRow item={{ id: "settings-2", label: "Portfolio main 브랜치 직접 작업/머지 금지", status: "done" }} />
-            <ChecklistRow item={{ id: "settings-3", label: "notes live/export fallback 유지", status: "done", note: `source ${data.dataSource.mode}` }} />
+            <ChecklistRow item={{ id: "settings-3", label: "Supabase-first notes path + direct workspace fallback", status: data.dataSource.mode === "supabase" ? "done" : "doing", note: `source ${data.dataSource.mode}` }} />
             <ChecklistRow item={{ id: "settings-4", label: "GitHub sync cache 자동 생성", status: data.github.mode === "live" ? "done" : "doing", note: `generated ${formatDateTime(data.github.generatedAt)}` }} />
             <ChecklistRow item={{ id: "settings-5", label: "Supabase real connection path visibility", status: data.dataSource.sourceHealth.supabaseConfigured ? (data.dataSource.sourceHealth.supabaseReachable ? "done" : "blocked") : "doing", note: `${data.dataSource.sourceHealth.activeMode} / preferred ${data.dataSource.sourceHealth.preferredMode}` }} />
             <ChecklistRow item={{ id: "settings-6", label: "AI worklog + typed artifact sync path", status: data.artifacts.length ? "done" : "doing", note: `worklogs ${data.dataSource.sourceHealth.worklogsCount ?? data.worklogs.length} · artifacts ${data.dataSource.sourceHealth.artifactsCount ?? data.artifacts.length}` }} />

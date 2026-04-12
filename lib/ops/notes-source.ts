@@ -1,13 +1,10 @@
 import { promises as fs } from "fs";
 import path from "path";
 import os from "os";
-import notesExport from "@/data/ops/notes-export.json";
 import type { ExportSourceRoot, NoteItem, NoteType } from "@/lib/ops/types";
 
-type ExportPayload = typeof notesExport;
-
 type NotesSourceData = {
-  mode: "live" | "export";
+  mode: "live";
   generatedAt: string;
   workspaceRoot?: string;
   notesRoots: string[];
@@ -15,29 +12,17 @@ type NotesSourceData = {
   notes: NoteItem[];
 };
 
-const bundledExport = notesExport as ExportPayload;
-
 export async function getNotesSourceData(): Promise<NotesSourceData> {
   const liveConfig = await resolveLiveSourceConfig();
-  if (liveConfig.resolvedRoots.length > 0) {
-    const notes = await loadNotes(liveConfig);
-    return {
-      mode: "live",
-      generatedAt: new Date().toISOString(),
-      workspaceRoot: liveConfig.workspaceRoot,
-      notesRoots: liveConfig.roots,
-      resolvedRoots: liveConfig.resolvedRoots,
-      notes,
-    };
-  }
+  const notes = liveConfig.resolvedRoots.length > 0 ? await loadNotes(liveConfig) : [];
 
   return {
-    mode: "export",
-    generatedAt: bundledExport.generatedAt,
-    workspaceRoot: bundledExport.source.workspaceRoot,
-    notesRoots: bundledExport.source.roots,
-    resolvedRoots: bundledExport.source.resolvedRoots,
-    notes: bundledExport.notes as NoteItem[],
+    mode: "live",
+    generatedAt: new Date().toISOString(),
+    workspaceRoot: liveConfig.workspaceRoot,
+    notesRoots: liveConfig.roots,
+    resolvedRoots: liveConfig.resolvedRoots,
+    notes,
   };
 }
 
@@ -65,7 +50,7 @@ async function resolveLiveSourceConfig() {
         resolvedRoots.push(root);
       }
     } catch {
-      // Missing local roots are allowed. We fall back to bundled export.
+      // Missing local roots are allowed. Runtime fallback is direct workspace reads only.
     }
   }
 

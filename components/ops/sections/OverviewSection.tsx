@@ -9,7 +9,7 @@ export function OverviewSection({ data, summary, notesById, githubReposByName, s
       <header>
         <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">Overview</p>
         <h2 className="mb-3 text-4xl font-bold">오늘의 운영 상황</h2>
-        <p className="max-w-3xl text-white/70">애옹 작업, 프로젝트 상태, synced notes snapshot, GitHub repo/project layer, 사용자 판단 필요 항목을 한 번에 보는 홈 화면입니다.</p>
+        <p className="max-w-3xl text-white/70">애옹 작업, 프로젝트 상태, Supabase-synced notes, GitHub repo/project layer, 사용자 판단 필요 항목을 한 번에 보는 홈 화면입니다.</p>
       </header>
 
       <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-8">

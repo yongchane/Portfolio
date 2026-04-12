@@ -140,7 +140,6 @@ async function runSync(reason) {
   releaseLock = await acquireLock();
   try {
     console.log(`[ops:source-sync] run start (${reason})`);
-    await runNodeScript("scripts/export-ops-notes.mjs");
     await runNodeScript("scripts/sync-ops-supabase.mjs");
     console.log("[ops:source-sync] run complete");
     await writeAutomationStatus({

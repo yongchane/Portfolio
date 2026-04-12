@@ -51,7 +51,7 @@ export function ProjectsSection({ data, notesById, setSection, setSelectedProjec
       return;
     }
 
-    setSaveMessage("projects.json에 반영했고 화면을 새로고침합니다.");
+    setSaveMessage(data.dataSource.mode === "supabase" ? "Supabase에 반영했고 화면을 새로고침합니다." : "로컬 fallback source에 반영했고 화면을 새로고침합니다.");
     startTransition(() => router.refresh());
   }
 
@@ -105,7 +105,7 @@ export function ProjectsSection({ data, notesById, setSection, setSelectedProjec
             <Panel title="Project write path (MVP)">
               <div className="space-y-4 text-sm text-white/80">
                 <div className="rounded-2xl border border-emerald-300/20 bg-emerald-500/10 p-4 text-xs leading-6 text-emerald-50/90">
-                  현재는 인증된 `/ops`에서만 project stage / summary / checklist 상태를 로컬 `data/ops/projects.json`에 반영합니다. 구조는 실용 MVP이고, 이후 Supabase write path와 충돌하지 않게 서버 액션/API 경유로 확장 가능합니다.
+                  현재는 인증된 `/ops`에서만 project stage / summary / checklist를 수정합니다. Supabase가 연결되면 `ops_projects`에 직접 반영하고, 미연결 환경에서만 로컬 fallback source를 수정합니다.
                 </div>
                 <label className="block">
                   <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-white/45">Stage</span>

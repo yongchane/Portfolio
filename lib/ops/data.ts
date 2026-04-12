@@ -48,7 +48,7 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
     lastSyncStatus: diagnostics.available ? "succeeded" : undefined,
     lastSyncMessage: diagnostics.configured
       ? (diagnostics.available ? "Supabase configured but inactive for current request." : "Supabase env exists but ops tables are not reachable yet.")
-      : "Supabase env not configured. Using local/export notes path.",
+      : "Supabase env not configured. Using direct workspace-read fallback for notes.",
     worklogsCount: worklogs.length,
     worklogsUpdatedAt: worklogs[0]?.updatedAt,
     artifactsCount: artifactCounts.total,
