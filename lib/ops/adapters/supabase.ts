@@ -7,6 +7,7 @@ import type {
   ProjectChecklistItem,
   ProjectSectorProgress,
   Task,
+  WorklogRecord,
 } from "@/lib/ops/types";
 
 export type SupabaseOpsConsoleData = Omit<OpsConsoleData, "github" | "vault">;
@@ -71,6 +72,30 @@ export type NoteRow = {
   preview: string[] | null;
   links: string[] | null;
   raw_excerpt: string;
+};
+
+export type WorklogRow = {
+  id: string;
+  note_id: string;
+  title: string;
+  path: string;
+  project: string | null;
+  actor: string;
+  repo: string | null;
+  branch: string | null;
+  status: WorklogRecord["status"];
+  summary: string;
+  source_machine: string | null;
+  session_id: string | null;
+  run_id: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  updated_at: string;
+  tags: string[] | null;
+  highlights: string[] | null;
+  decisions: string[] | null;
+  blockers: string[] | null;
+  next_actions: string[] | null;
 };
 
 export function buildSupabaseSourceHealth(args: {
@@ -146,6 +171,32 @@ export function mapNoteRow(row: NoteRow): NoteItem {
     headings: row.headings ?? [],
     preview: row.preview ?? [],
     rawExcerpt: row.raw_excerpt,
+  };
+}
+
+export function mapWorklogRow(row: WorklogRow): WorklogRecord {
+  return {
+    id: row.id,
+    noteId: row.note_id,
+    title: row.title,
+    path: row.path.replace(/\\/g, "/"),
+    project: row.project ?? undefined,
+    actor: row.actor,
+    repo: row.repo ?? undefined,
+    branch: row.branch ?? undefined,
+    status: row.status,
+    summary: row.summary,
+    sourceMachine: row.source_machine ?? undefined,
+    sessionId: row.session_id ?? undefined,
+    runId: row.run_id ?? undefined,
+    startedAt: row.started_at ?? undefined,
+    finishedAt: row.finished_at ?? undefined,
+    updatedAt: row.updated_at,
+    tags: row.tags ?? [],
+    highlights: row.highlights ?? [],
+    decisions: row.decisions ?? [],
+    blockers: row.blockers ?? [],
+    nextActions: row.next_actions ?? [],
   };
 }
 

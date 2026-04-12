@@ -17,6 +17,7 @@ export function OverviewSection({ data, summary, notesById, githubReposByName, s
         <SummaryCard label="진행 중 작업" value={String(summary.activeTasks)} />
         <SummaryCard label="검증 중 작업" value={String(summary.verifyingTasks)} />
         <SummaryCard label="저장된 노트" value={String(summary.notesCount)} />
+        <SummaryCard label="AI worklogs" value={String(summary.worklogsCount)} />
         <SummaryCard label="Project-linked notes" value={String(summary.mappedNotes)} />
         <SummaryCard label="Vault orphan" value={String(summary.orphanNotes)} />
         <SummaryCard label="GitHub repos" value={String(summary.githubRepos)} />
@@ -55,13 +56,28 @@ export function OverviewSection({ data, summary, notesById, githubReposByName, s
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+        <Panel title="Recent AI work">
+          <div className="space-y-3">
+            {data.worklogs.slice(0, 4).map((worklog) => (
+              <div key={worklog.id} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
+                <div className="flex items-center justify-between gap-3">
+                  <strong className="text-white">{worklog.title}</strong>
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">{worklog.actor} · {worklog.status}</span>
+                </div>
+                <p className="mt-2 text-white/70">{worklog.summary}</p>
+                <p className="mt-2 text-xs text-white/45">{worklog.project || worklog.repo || "unassigned"} · {worklog.sourceMachine || "source unknown"} · {formatDateTime(worklog.updatedAt)}</p>
+              </div>
+            ))}
+            {!data.worklogs.length && <EmptyLine message="아직 감지된 AI worklog가 없습니다. `obsidian-vault/01 Worklog/...` 아래에 markdown 기록을 추가하세요." />}
+          </div>
+        </Panel>
         <Panel title="Data source verification">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
               <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">Active source</p>
               <p className="text-lg font-semibold text-white">{liveStatus?.mode || data.dataSource.mode}</p>
               <p className="mt-2 text-xs text-white/55">
-                preferred {data.dataSource.sourceHealth.preferredMode} · notes {liveStatus?.notesCount ?? data.dataSource.notesCount} · projects {liveStatus?.projectsCount ?? data.projects.length} · tasks {liveStatus?.tasksCount ?? data.tasks.length}
+                preferred {data.dataSource.sourceHealth.preferredMode} · notes {liveStatus?.notesCount ?? data.dataSource.notesCount} · worklogs {liveStatus?.worklogsCount ?? data.worklogs.length} · projects {liveStatus?.projectsCount ?? data.projects.length} · tasks {liveStatus?.tasksCount ?? data.tasks.length}
               </p>
               <p className="mt-2 text-xs text-white/50">updated {formatDateTime(liveStatus?.generatedAt || data.dataSource.generatedAt)}</p>
             </div>
@@ -74,6 +90,9 @@ export function OverviewSection({ data, summary, notesById, githubReposByName, s
               </p>
               <p className="mt-2 text-xs text-white/55">
                 last sync {data.dataSource.sourceHealth.lastSyncStatus || "-"} · {formatDateTime(data.dataSource.sourceHealth.lastSyncAt)}
+              </p>
+              <p className="mt-2 text-xs text-white/55">
+                worklogs {data.dataSource.sourceHealth.worklogsCount ?? data.worklogs.length} · latest {formatDateTime(data.dataSource.sourceHealth.worklogsUpdatedAt || data.worklogs[0]?.updatedAt)}
               </p>
               {data.dataSource.sourceHealth.lastSyncMessage && (
                 <p className="mt-2 text-xs text-white/50">{data.dataSource.sourceHealth.lastSyncMessage}</p>

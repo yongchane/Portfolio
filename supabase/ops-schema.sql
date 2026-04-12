@@ -69,6 +69,34 @@ create unique index if not exists idx_ops_notes_path on public.ops_notes(path);
 
 alter table public.ops_notes add column if not exists links jsonb not null default '[]'::jsonb;
 
+create table if not exists public.ops_worklogs (
+  id text primary key,
+  note_id text not null references public.ops_notes(id) on delete cascade,
+  title text not null,
+  path text not null,
+  project text,
+  actor text not null,
+  repo text,
+  branch text,
+  status text not null check (status in ('planned', 'running', 'completed', 'blocked')),
+  summary text not null,
+  source_machine text,
+  session_id text,
+  run_id text,
+  started_at timestamptz,
+  finished_at timestamptz,
+  updated_at timestamptz not null,
+  tags jsonb not null default '[]'::jsonb,
+  highlights jsonb not null default '[]'::jsonb,
+  decisions jsonb not null default '[]'::jsonb,
+  blockers jsonb not null default '[]'::jsonb,
+  next_actions jsonb not null default '[]'::jsonb
+);
+
+create index if not exists idx_ops_worklogs_updated_at on public.ops_worklogs(updated_at desc);
+create index if not exists idx_ops_worklogs_project on public.ops_worklogs(project);
+create index if not exists idx_ops_worklogs_actor on public.ops_worklogs(actor);
+
 create table if not exists public.ops_sync_state (
   key text primary key,
   value text,
@@ -89,6 +117,7 @@ create table if not exists public.ops_sync_runs (
 alter table public.ops_projects enable row level security;
 alter table public.ops_tasks enable row level security;
 alter table public.ops_notes enable row level security;
+alter table public.ops_worklogs enable row level security;
 alter table public.ops_sync_state enable row level security;
 alter table public.ops_sync_runs enable row level security;
 

@@ -12,6 +12,7 @@ export type OpsSummary = {
   activeTasks: number;
   verifyingTasks: number;
   notesCount: number;
+  worklogsCount: number;
   githubRepos: number;
   githubBoards: number;
   mappedNotes: number;
@@ -55,6 +56,7 @@ export function buildOpsSummary(data: OpsConsoleData): OpsSummary {
     activeTasks: data.tasks.filter((task) => task.status === "doing").length,
     verifyingTasks: data.tasks.filter((task) => task.status === "verifying").length,
     notesCount: data.notes.length,
+    worklogsCount: data.worklogs.length,
     githubRepos: data.github.repoSnapshots.length,
     githubBoards: data.github.projectBoards.length,
     mappedNotes: data.vault.projectMappedCount,

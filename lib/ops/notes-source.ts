@@ -136,6 +136,7 @@ async function buildNoteItem(sourceConfig: { workspaceRoot: string; resolvedRoot
     path: normalizedPath,
     workspaceRootLabel: path.basename(sourceConfig.workspaceRoot),
     folder: path.posix.dirname(normalizedPath),
+    frontmatter: parsed.data,
     links: extractLinks(raw),
     summary,
     highlights: bullets,

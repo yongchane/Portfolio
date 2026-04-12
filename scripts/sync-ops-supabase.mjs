@@ -25,27 +25,29 @@ async function main() {
     readJson(tasksPath),
     loadNotes(sourceConfig),
   ]);
+  const worklogs = extractWorklogRecords(notes);
 
   await insertSyncRun(supabase, {
     status: "started",
     projects_count: projects.length,
     tasks_count: tasks.length,
     notes_count: notes.length,
-    message: "Starting Portfolio /ops sync",
+    message: `Starting Portfolio /ops sync (${worklogs.length} worklogs)`,
   });
 
   try {
     await upsertProjects(supabase, projects);
     await upsertTasks(supabase, tasks);
     await upsertNotes(supabase, notes);
-    await upsertSyncState(supabase, sourceConfig, notes.length);
+    await upsertWorklogs(supabase, worklogs);
+    await upsertSyncState(supabase, sourceConfig, notes.length, worklogs);
 
     await insertSyncRun(supabase, {
       status: "succeeded",
       projects_count: projects.length,
       tasks_count: tasks.length,
       notes_count: notes.length,
-      message: "Portfolio /ops sync finished",
+      message: `Portfolio /ops sync finished (${worklogs.length} worklogs)`,
     });
   } catch (error) {
     await insertSyncRun(supabase, {
@@ -53,13 +55,13 @@ async function main() {
       projects_count: projects.length,
       tasks_count: tasks.length,
       notes_count: notes.length,
-      message: error instanceof Error ? error.message : String(error),
+      message: error instanceof Error ? `${error.message} (${worklogs.length} worklogs queued)` : String(error),
     });
     throw error;
   }
 
   console.log(
-    `Synced ${projects.length} projects, ${tasks.length} tasks, ${notes.length} notes to Supabase.`,
+    `Synced ${projects.length} projects, ${tasks.length} tasks, ${notes.length} notes, ${worklogs.length} worklogs to Supabase.`,
   );
 }
 
@@ -191,7 +193,35 @@ async function upsertNotes(supabase, notes) {
   await upsertRowsWithSchemaFallback(supabase, "ops_notes", rows, "id");
 }
 
-async function upsertSyncState(supabase, sourceConfig, notesCount) {
+async function upsertWorklogs(supabase, worklogs) {
+  const rows = worklogs.map((worklog) => ({
+    id: worklog.id,
+    note_id: worklog.noteId,
+    title: worklog.title,
+    path: worklog.path,
+    project: worklog.project ?? null,
+    actor: worklog.actor,
+    repo: worklog.repo ?? null,
+    branch: worklog.branch ?? null,
+    status: worklog.status,
+    summary: worklog.summary,
+    source_machine: worklog.sourceMachine ?? null,
+    session_id: worklog.sessionId ?? null,
+    run_id: worklog.runId ?? null,
+    started_at: worklog.startedAt ?? null,
+    finished_at: worklog.finishedAt ?? null,
+    updated_at: worklog.updatedAt,
+    tags: worklog.tags ?? [],
+    highlights: worklog.highlights ?? [],
+    decisions: worklog.decisions ?? [],
+    blockers: worklog.blockers ?? [],
+    next_actions: worklog.nextActions ?? [],
+  }));
+
+  await upsertRowsWithSchemaFallback(supabase, "ops_worklogs", rows, "id");
+}
+
+async function upsertSyncState(supabase, sourceConfig, notesCount, worklogs) {
   const generatedAt = new Date().toISOString();
   const rows = [
     { key: "generated_at", value: generatedAt },
@@ -202,6 +232,8 @@ async function upsertSyncState(supabase, sourceConfig, notesCount) {
       value: JSON.stringify(sourceConfig.resolvedRoots),
     },
     { key: "notes_count", value: String(notesCount) },
+    { key: "worklogs_count", value: String(worklogs.length) },
+    { key: "worklogs_updated_at", value: worklogs[0]?.updatedAt ?? "" },
   ].map((row) => ({ ...row, updated_at: generatedAt }));
 
   await upsertRowsWithSchemaFallback(supabase, "ops_sync_state", rows, "key");
@@ -258,6 +290,46 @@ function parseMissingColumnError(error, tableName) {
   if (foundTableName !== tableName) return null;
 
   return columnName;
+}
+
+function extractWorklogRecords(notes) {
+  return notes
+    .filter((note) => note.path.replace(/\\/g, "/").startsWith("obsidian-vault/01 Worklog/"))
+    .map((note) => {
+      const frontmatter = note.frontmatter || {};
+      return {
+        id: note.id,
+        noteId: note.id,
+        title: note.title,
+        path: note.path,
+        project: note.project ?? frontmatter.project,
+        actor: frontmatter.actor || frontmatter.agent || note.tags?.[0] || "ai",
+        repo: frontmatter.repo || frontmatter.repository,
+        branch: frontmatter.branch,
+        status: normalizeWorklogStatus(frontmatter.status),
+        summary: note.summary,
+        sourceMachine: frontmatter.source_machine || frontmatter.sourceMachine,
+        sessionId: frontmatter.session_id || frontmatter.sessionId,
+        runId: frontmatter.run_id || frontmatter.runId,
+        startedAt: frontmatter.started_at || frontmatter.startedAt,
+        finishedAt: frontmatter.finished_at || frontmatter.finishedAt || frontmatter.ended_at || frontmatter.endedAt,
+        updatedAt: note.updatedAt,
+        tags: note.tags ?? [],
+        highlights: note.highlights ?? [],
+        decisions: (note.highlights ?? []).filter((line) => /decid|판단|결정/i.test(line)).slice(0, 3),
+        blockers: (note.highlights ?? []).filter((line) => /block|risk|문제|막힘/i.test(line)).slice(0, 3),
+        nextActions: (note.highlights ?? []).filter((line) => /next|todo|follow|다음/i.test(line)).slice(0, 3),
+      };
+    })
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+function normalizeWorklogStatus(value) {
+  const normalized = value?.replace(/^[\"']|[\"']$/g, '').trim().toLowerCase();
+  if (["planned", "running", "completed", "blocked"].includes(normalized)) {
+    return normalized;
+  }
+  return "completed";
 }
 
 const DEFAULT_SOURCE_CONFIG = {
@@ -373,6 +445,7 @@ async function buildNoteItem(sourceConfig, filePath) {
     updatedAt: formatDateTime(parsed.data.date || stat.mtime.toISOString()),
     path: relativePath.replace(/\\/g, "/"),
     workspaceRootLabel: path.basename(sourceConfig.workspaceRoot),
+    frontmatter: parsed.data,
     links: extractLinks(raw),
     summary,
     highlights: bullets,

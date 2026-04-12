@@ -11,6 +11,8 @@
     "ops:sync-notes": "node scripts/export-ops-notes.mjs",
     "ops:watch-notes": "node scripts/watch-ops-notes.mjs",
     "ops:sync-supabase": "node scripts/sync-ops-supabase.mjs",
+    "ops:source-sync": "node scripts/ops-source-sync.mjs",
+    "ops:watch-source": "node scripts/ops-source-sync.mjs --watch",
     "ci": "npm run lint && npm run typecheck && npm run build",
     "ops:sync-github": "node scripts/sync-ops-github.mjs"
   },

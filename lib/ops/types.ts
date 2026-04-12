@@ -71,6 +71,7 @@ export type NoteItem = {
   path: string;
   workspaceRootLabel: string;
   folder: string;
+  frontmatter?: Record<string, string>;
   links: string[];
   summary: string;
   highlights: string[];
@@ -113,6 +114,32 @@ export type ExportSourceRoot = {
   path: string;
 };
 
+export type WorklogStatus = "planned" | "running" | "completed" | "blocked";
+
+export type WorklogRecord = {
+  id: string;
+  noteId: string;
+  title: string;
+  path: string;
+  project?: string;
+  actor: string;
+  repo?: string;
+  branch?: string;
+  status: WorklogStatus;
+  summary: string;
+  sourceMachine?: string;
+  sessionId?: string;
+  runId?: string;
+  startedAt?: string;
+  finishedAt?: string;
+  updatedAt: string;
+  tags: string[];
+  highlights: string[];
+  decisions: string[];
+  blockers: string[];
+  nextActions: string[];
+};
+
 export type OpsSourceHealth = {
   supabaseConfigured: boolean;
   supabaseReachable: boolean;
@@ -122,6 +149,8 @@ export type OpsSourceHealth = {
   lastSyncStatus?: "started" | "succeeded" | "failed";
   lastSyncMessage?: string;
   lastSyncAt?: string;
+  worklogsCount?: number;
+  worklogsUpdatedAt?: string;
 };
 
 export type GitHubRepoSnapshot = {
@@ -186,6 +215,7 @@ export type OpsVersionSnapshot = {
   notesCount: number;
   projectsCount: number;
   tasksCount: number;
+  worklogsCount: number;
   workspaceRoot?: string;
   notesRoots: string[];
   resolvedRoots: ExportSourceRoot[];
@@ -197,6 +227,7 @@ export type OpsConsoleData = {
   projects: Project[];
   tasks: Task[];
   notes: NoteItem[];
+  worklogs: WorklogRecord[];
   github: GitHubCache;
   vault: VaultSummary;
   dataSource: {

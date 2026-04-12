@@ -18,7 +18,8 @@ export function SettingsSection({ data }: SettingsSectionProps) {
             <ChecklistRow item={{ id: "settings-3", label: "notes live/export fallback 유지", status: "done", note: `source ${data.dataSource.mode}` }} />
             <ChecklistRow item={{ id: "settings-4", label: "GitHub sync cache 자동 생성", status: data.github.mode === "live" ? "done" : "doing", note: `generated ${formatDateTime(data.github.generatedAt)}` }} />
             <ChecklistRow item={{ id: "settings-5", label: "Supabase real connection path visibility", status: data.dataSource.sourceHealth.supabaseConfigured ? (data.dataSource.sourceHealth.supabaseReachable ? "done" : "blocked") : "doing", note: `${data.dataSource.sourceHealth.activeMode} / preferred ${data.dataSource.sourceHealth.preferredMode}` }} />
-            <ChecklistRow item={{ id: "settings-6", label: "서버 기반 인증으로 전환", status: "todo", note: "현재는 hardcoded access code MVP 보호" }} />
+            <ChecklistRow item={{ id: "settings-6", label: "AI worklog source path + typed sync path", status: data.worklogs.length ? "done" : "doing", note: `worklogs ${data.dataSource.sourceHealth.worklogsCount ?? data.worklogs.length}` }} />
+            <ChecklistRow item={{ id: "settings-7", label: "서버 기반 인증으로 전환", status: "todo", note: "현재는 hardcoded access code MVP 보호" }} />
           </div>
         </Panel>
         <div className="space-y-6">
@@ -29,6 +30,8 @@ export function SettingsSection({ data }: SettingsSectionProps) {
               <InfoTile label="Source active/preferred" value={`${data.dataSource.sourceHealth.activeMode} / ${data.dataSource.sourceHealth.preferredMode}`} />
               <InfoTile label="Supabase" value={data.dataSource.sourceHealth.supabaseConfigured ? (data.dataSource.sourceHealth.supabaseReachable ? "configured + reachable" : "configured but unreachable") : "not configured"} />
               <InfoTile label="Projects / Tasks / Notes" value={`${data.projects.length} / ${data.tasks.length} / ${data.dataSource.notesCount}`} />
+              <InfoTile label="AI worklogs" value={`${data.dataSource.sourceHealth.worklogsCount ?? data.worklogs.length}`} />
+              <InfoTile label="Worklogs updated at" value={formatDateTime(data.dataSource.sourceHealth.worklogsUpdatedAt || data.worklogs[0]?.updatedAt)} />
               <InfoTile label="Notes synced at" value={formatDateTime(data.dataSource.generatedAt) || "미기록"} />
               <InfoTile label="Notes roots" value={data.dataSource.notesRoots.join(" | ") || "-"} />
               <InfoTile label="Resolved roots" value={data.dataSource.resolvedRoots.map((root) => `${root.label}: ${root.path}`).join(" | ") || "-"} />

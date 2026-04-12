@@ -54,9 +54,13 @@ npm run dev
 
 # 선택: export 파일도 자동 갱신하고 싶으면 watcher 실행
 npm run ops:watch-notes
+npm run ops:source-sync
+npm run ops:watch-source
 ```
 
 특정 루트만 지정하고 싶다면 `PORTFOLIO_OPS_NOTE_ROOTS`에 경로 구분자(`:` on macOS/Linux)로 여러 경로를 넘길 수 있습니다.
+
+AI 작업 기록은 `obsidian-vault/01 Worklog/YYYY/MM/DD/*.md` 아래에 두는 것을 권장합니다. 자세한 schema/운영 규칙은 `docs/ops-ai-worklog-mvp.md`를 참고하세요.
 
 ### 빌드
 

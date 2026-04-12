@@ -4,6 +4,7 @@ import { getOpsDataMode, getSupabaseOpsDiagnostics } from "@/lib/ops/supabase";
 import { opsGitHubCache, opsProjects, opsTasks } from "@/lib/ops/sources/static";
 import type { OpsConsoleData, OpsSourceHealth } from "@/lib/ops/types";
 import { buildVaultSummary } from "@/lib/ops/vault";
+import { extractWorklogRecords } from "@/lib/ops/worklog";
 
 export async function getOpsConsoleData(): Promise<OpsConsoleData> {
   const [supabaseData, diagnostics] = await Promise.all([
@@ -16,6 +17,7 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
       ...supabaseData,
       github: opsGitHubCache,
       vault: buildVaultSummary(supabaseData.notes),
+      worklogs: supabaseData.worklogs,
       dataSource: {
         ...supabaseData.dataSource,
         sourceHealth: {
@@ -29,6 +31,7 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
 
   const notesSource = await getNotesSourceData();
   const preferredMode = getOpsDataMode();
+  const worklogs = extractWorklogRecords(notesSource.notes);
   const sourceHealth: OpsSourceHealth = {
     supabaseConfigured: diagnostics.configured,
     supabaseReachable: diagnostics.available,
@@ -39,12 +42,15 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
     lastSyncMessage: diagnostics.configured
       ? (diagnostics.available ? "Supabase configured but inactive for current request." : "Supabase env exists but ops tables are not reachable yet.")
       : "Supabase env not configured. Using local/export notes path.",
+    worklogsCount: worklogs.length,
+    worklogsUpdatedAt: worklogs[0]?.updatedAt,
   };
 
   return {
     projects: opsProjects,
     tasks: opsTasks,
     notes: notesSource.notes,
+    worklogs,
     github: opsGitHubCache,
     vault: buildVaultSummary(notesSource.notes),
     dataSource: {
