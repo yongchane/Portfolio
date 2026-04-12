@@ -5,6 +5,7 @@ import { getOpsDataMode, getSupabaseOpsDiagnostics } from "@/lib/ops/supabase";
 import { opsGitHubCache, opsProjects, opsTasks } from "@/lib/ops/sources/static";
 import type { OpsConsoleData, OpsSourceHealth } from "@/lib/ops/types";
 import { buildVaultSummary } from "@/lib/ops/vault";
+import { extractArtifactRecords, summarizeArtifactCounts } from "@/lib/ops/artifacts";
 import { extractWorklogRecords } from "@/lib/ops/worklog";
 
 export async function getOpsConsoleData(): Promise<OpsConsoleData> {
@@ -20,6 +21,7 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
       github: opsGitHubCache,
       vault: buildVaultSummary(supabaseData.notes),
       worklogs: supabaseData.worklogs,
+      artifacts: supabaseData.artifacts,
       dataSource: {
         ...supabaseData.dataSource,
         sourceHealth: {
@@ -35,6 +37,8 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
   const notesSource = await getNotesSourceData();
   const preferredMode = getOpsDataMode();
   const worklogs = extractWorklogRecords(notesSource.notes);
+  const artifacts = extractArtifactRecords(notesSource.notes);
+  const artifactCounts = summarizeArtifactCounts(artifacts);
   const sourceHealth: OpsSourceHealth = {
     supabaseConfigured: diagnostics.configured,
     supabaseReachable: diagnostics.available,
@@ -47,6 +51,10 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
       : "Supabase env not configured. Using local/export notes path.",
     worklogsCount: worklogs.length,
     worklogsUpdatedAt: worklogs[0]?.updatedAt,
+    artifactsCount: artifactCounts.total,
+    decisionsCount: artifactCounts.decisions,
+    learningsCount: artifactCounts.learnings,
+    artifactsUpdatedAt: artifacts[0]?.updatedAt,
     automation,
   };
 
@@ -55,6 +63,7 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
     tasks: opsTasks,
     notes: notesSource.notes,
     worklogs,
+    artifacts,
     github: opsGitHubCache,
     vault: buildVaultSummary(notesSource.notes),
     dataSource: {

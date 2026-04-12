@@ -13,6 +13,9 @@ export type OpsSummary = {
   verifyingTasks: number;
   notesCount: number;
   worklogsCount: number;
+  artifactCount: number;
+  decisionCount: number;
+  learningCount: number;
   githubRepos: number;
   githubBoards: number;
   mappedNotes: number;
@@ -57,6 +60,9 @@ export function buildOpsSummary(data: OpsConsoleData): OpsSummary {
     verifyingTasks: data.tasks.filter((task) => task.status === "verifying").length,
     notesCount: data.notes.length,
     worklogsCount: data.worklogs.length,
+    artifactCount: data.artifacts.length,
+    decisionCount: data.artifacts.filter((artifact) => artifact.artifactType === "decision").length,
+    learningCount: data.artifacts.filter((artifact) => artifact.artifactType === "learning").length,
     githubRepos: data.github.repoSnapshots.length,
     githubBoards: data.github.projectBoards.length,
     mappedNotes: data.vault.projectMappedCount,

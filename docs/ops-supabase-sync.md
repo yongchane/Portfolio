@@ -6,7 +6,7 @@ This repo now supports a staged path from local Obsidian markdown to Supabase-ba
 
 1. Author notes in Obsidian-compatible markdown roots (`obsidian-vault`, `docs`, or explicit roots)
 2. Run `npm run ops:source-sync` (or `npm run ops:sync-supabase` if notes export already happened)
-3. Script upserts projects/tasks/notes/worklogs into Supabase tables
+3. Script upserts projects/tasks/notes/worklogs/artifacts into Supabase tables
 4. Next `/ops` server loader reads from Supabase when configured
 5. If Supabase is missing/unready, `/ops` falls back to the existing local live/export path
 
@@ -56,12 +56,13 @@ npm run dev
 ## Current scope
 
 Implemented now:
-- schema SQL for `ops_projects`, `ops_tasks`, `ops_notes`, `ops_worklogs`, `ops_sync_state`, `ops_sync_runs`
+- schema SQL for `ops_projects`, `ops_tasks`, `ops_notes`, `ops_worklogs`, `ops_artifacts`, `ops_sync_state`, `ops_sync_runs`
 - sync script for projects/tasks/Obsidian notes -> Supabase, including rich project metadata (`sectors`, `checklist`, `admin_surfaces`, `vault_views`, `github_focus`) and note link graph data
 - AI worklog extraction from `obsidian-vault/01 Worklog/**` into typed Supabase rows
+- automatic typed artifact extraction for `worklog`, `decision`, and `learning` records from synced notes/worklogs
 - cron-friendly source sync command and local watch loop with debounce + lock file protection
 - server data loader that can read `/ops` data from Supabase with local fallback
-- `/ops` overview/settings now surface recent AI work and source-health state (preferred mode, Supabase configured/reachable, latest sync status/message, worklog counts)
+- `/ops` overview/settings/notes now surface recent AI work, typed artifacts, linked decisions/learnings, and source-health state (preferred mode, Supabase configured/reachable, latest sync status/message, worklog/artifact counts)
 - `/api/ops/notes-version` now reports the active data source metadata including worklog counts
 
 Still up to you / deployment:

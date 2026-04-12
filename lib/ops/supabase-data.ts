@@ -3,6 +3,7 @@ import "server-only";
 import { getOpsDataMode, getSupabaseAdminClient, getSupabaseOpsDiagnostics } from "@/lib/ops/supabase";
 import {
   buildSupabaseSourceHealth,
+  mapArtifactRow,
   mapNoteRow,
   mapProjectRow,
   mapTaskRow,
@@ -12,6 +13,7 @@ import {
   type SupabaseOpsConsoleData,
   type SyncRunRow,
   type SyncStateRow,
+  type ArtifactRow,
   type NoteRow,
   type ProjectRow,
   type TaskRow,
@@ -35,12 +37,13 @@ export async function getSupabaseOpsConsoleData(): Promise<SupabaseOpsConsoleDat
     return null;
   }
 
-  const [projectsResult, tasksResult, notesResult, worklogsResult, syncStateResult, syncRunResult] = await Promise.all([
+  const [projectsResult, tasksResult, notesResult, worklogsResult, artifactsResult, syncStateResult, syncRunResult] = await Promise.all([
     client.from("ops_projects").select("*").order("name", { ascending: true }),
     client.from("ops_tasks").select("*").order("updated_at", { ascending: false }),
     client.from("ops_notes").select("*").order("updated_at", { ascending: false }),
     client.from("ops_worklogs").select("*").order("updated_at", { ascending: false }),
-    client.from("ops_sync_state").select("key,value,updated_at").in("key", ["generated_at", "workspace_root", "notes_roots", "resolved_roots", "notes_count", "worklogs_count", "worklogs_updated_at"]),
+    client.from("ops_artifacts").select("*").order("updated_at", { ascending: false }),
+    client.from("ops_sync_state").select("key,value,updated_at").in("key", ["generated_at", "workspace_root", "notes_roots", "resolved_roots", "notes_count", "worklogs_count", "worklogs_updated_at", "artifacts_count", "decisions_count", "learnings_count", "artifacts_updated_at"]),
     client.from("ops_sync_runs").select("status,message,created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
 
@@ -48,15 +51,17 @@ export async function getSupabaseOpsConsoleData(): Promise<SupabaseOpsConsoleDat
   const { data: tasks, error: tasksError } = tasksResult;
   const { data: notes, error: notesError } = notesResult;
   const { data: worklogs, error: worklogsError } = worklogsResult;
+  const { data: artifacts, error: artifactsError } = artifactsResult;
   const { data: syncState, error: syncStateError } = syncStateResult;
   const { data: latestSyncRun, error: syncRunError } = syncRunResult;
 
-  if (projectsError || tasksError || notesError || worklogsError || syncStateError || syncRunError) {
+  if (projectsError || tasksError || notesError || worklogsError || artifactsError || syncStateError || syncRunError) {
     throw new Error([
       projectsError?.message,
       tasksError?.message,
       notesError?.message,
       worklogsError?.message,
+      artifactsError?.message,
       syncStateError?.message,
       syncRunError?.message,
     ].filter(Boolean).join(" | "));
@@ -69,6 +74,7 @@ export async function getSupabaseOpsConsoleData(): Promise<SupabaseOpsConsoleDat
     tasks: ((tasks ?? []) as TaskRow[]).map(mapTaskRow),
     notes: ((notes ?? []) as NoteRow[]).map(mapNoteRow),
     worklogs: ((worklogs ?? []) as WorklogRow[]).map(mapWorklogRow),
+    artifacts: ((artifacts ?? []) as ArtifactRow[]).map(mapArtifactRow),
     dataSource: {
       mode: "supabase",
       generatedAt: state.get("generated_at") || new Date().toISOString(),
@@ -85,6 +91,10 @@ export async function getSupabaseOpsConsoleData(): Promise<SupabaseOpsConsoleDat
         }),
         worklogsCount: Number(state.get("worklogs_count") || worklogs?.length || 0),
         worklogsUpdatedAt: state.get("worklogs_updated_at") || ((worklogs?.[0] as WorklogRow | undefined)?.updated_at ?? undefined),
+        artifactsCount: Number(state.get("artifacts_count") || artifacts?.length || 0),
+        decisionsCount: Number(state.get("decisions_count") || ((artifacts ?? []).filter((row) => (row as ArtifactRow).artifact_type === "decision").length) || 0),
+        learningsCount: Number(state.get("learnings_count") || ((artifacts ?? []).filter((row) => (row as ArtifactRow).artifact_type === "learning").length) || 0),
+        artifactsUpdatedAt: state.get("artifacts_updated_at") || ((artifacts?.[0] as ArtifactRow | undefined)?.updated_at ?? undefined),
       },
     },
   };

@@ -18,6 +18,9 @@ export function OverviewSection({ data, summary, notesById, githubReposByName, s
         <SummaryCard label="검증 중 작업" value={String(summary.verifyingTasks)} />
         <SummaryCard label="저장된 노트" value={String(summary.notesCount)} />
         <SummaryCard label="AI worklogs" value={String(summary.worklogsCount)} />
+        <SummaryCard label="Typed artifacts" value={String(summary.artifactCount)} />
+        <SummaryCard label="Decisions" value={String(summary.decisionCount)} />
+        <SummaryCard label="Learnings" value={String(summary.learningCount)} />
         <SummaryCard label="Project-linked notes" value={String(summary.mappedNotes)} />
         <SummaryCard label="Vault orphan" value={String(summary.orphanNotes)} />
         <SummaryCard label="GitHub repos" value={String(summary.githubRepos)} />
@@ -71,6 +74,21 @@ export function OverviewSection({ data, summary, notesById, githubReposByName, s
             {!data.worklogs.length && <EmptyLine message="아직 감지된 AI worklog가 없습니다. `obsidian-vault/01 Worklog/...` 아래에 markdown 기록을 추가하세요." />}
           </div>
         </Panel>
+        <Panel title="Recent typed artifacts">
+          <div className="space-y-3">
+            {data.artifacts.slice(0, 6).map((artifact) => (
+              <div key={artifact.id} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
+                <div className="flex items-center justify-between gap-3">
+                  <strong className="text-white">{artifact.title}</strong>
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">{artifact.artifactType}</span>
+                </div>
+                <p className="mt-2 text-white/70">{artifact.summary}</p>
+                <p className="mt-2 text-xs text-white/45">{artifact.project || artifact.repo || "unassigned"} · {artifact.actor || "unknown actor"} · {formatDateTime(artifact.updatedAt)}</p>
+              </div>
+            ))}
+            {!data.artifacts.length && <EmptyLine message="아직 typed artifact가 없습니다. worklog / decision / learning 신호가 노트에 쌓이면 여기에 나타납니다." />}
+          </div>
+        </Panel>
         <Panel title="Data source verification">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
@@ -95,7 +113,7 @@ export function OverviewSection({ data, summary, notesById, githubReposByName, s
                 automation {(liveStatus?.sourceHealth.automation?.mode || data.dataSource.sourceHealth.automation?.mode || "manual")} · {(liveStatus?.sourceHealth.automation?.state || data.dataSource.sourceHealth.automation?.state || "manual")} · heartbeat {formatDateTime(liveStatus?.sourceHealth.automation?.heartbeatAt || data.dataSource.sourceHealth.automation?.heartbeatAt)}
               </p>
               <p className="mt-2 text-xs text-white/55">
-                worklogs {data.dataSource.sourceHealth.worklogsCount ?? data.worklogs.length} · latest {formatDateTime(data.dataSource.sourceHealth.worklogsUpdatedAt || data.worklogs[0]?.updatedAt)}
+                worklogs {data.dataSource.sourceHealth.worklogsCount ?? data.worklogs.length} · artifacts {data.dataSource.sourceHealth.artifactsCount ?? data.artifacts.length} · latest {formatDateTime(data.dataSource.sourceHealth.artifactsUpdatedAt || data.dataSource.sourceHealth.worklogsUpdatedAt || data.artifacts[0]?.updatedAt || data.worklogs[0]?.updatedAt)}
               </p>
               {(liveStatus?.sourceHealth.automation?.lastRunMessage || data.dataSource.sourceHealth.automation?.lastRunMessage) && (
                 <p className="mt-2 text-xs text-white/50">{liveStatus?.sourceHealth.automation?.lastRunMessage || data.dataSource.sourceHealth.automation?.lastRunMessage}</p>

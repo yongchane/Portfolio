@@ -166,7 +166,7 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
               mode: <strong>{liveStatus?.mode || safeData.dataSource.mode}</strong> · preferred <strong>{safeData.dataSource.sourceHealth.preferredMode}</strong>
             </p>
             <p className="mt-1 text-xs text-white/55">
-              notes {liveStatus?.notesCount ?? safeData.dataSource.notesCount}개 · projects {liveStatus?.projectsCount ?? safeData.projects.length} · tasks {liveStatus?.tasksCount ?? safeData.tasks.length}
+              notes {liveStatus?.notesCount ?? safeData.dataSource.notesCount}개 · tasks {liveStatus?.tasksCount ?? safeData.tasks.length} · worklogs {safeData.dataSource.sourceHealth.worklogsCount ?? safeData.worklogs.length} · artifacts {safeData.dataSource.sourceHealth.artifactsCount ?? safeData.artifacts.length}
             </p>
             <p className="mt-1 text-xs text-white/55">
               sync {safeData.dataSource.sourceHealth.lastSyncStatus || "-"} · updated {liveStatus?.generatedAt || safeData.dataSource.generatedAt}

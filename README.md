@@ -66,7 +66,7 @@ npm run ops:watch-status
 
 Mac mini에서 완전 자동 운영으로 전환하려면 `docs/ops-automation-mac-mini.md`를 따르세요. launchd 또는 cron watchdog을 설치하면 watcher가 자동 부팅되고, 상태는 `.ops-runtime/automation-status.json`과 `/ops` Settings/Overview에 함께 표시됩니다.
 
-AI 작업 기록은 `obsidian-vault/01 Worklog/YYYY/MM/DD/*.md` 아래에 두는 것을 권장합니다. 자세한 schema/운영 규칙은 `docs/ops-ai-worklog-mvp.md`를 참고하세요.
+AI 작업 기록은 `obsidian-vault/01 Worklog/YYYY/MM/DD/*.md` 아래에 두는 것을 권장합니다. 이제 `/ops`는 여기서 `worklog / decision / learning` typed artifact도 자동 추출해 recent AI work와 note detail에서 함께 보여줍니다. 자세한 schema/운영 규칙은 `docs/ops-ai-worklog-mvp.md`와 `docs/ops-supabase-sync.md`를 참고하세요.
 
 ### 빌드
 

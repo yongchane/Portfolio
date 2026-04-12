@@ -140,6 +140,31 @@ export type WorklogRecord = {
   nextActions: string[];
 };
 
+export type OpsArtifactType = "worklog" | "decision" | "learning";
+
+export type OpsArtifactRecord = {
+  id: string;
+  noteId: string;
+  title: string;
+  artifactType: OpsArtifactType;
+  project?: string;
+  path: string;
+  summary: string;
+  actor?: string;
+  sourceMachine?: string;
+  repo?: string;
+  branch?: string;
+  status?: WorklogStatus;
+  tags: string[];
+  highlights: string[];
+  decisions: string[];
+  learnings: string[];
+  blockers: string[];
+  nextActions: string[];
+  linkedNoteIds: string[];
+  updatedAt: string;
+};
+
 export type OpsAutomationState = "manual" | "starting" | "running" | "syncing" | "idle" | "stopped" | "error";
 
 export type OpsAutomationStatus = {
@@ -180,6 +205,10 @@ export type OpsSourceHealth = {
   lastSyncAt?: string;
   worklogsCount?: number;
   worklogsUpdatedAt?: string;
+  artifactsCount?: number;
+  decisionsCount?: number;
+  learningsCount?: number;
+  artifactsUpdatedAt?: string;
   automation?: OpsAutomationStatus;
 };
 
@@ -258,6 +287,7 @@ export type OpsConsoleData = {
   tasks: Task[];
   notes: NoteItem[];
   worklogs: WorklogRecord[];
+  artifacts: OpsArtifactRecord[];
   github: GitHubCache;
   vault: VaultSummary;
   dataSource: {

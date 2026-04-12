@@ -31,13 +31,14 @@ async function main() {
     loadNotes(sourceConfig),
   ]);
   const worklogs = extractWorklogRecords(notes);
+  const artifacts = extractArtifactRecords(notes);
 
   await insertSyncRun(supabase, {
     status: "started",
     projects_count: projects.length,
     tasks_count: tasks.length,
     notes_count: notes.length,
-    message: `Starting Portfolio /ops sync (${worklogs.length} worklogs)`,
+    message: `Starting Portfolio /ops sync (${worklogs.length} worklogs / ${artifacts.length} artifacts)`,
   });
 
   try {
@@ -45,14 +46,15 @@ async function main() {
     await upsertTasks(supabase, tasks);
     await upsertNotes(supabase, notes);
     await upsertWorklogs(supabase, worklogs);
-    await upsertSyncState(supabase, sourceConfig, notes.length, worklogs);
+    await upsertArtifacts(supabase, artifacts);
+    await upsertSyncState(supabase, sourceConfig, notes.length, worklogs, artifacts);
 
     await insertSyncRun(supabase, {
       status: "succeeded",
       projects_count: projects.length,
       tasks_count: tasks.length,
       notes_count: notes.length,
-      message: `Portfolio /ops sync finished (${worklogs.length} worklogs)`,
+      message: `Portfolio /ops sync finished (${worklogs.length} worklogs / ${artifacts.length} artifacts)`,
     });
   } catch (error) {
     await insertSyncRun(supabase, {
@@ -60,13 +62,13 @@ async function main() {
       projects_count: projects.length,
       tasks_count: tasks.length,
       notes_count: notes.length,
-      message: error instanceof Error ? `${error.message} (${worklogs.length} worklogs queued)` : String(error),
+      message: error instanceof Error ? `${error.message} (${worklogs.length} worklogs / ${artifacts.length} artifacts queued)` : String(error),
     });
     throw error;
   }
 
   console.log(
-    `Synced ${projects.length} projects, ${tasks.length} tasks, ${notes.length} notes, ${worklogs.length} worklogs to Supabase.`,
+    `Synced ${projects.length} projects, ${tasks.length} tasks, ${notes.length} notes, ${worklogs.length} worklogs, ${artifacts.length} artifacts to Supabase.`,
   );
 }
 
@@ -236,7 +238,35 @@ async function upsertWorklogs(supabase, worklogs) {
   await upsertRowsWithSchemaFallback(supabase, "ops_worklogs", rows, "id");
 }
 
-async function upsertSyncState(supabase, sourceConfig, notesCount, worklogs) {
+
+async function upsertArtifacts(supabase, artifacts) {
+  const rows = artifacts.map((artifact) => ({
+    id: artifact.id,
+    note_id: artifact.noteId,
+    title: artifact.title,
+    artifact_type: artifact.artifactType,
+    project: artifact.project ?? null,
+    path: artifact.path,
+    summary: artifact.summary,
+    actor: artifact.actor ?? null,
+    source_machine: artifact.sourceMachine ?? null,
+    repo: artifact.repo ?? null,
+    branch: artifact.branch ?? null,
+    status: artifact.status ?? null,
+    tags: artifact.tags ?? [],
+    highlights: artifact.highlights ?? [],
+    decisions: artifact.decisions ?? [],
+    learnings: artifact.learnings ?? [],
+    blockers: artifact.blockers ?? [],
+    next_actions: artifact.nextActions ?? [],
+    linked_note_ids: artifact.linkedNoteIds ?? [artifact.noteId],
+    updated_at: artifact.updatedAt,
+  }));
+
+  await upsertRowsWithSchemaFallback(supabase, "ops_artifacts", rows, "id");
+}
+
+async function upsertSyncState(supabase, sourceConfig, notesCount, worklogs, artifacts) {
   const generatedAt = new Date().toISOString();
   const rows = [
     { key: "generated_at", value: generatedAt },
@@ -249,6 +279,10 @@ async function upsertSyncState(supabase, sourceConfig, notesCount, worklogs) {
     { key: "notes_count", value: String(notesCount) },
     { key: "worklogs_count", value: String(worklogs.length) },
     { key: "worklogs_updated_at", value: worklogs[0]?.updatedAt ?? "" },
+    { key: "artifacts_count", value: String(artifacts.length) },
+    { key: "decisions_count", value: String(artifacts.filter((artifact) => artifact.artifactType === "decision").length) },
+    { key: "learnings_count", value: String(artifacts.filter((artifact) => artifact.artifactType === "learning").length) },
+    { key: "artifacts_updated_at", value: artifacts[0]?.updatedAt ?? "" },
   ].map((row) => ({ ...row, updated_at: generatedAt }));
 
   await upsertRowsWithSchemaFallback(supabase, "ops_sync_state", rows, "key");
@@ -305,6 +339,98 @@ function parseMissingColumnError(error, tableName) {
   if (foundTableName !== tableName) return null;
 
   return columnName;
+}
+
+
+function extractArtifactRecords(notes) {
+  const worklogs = extractWorklogRecords(notes);
+  const worklogArtifacts = worklogs.map((worklog) => ({
+    id: `${worklog.id}::worklog`,
+    noteId: worklog.noteId,
+    title: worklog.title,
+    artifactType: "worklog",
+    project: worklog.project,
+    path: worklog.path,
+    summary: worklog.summary,
+    actor: worklog.actor,
+    sourceMachine: worklog.sourceMachine,
+    repo: worklog.repo,
+    branch: worklog.branch,
+    status: worklog.status,
+    tags: worklog.tags ?? [],
+    highlights: worklog.highlights ?? [],
+    decisions: worklog.decisions ?? [],
+    learnings: [],
+    blockers: worklog.blockers ?? [],
+    nextActions: worklog.nextActions ?? [],
+    linkedNoteIds: [worklog.noteId],
+    updatedAt: worklog.updatedAt,
+  }));
+
+  const typed = notes.flatMap((note) => {
+    const lines = [...new Set([
+      ...(note.highlights ?? []),
+      ...(note.preview ?? []),
+      ...String(note.rawExcerpt || "").split("\n").map((line) => line.trim()).filter(Boolean),
+    ])];
+    const decisions = lines.filter((line) => /decid|decision|판단|결정/i.test(line)).slice(0, 4);
+    const learnings = lines.filter((line) => /learn|lesson|insight|realiz|배운|학습|교훈|인사이트/i.test(line)).slice(0, 4);
+    const blockers = lines.filter((line) => /block|risk|issue|문제|막힘/i.test(line)).slice(0, 3);
+    const nextActions = lines.filter((line) => /next|todo|follow|action|다음/i.test(line)).slice(0, 3);
+    const actor = note.frontmatter?.actor || note.frontmatter?.agent || note.tags?.[0] || (note.path.replace(/\/g, "/").startsWith("obsidian-vault/01 Worklog/") ? "ai" : null);
+    const rows = [];
+    if (decisions.length) {
+      rows.push({
+        id: `${note.id}::decision`,
+        noteId: note.id,
+        title: `${note.title} decision`,
+        artifactType: "decision",
+        project: note.project,
+        path: note.path,
+        summary: decisions[0],
+        actor,
+        sourceMachine: note.frontmatter?.source_machine || note.frontmatter?.sourceMachine || null,
+        repo: note.frontmatter?.repo || note.frontmatter?.repository || null,
+        branch: note.frontmatter?.branch || null,
+        status: null,
+        tags: note.tags ?? [],
+        highlights: decisions,
+        decisions,
+        learnings: [],
+        blockers,
+        nextActions,
+        linkedNoteIds: [note.id],
+        updatedAt: note.updatedAt,
+      });
+    }
+    if (learnings.length) {
+      rows.push({
+        id: `${note.id}::learning`,
+        noteId: note.id,
+        title: `${note.title} learning`,
+        artifactType: "learning",
+        project: note.project,
+        path: note.path,
+        summary: learnings[0],
+        actor,
+        sourceMachine: note.frontmatter?.source_machine || note.frontmatter?.sourceMachine || null,
+        repo: note.frontmatter?.repo || note.frontmatter?.repository || null,
+        branch: note.frontmatter?.branch || null,
+        status: null,
+        tags: note.tags ?? [],
+        highlights: learnings,
+        decisions: [],
+        learnings,
+        blockers,
+        nextActions,
+        linkedNoteIds: [note.id],
+        updatedAt: note.updatedAt,
+      });
+    }
+    return rows;
+  });
+
+  return [...worklogArtifacts, ...typed].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 function extractWorklogRecords(notes) {

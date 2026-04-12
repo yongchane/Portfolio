@@ -22,6 +22,11 @@ function buildNoteSections(rawExcerpt: string) {
   return sections.filter((section) => section.lines.length);
 }
 
+
+function getNoteArtifacts(noteId: string, artifacts: NotesSectionProps["data"]["artifacts"]) {
+  return artifacts.filter((artifact) => artifact.noteId === noteId || artifact.linkedNoteIds.includes(noteId));
+}
+
 function findRelatedNotes(noteId: string, vaultLinksByNoteId: NotesSectionProps["vaultLinksByNoteId"], notesById: NotesSectionProps["notesById"]) {
   const stats = vaultLinksByNoteId.get(noteId);
   const ids = [...(stats?.linksTo || []), ...(stats?.linkedBy || [])];
@@ -31,6 +36,7 @@ function findRelatedNotes(noteId: string, vaultLinksByNoteId: NotesSectionProps[
 export function NotesSection({ data, notesById, setSection, setSelectedNoteId, filteredNotes, selectedNote, noteQuery, setNoteQuery, vaultLinksByNoteId }: NotesSectionProps) {
   const noteSections = selectedNote ? buildNoteSections(selectedNote.rawExcerpt) : [];
   const relatedNotes = selectedNote ? findRelatedNotes(selectedNote.id, vaultLinksByNoteId, notesById) : [];
+  const noteArtifacts = selectedNote ? getNoteArtifacts(selectedNote.id, data.artifacts) : [];
 
   return (
     <div className="space-y-8">
@@ -138,6 +144,7 @@ export function NotesSection({ data, notesById, setSection, setSelectedNoteId, f
               <InfoTile label="Tags" value={selectedNote.tags.length ? selectedNote.tags.join(", ") : "-"} />
               <InfoTile label="Headings" value={selectedNote.headings.length ? selectedNote.headings.join(" · ") : "-"} />
               <InfoTile label="Highlights" value={String(selectedNote.highlights.length)} />
+              <InfoTile label="Typed artifacts" value={String(noteArtifacts.length)} />
               <InfoTile label="Vault graph" value={`out ${vaultLinksByNoteId.get(selectedNote.id)?.linksTo.length || 0} · in ${vaultLinksByNoteId.get(selectedNote.id)?.linkedBy.length || 0}`} />
             </div>
 
@@ -174,6 +181,21 @@ export function NotesSection({ data, notesById, setSection, setSelectedNoteId, f
                     </button>
                   ) : null)}
                   {!relatedNotes.length && <EmptyLine message="그래프상 직접 연결된 note가 없습니다." />}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+                <p className="mb-3 text-sm font-semibold text-white/55">Typed artifacts</p>
+                <div className="space-y-3">
+                  {noteArtifacts.map((artifact) => (
+                    <div key={artifact.id} className="rounded-2xl bg-white/5 px-4 py-3 text-left text-sm text-white/80">
+                      <div className="flex items-center justify-between gap-3">
+                        <strong>{artifact.title}</strong>
+                        <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">{artifact.artifactType}</span>
+                      </div>
+                      <p className="mt-2 text-white/65">{artifact.summary}</p>
+                    </div>
+                  ))}
+                  {!noteArtifacts.length && <EmptyLine message="이 노트에서 아직 추출된 typed artifact가 없습니다." />}
                 </div>
               </div>
               <div className="rounded-2xl border border-white/10 bg-black/20 p-5">

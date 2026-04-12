@@ -1,5 +1,6 @@
 import type {
   NoteItem,
+  OpsArtifactRecord,
   OpsConsoleData,
   OpsSourceHealth,
   Project,
@@ -96,6 +97,30 @@ export type WorklogRow = {
   decisions: string[] | null;
   blockers: string[] | null;
   next_actions: string[] | null;
+};
+
+
+export type ArtifactRow = {
+  id: string;
+  note_id: string;
+  title: string;
+  artifact_type: OpsArtifactRecord["artifactType"];
+  project: string | null;
+  path: string;
+  summary: string;
+  actor: string | null;
+  source_machine: string | null;
+  repo: string | null;
+  branch: string | null;
+  status: WorklogRecord["status"] | null;
+  tags: string[] | null;
+  highlights: string[] | null;
+  decisions: string[] | null;
+  learnings: string[] | null;
+  blockers: string[] | null;
+  next_actions: string[] | null;
+  linked_note_ids: string[] | null;
+  updated_at: string;
 };
 
 export function buildSupabaseSourceHealth(args: {
@@ -197,6 +222,32 @@ export function mapWorklogRow(row: WorklogRow): WorklogRecord {
     decisions: row.decisions ?? [],
     blockers: row.blockers ?? [],
     nextActions: row.next_actions ?? [],
+  };
+}
+
+
+export function mapArtifactRow(row: ArtifactRow): OpsArtifactRecord {
+  return {
+    id: row.id,
+    noteId: row.note_id,
+    title: row.title,
+    artifactType: row.artifact_type,
+    project: row.project ?? undefined,
+    path: row.path.replace(/\\/g, "/"),
+    summary: row.summary,
+    actor: row.actor ?? undefined,
+    sourceMachine: row.source_machine ?? undefined,
+    repo: row.repo ?? undefined,
+    branch: row.branch ?? undefined,
+    status: row.status ?? undefined,
+    tags: row.tags ?? [],
+    highlights: row.highlights ?? [],
+    decisions: row.decisions ?? [],
+    learnings: row.learnings ?? [],
+    blockers: row.blockers ?? [],
+    nextActions: row.next_actions ?? [],
+    linkedNoteIds: row.linked_note_ids ?? [row.note_id],
+    updatedAt: row.updated_at,
   };
 }
 
