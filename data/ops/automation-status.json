@@ -1,0 +1,9 @@
+{
+  "mode": "manual",
+  "state": "manual",
+  "updatedAt": "",
+  "statusPath": ".ops-runtime/automation-status.json",
+  "logPath": ".ops-runtime/ops-watch.log",
+  "lockPath": ".ops-source-sync.lock",
+  "nextSuggestedAction": "Install the LaunchAgent or cron entry to make /ops automation automatic."
+}

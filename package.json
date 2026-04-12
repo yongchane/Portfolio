@@ -13,6 +13,9 @@
     "ops:sync-supabase": "node scripts/sync-ops-supabase.mjs",
     "ops:source-sync": "node scripts/ops-source-sync.mjs",
     "ops:watch-source": "node scripts/ops-source-sync.mjs --watch",
+    "ops:ensure-watch": "node scripts/ops-automation.mjs ensure-watch",
+    "ops:watch-status": "node scripts/ops-automation.mjs status",
+    "ops:watch-stop": "node scripts/ops-automation.mjs stop",
     "ci": "npm run lint && npm run typecheck && npm run build",
     "ops:sync-github": "node scripts/sync-ops-github.mjs"
   },

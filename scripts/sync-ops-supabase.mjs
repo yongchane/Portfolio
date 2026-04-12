@@ -18,6 +18,11 @@ const ENV_FILES = [
 async function main() {
   await loadLocalEnvFiles();
 
+  if (!hasSupabaseAdminEnv()) {
+    console.log("[ops:sync-supabase] skipped: Supabase admin env is not configured.");
+    return;
+  }
+
   const supabase = getSupabaseAdminClient();
   const sourceConfig = await resolveSourceConfig();
   const [projects, tasks, notes] = await Promise.all([
@@ -63,6 +68,16 @@ async function main() {
   console.log(
     `Synced ${projects.length} projects, ${tasks.length} tasks, ${notes.length} notes, ${worklogs.length} worklogs to Supabase.`,
   );
+}
+
+function hasSupabaseAdminEnv() {
+  const url =
+    process.env.PORTFOLIO_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key =
+    process.env.PORTFOLIO_SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  return Boolean(url && key);
 }
 
 function getSupabaseAdminClient() {

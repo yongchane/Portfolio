@@ -1,3 +1,4 @@
+import { getOpsAutomationStatus } from "@/lib/ops/automation";
 import { getNotesSourceData } from "@/lib/ops/notes-source";
 import { getSupabaseOpsConsoleData } from "@/lib/ops/supabase-data";
 import { getOpsDataMode, getSupabaseOpsDiagnostics } from "@/lib/ops/supabase";
@@ -7,9 +8,10 @@ import { buildVaultSummary } from "@/lib/ops/vault";
 import { extractWorklogRecords } from "@/lib/ops/worklog";
 
 export async function getOpsConsoleData(): Promise<OpsConsoleData> {
-  const [supabaseData, diagnostics] = await Promise.all([
+  const [supabaseData, diagnostics, automation] = await Promise.all([
     getSupabaseOpsConsoleData(),
     getSupabaseOpsDiagnostics(),
+    getOpsAutomationStatus(),
   ]);
 
   if (supabaseData) {
@@ -24,6 +26,7 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
           ...supabaseData.dataSource.sourceHealth,
           supabaseConfigured: diagnostics.configured,
           supabaseReachable: diagnostics.available,
+          automation,
         },
       },
     };
@@ -44,6 +47,7 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
       : "Supabase env not configured. Using local/export notes path.",
     worklogsCount: worklogs.length,
     worklogsUpdatedAt: worklogs[0]?.updatedAt,
+    automation,
   };
 
   return {

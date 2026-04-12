@@ -82,7 +82,7 @@ export function OverviewSection({ data, summary, notesById, githubReposByName, s
               <p className="mt-2 text-xs text-white/50">updated {formatDateTime(liveStatus?.generatedAt || data.dataSource.generatedAt)}</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
-              <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">Supabase health</p>
+              <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">Supabase + automation health</p>
               <p className="text-lg font-semibold text-white">
                 {data.dataSource.sourceHealth.supabaseConfigured
                   ? (data.dataSource.sourceHealth.supabaseReachable ? "configured + reachable" : "configured but unreachable")
@@ -92,8 +92,14 @@ export function OverviewSection({ data, summary, notesById, githubReposByName, s
                 last sync {data.dataSource.sourceHealth.lastSyncStatus || "-"} · {formatDateTime(data.dataSource.sourceHealth.lastSyncAt)}
               </p>
               <p className="mt-2 text-xs text-white/55">
+                automation {(liveStatus?.sourceHealth.automation?.mode || data.dataSource.sourceHealth.automation?.mode || "manual")} · {(liveStatus?.sourceHealth.automation?.state || data.dataSource.sourceHealth.automation?.state || "manual")} · heartbeat {formatDateTime(liveStatus?.sourceHealth.automation?.heartbeatAt || data.dataSource.sourceHealth.automation?.heartbeatAt)}
+              </p>
+              <p className="mt-2 text-xs text-white/55">
                 worklogs {data.dataSource.sourceHealth.worklogsCount ?? data.worklogs.length} · latest {formatDateTime(data.dataSource.sourceHealth.worklogsUpdatedAt || data.worklogs[0]?.updatedAt)}
               </p>
+              {(liveStatus?.sourceHealth.automation?.lastRunMessage || data.dataSource.sourceHealth.automation?.lastRunMessage) && (
+                <p className="mt-2 text-xs text-white/50">{liveStatus?.sourceHealth.automation?.lastRunMessage || data.dataSource.sourceHealth.automation?.lastRunMessage}</p>
+              )}
               {data.dataSource.sourceHealth.lastSyncMessage && (
                 <p className="mt-2 text-xs text-white/50">{data.dataSource.sourceHealth.lastSyncMessage}</p>
               )}

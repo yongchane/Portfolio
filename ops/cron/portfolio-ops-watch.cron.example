@@ -1,0 +1,1 @@
+* * * * * cd {{REPO_PATH}} && /usr/bin/env PORTFOLIO_OPS_WORKSPACE_ROOT="{{WORKSPACE_ROOT}}" PORTFOLIO_OPS_DATA_MODE="{{OPS_DATA_MODE}}" PORTFOLIO_OPS_NOTE_ROOTS="{{OPS_NOTE_ROOTS}}" PORTFOLIO_OPS_AUTOMATION_MODE="cron" {{NODE_PATH}} scripts/ops-automation.mjs ensure-watch >> .ops-runtime/cron.ensure-watch.log 2>&1

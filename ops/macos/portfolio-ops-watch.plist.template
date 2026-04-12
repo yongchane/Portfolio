@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.yongchane.portfolio.ops-watch</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>{{NODE_PATH}}</string>
+      <string>{{REPO_PATH}}/scripts/ops-automation.mjs</string>
+      <string>daemon</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>{{REPO_PATH}}</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>PORTFOLIO_OPS_WORKSPACE_ROOT</key>
+      <string>{{WORKSPACE_ROOT}}</string>
+      <key>PORTFOLIO_OPS_AUTOMATION_MODE</key>
+      <string>launchd</string>
+      <key>PORTFOLIO_OPS_DATA_MODE</key>
+      <string>{{OPS_DATA_MODE}}</string>
+      <key>PORTFOLIO_OPS_NOTE_ROOTS</key>
+      <string>{{OPS_NOTE_ROOTS}}</string>
+      <key>PATH</key>
+      <string>{{PATH_VALUE}}</string>
+    </dict>
+
+    <key>KeepAlive</key>
+    <true/>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>{{REPO_PATH}}/.ops-runtime/launchd.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>{{REPO_PATH}}/.ops-runtime/launchd.stderr.log</string>
+  </dict>
+</plist>

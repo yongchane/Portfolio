@@ -140,6 +140,35 @@ export type WorklogRecord = {
   nextActions: string[];
 };
 
+export type OpsAutomationState = "manual" | "starting" | "running" | "syncing" | "idle" | "stopped" | "error";
+
+export type OpsAutomationStatus = {
+  mode: "manual" | "watch" | "cron" | "launchd";
+  state: OpsAutomationState;
+  updatedAt?: string;
+  heartbeatAt?: string;
+  startedAt?: string;
+  stoppedAt?: string;
+  pid?: number;
+  watchMode?: boolean;
+  watchTargets?: string[];
+  watchTargetsCount?: number;
+  queuedReason?: string;
+  restartCount?: number;
+  lastRunStartedAt?: string;
+  lastRunFinishedAt?: string;
+  lastRunStatus?: "started" | "succeeded" | "failed";
+  lastRunReason?: string;
+  lastRunMessage?: string;
+  lastErrorAt?: string;
+  lastErrorMessage?: string;
+  watchTargetsSummary?: string;
+  nextSuggestedAction?: string;
+  statusPath?: string;
+  logPath?: string;
+  lockPath?: string;
+};
+
 export type OpsSourceHealth = {
   supabaseConfigured: boolean;
   supabaseReachable: boolean;
@@ -151,6 +180,7 @@ export type OpsSourceHealth = {
   lastSyncAt?: string;
   worklogsCount?: number;
   worklogsUpdatedAt?: string;
+  automation?: OpsAutomationStatus;
 };
 
 export type GitHubRepoSnapshot = {

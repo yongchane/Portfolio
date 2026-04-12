@@ -56,9 +56,15 @@ npm run dev
 npm run ops:watch-notes
 npm run ops:source-sync
 npm run ops:watch-source
+
+# Mac mini에서 자동 운영 경로(권장)
+npm run ops:ensure-watch
+npm run ops:watch-status
 ```
 
 특정 루트만 지정하고 싶다면 `PORTFOLIO_OPS_NOTE_ROOTS`에 경로 구분자(`:` on macOS/Linux)로 여러 경로를 넘길 수 있습니다.
+
+Mac mini에서 완전 자동 운영으로 전환하려면 `docs/ops-automation-mac-mini.md`를 따르세요. launchd 또는 cron watchdog을 설치하면 watcher가 자동 부팅되고, 상태는 `.ops-runtime/automation-status.json`과 `/ops` Settings/Overview에 함께 표시됩니다.
 
 AI 작업 기록은 `obsidian-vault/01 Worklog/YYYY/MM/DD/*.md` 아래에 두는 것을 권장합니다. 자세한 schema/운영 규칙은 `docs/ops-ai-worklog-mvp.md`를 참고하세요.
 

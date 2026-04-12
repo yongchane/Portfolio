@@ -6,6 +6,9 @@ import { spawn } from "child_process";
 
 const repoRoot = process.cwd();
 const lockPath = path.join(repoRoot, ".ops-source-sync.lock");
+const statusFile = process.env.PORTFOLIO_OPS_AUTOMATION_STATUS_FILE
+  ? path.resolve(process.env.PORTFOLIO_OPS_AUTOMATION_STATUS_FILE)
+  : path.join(repoRoot, ".ops-runtime", "automation-status.json");
 const args = new Set(process.argv.slice(2));
 const watchMode = args.has("--watch");
 const debounceMs = Number(process.env.PORTFOLIO_OPS_SYNC_DEBOUNCE_MS || 1200);
@@ -16,7 +19,14 @@ let running = false;
 let queuedReason = null;
 let releaseLock = null;
 
-main().catch((error) => {
+main().catch(async (error) => {
+  await writeAutomationStatus({
+    state: watchMode ? "error" : "idle",
+    lastRunFinishedAt: new Date().toISOString(),
+    lastRunStatus: "failed",
+    lastErrorAt: new Date().toISOString(),
+    lastErrorMessage: error instanceof Error ? error.message : String(error),
+  });
   console.error("[ops:source-sync]", error);
   process.exitCode = 1;
 });
@@ -27,12 +37,24 @@ async function main() {
     return;
   }
 
+  await writeAutomationStatus({
+    state: "running",
+    pid: process.pid,
+    heartbeatAt: new Date().toISOString(),
+    watchMode: true,
+  });
+
   const watchTargets = await resolveWatchTargets();
   if (!watchTargets.length) {
     throw new Error("No watch targets found. Set PORTFOLIO_OPS_WORKSPACE_ROOT or PORTFOLIO_OPS_NOTE_ROOTS before using --watch.");
   }
 
   console.log(`[ops:source-sync] watching ${watchTargets.length} path(s)`);
+  await writeAutomationStatus({
+    watchTargets: watchTargets.map((target) => path.relative(repoRoot, target) || target),
+    watchTargetsCount: watchTargets.length,
+    lastRunMessage: `Watching ${watchTargets.length} path(s).`,
+  });
   await runSync("startup");
 
   for (const target of watchTargets) {
@@ -96,16 +118,53 @@ function queueSync(reason) {
 async function runSync(reason) {
   if (running) {
     queuedReason = reason;
+    await writeAutomationStatus({
+      state: watchMode ? "running" : "idle",
+      queuedReason,
+      lastRunMessage: `Sync already running; queued ${reason}.`,
+    });
     return;
   }
 
   running = true;
+  await writeAutomationStatus({
+    state: watchMode ? "running" : "syncing",
+    pid: process.pid,
+    heartbeatAt: new Date().toISOString(),
+    lastRunStartedAt: new Date().toISOString(),
+    lastRunStatus: "started",
+    lastRunReason: reason,
+    lastRunMessage: `Sync started (${reason}).`,
+    queuedReason: undefined,
+  });
   releaseLock = await acquireLock();
   try {
     console.log(`[ops:source-sync] run start (${reason})`);
     await runNodeScript("scripts/export-ops-notes.mjs");
     await runNodeScript("scripts/sync-ops-supabase.mjs");
     console.log("[ops:source-sync] run complete");
+    await writeAutomationStatus({
+      state: watchMode ? "running" : "idle",
+      heartbeatAt: new Date().toISOString(),
+      lastRunFinishedAt: new Date().toISOString(),
+      lastRunStatus: "succeeded",
+      lastRunReason: reason,
+      lastRunMessage: `Sync finished successfully (${reason}).`,
+      lastErrorAt: "",
+      lastErrorMessage: "",
+    });
+  } catch (error) {
+    await writeAutomationStatus({
+      state: watchMode ? "error" : "idle",
+      heartbeatAt: new Date().toISOString(),
+      lastRunFinishedAt: new Date().toISOString(),
+      lastRunStatus: "failed",
+      lastRunReason: reason,
+      lastRunMessage: `Sync failed (${reason}).`,
+      lastErrorAt: new Date().toISOString(),
+      lastErrorMessage: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
   } finally {
     await releaseLock?.();
     releaseLock = null;
@@ -150,4 +209,27 @@ async function runNodeScript(scriptPath) {
     });
     child.on("error", reject);
   });
+}
+
+async function readAutomationStatus() {
+  try {
+    const raw = await fsPromises.readFile(statusFile, "utf8");
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
+async function writeAutomationStatus(patch) {
+  await fsPromises.mkdir(path.dirname(statusFile), { recursive: true });
+  const current = await readAutomationStatus();
+  const next = {
+    ...current,
+    mode: process.env.PORTFOLIO_OPS_AUTOMATION_MODE || current.mode || (watchMode ? "watch" : "manual"),
+    updatedAt: new Date().toISOString(),
+    lockPath: path.relative(repoRoot, lockPath),
+    statusPath: path.relative(repoRoot, statusFile),
+    ...Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined)),
+  };
+  await fsPromises.writeFile(statusFile, `${JSON.stringify(next, null, 2)}\n`);
 }

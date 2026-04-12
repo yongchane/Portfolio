@@ -16,6 +16,11 @@ export function buildOpsVersionSnapshot(data: OpsConsoleData): OpsVersionSnapsho
     sourceHealth.lastSyncStatus ?? "unknown",
     sourceHealth.lastSyncAt ?? "no-sync-at",
     sourceHealth.lastSyncMessage ?? "no-sync-message",
+    sourceHealth.automation?.mode ?? "manual",
+    sourceHealth.automation?.state ?? "manual",
+    sourceHealth.automation?.heartbeatAt ?? "no-heartbeat",
+    sourceHealth.automation?.lastRunStatus ?? "no-run-status",
+    sourceHealth.automation?.lastRunFinishedAt ?? "no-run-finished-at",
   ].join("::");
 
   return {

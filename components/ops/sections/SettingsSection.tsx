@@ -19,7 +19,8 @@ export function SettingsSection({ data }: SettingsSectionProps) {
             <ChecklistRow item={{ id: "settings-4", label: "GitHub sync cache 자동 생성", status: data.github.mode === "live" ? "done" : "doing", note: `generated ${formatDateTime(data.github.generatedAt)}` }} />
             <ChecklistRow item={{ id: "settings-5", label: "Supabase real connection path visibility", status: data.dataSource.sourceHealth.supabaseConfigured ? (data.dataSource.sourceHealth.supabaseReachable ? "done" : "blocked") : "doing", note: `${data.dataSource.sourceHealth.activeMode} / preferred ${data.dataSource.sourceHealth.preferredMode}` }} />
             <ChecklistRow item={{ id: "settings-6", label: "AI worklog source path + typed sync path", status: data.worklogs.length ? "done" : "doing", note: `worklogs ${data.dataSource.sourceHealth.worklogsCount ?? data.worklogs.length}` }} />
-            <ChecklistRow item={{ id: "settings-7", label: "서버 기반 인증으로 전환", status: "todo", note: "현재는 hardcoded access code MVP 보호" }} />
+            <ChecklistRow item={{ id: "settings-7", label: "Mac mini automation watcher status visibility", status: data.dataSource.sourceHealth.automation?.mode && data.dataSource.sourceHealth.automation.mode !== "manual" ? "done" : "doing", note: `${data.dataSource.sourceHealth.automation?.mode || "manual"} / ${data.dataSource.sourceHealth.automation?.state || "manual"}` }} />
+            <ChecklistRow item={{ id: "settings-8", label: "서버 기반 인증으로 전환", status: "todo", note: "현재는 hardcoded access code MVP 보호" }} />
           </div>
         </Panel>
         <div className="space-y-6">
@@ -41,11 +42,18 @@ export function SettingsSection({ data }: SettingsSectionProps) {
               <InfoTile label="GitHub mode" value={`${data.github.mode} · repos ${data.github.repoSnapshots.length}`} />
               <InfoTile label="Last sync status" value={data.dataSource.sourceHealth.lastSyncStatus || "-"} />
               <InfoTile label="Last sync at" value={formatDateTime(data.dataSource.sourceHealth.lastSyncAt)} />
+              <InfoTile label="Automation mode/state" value={`${data.dataSource.sourceHealth.automation?.mode || "manual"} / ${data.dataSource.sourceHealth.automation?.state || "manual"}`} />
+              <InfoTile label="Automation heartbeat" value={formatDateTime(data.dataSource.sourceHealth.automation?.heartbeatAt)} />
+              <InfoTile label="Automation PID" value={String(data.dataSource.sourceHealth.automation?.pid || "-")} />
+              <InfoTile label="Automation last run" value={`${data.dataSource.sourceHealth.automation?.lastRunStatus || "-"} / ${formatDateTime(data.dataSource.sourceHealth.automation?.lastRunFinishedAt)}`} />
+              <InfoTile label="Automation files" value={[data.dataSource.sourceHealth.automation?.statusPath, data.dataSource.sourceHealth.automation?.logPath, data.dataSource.sourceHealth.automation?.lockPath].filter(Boolean).join(" | ") || "-"} />
             </div>
-            {data.dataSource.sourceHealth.lastSyncMessage && (
+            {(data.dataSource.sourceHealth.lastSyncMessage || data.dataSource.sourceHealth.automation?.lastRunMessage || data.dataSource.sourceHealth.automation?.nextSuggestedAction) && (
               <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
                 <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">Source health note</p>
-                <p>{data.dataSource.sourceHealth.lastSyncMessage}</p>
+                {data.dataSource.sourceHealth.lastSyncMessage && <p>{data.dataSource.sourceHealth.lastSyncMessage}</p>}
+                {data.dataSource.sourceHealth.automation?.lastRunMessage && <p className="mt-2">automation: {data.dataSource.sourceHealth.automation.lastRunMessage}</p>}
+                {data.dataSource.sourceHealth.automation?.nextSuggestedAction && <p className="mt-2 text-white/60">next: {data.dataSource.sourceHealth.automation.nextSuggestedAction}</p>}
               </div>
             )}
           </Panel>
