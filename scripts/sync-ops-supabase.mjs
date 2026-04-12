@@ -8,8 +8,16 @@ import { createClient } from "@supabase/supabase-js";
 const repoRoot = process.cwd();
 const projectsPath = path.join(repoRoot, "data", "ops", "projects.json");
 const tasksPath = path.join(repoRoot, "data", "ops", "tasks.json");
+const ENV_FILES = [
+  ".env.local",
+  ".env.development.local",
+  ".env.development",
+  ".env",
+];
 
 async function main() {
+  await loadLocalEnvFiles();
+
   const supabase = getSupabaseAdminClient();
   const sourceConfig = await resolveSourceConfig();
   const [projects, tasks, notes] = await Promise.all([
@@ -50,15 +58,22 @@ async function main() {
     throw error;
   }
 
-  console.log(`Synced ${projects.length} projects, ${tasks.length} tasks, ${notes.length} notes to Supabase.`);
+  console.log(
+    `Synced ${projects.length} projects, ${tasks.length} tasks, ${notes.length} notes to Supabase.`,
+  );
 }
 
 function getSupabaseAdminClient() {
-  const url = process.env.PORTFOLIO_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.PORTFOLIO_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url =
+    process.env.PORTFOLIO_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key =
+    process.env.PORTFOLIO_SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !key) {
-    throw new Error("Missing PORTFOLIO_SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) and PORTFOLIO_SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_SERVICE_ROLE_KEY).");
+    throw new Error(
+      "Missing PORTFOLIO_SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) and PORTFOLIO_SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_SERVICE_ROLE_KEY).",
+    );
   }
 
   return createClient(url, key, {
@@ -71,6 +86,46 @@ function getSupabaseAdminClient() {
 
 async function readJson(filePath) {
   return JSON.parse(await fs.readFile(filePath, "utf8"));
+}
+
+async function loadLocalEnvFiles() {
+  for (const fileName of ENV_FILES) {
+    const filePath = path.join(repoRoot, fileName);
+
+    try {
+      const contents = await fs.readFile(filePath, "utf8");
+      applyEnvFile(contents);
+    } catch {
+      // ignore missing env files
+    }
+  }
+}
+
+function applyEnvFile(contents) {
+  for (const line of contents.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+
+    const equalsIndex = trimmed.indexOf("=");
+    if (equalsIndex === -1) continue;
+
+    let key = trimmed.slice(0, equalsIndex).trim();
+    if (key.startsWith("export ")) {
+      key = key.slice("export ".length).trim();
+    }
+
+    if (!key || process.env[key] !== undefined) continue;
+
+    let value = trimmed.slice(equalsIndex + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    process.env[key] = value;
+  }
 }
 
 async function upsertProjects(supabase, projects) {
@@ -92,8 +147,7 @@ async function upsertProjects(supabase, projects) {
     updated_at: new Date().toISOString(),
   }));
 
-  const { error } = await supabase.from("ops_projects").upsert(rows, { onConflict: "id" });
-  if (error) throw error;
+  await upsertRowsWithSchemaFallback(supabase, "ops_projects", rows, "id");
 }
 
 async function upsertTasks(supabase, tasks) {
@@ -113,8 +167,7 @@ async function upsertTasks(supabase, tasks) {
     updated_at: task.updatedAt,
   }));
 
-  const { error } = await supabase.from("ops_tasks").upsert(rows, { onConflict: "id" });
-  if (error) throw error;
+  await upsertRowsWithSchemaFallback(supabase, "ops_tasks", rows, "id");
 }
 
 async function upsertNotes(supabase, notes) {
@@ -135,8 +188,7 @@ async function upsertNotes(supabase, notes) {
     raw_excerpt: note.rawExcerpt,
   }));
 
-  const { error } = await supabase.from("ops_notes").upsert(rows, { onConflict: "id" });
-  if (error) throw error;
+  await upsertRowsWithSchemaFallback(supabase, "ops_notes", rows, "id");
 }
 
 async function upsertSyncState(supabase, sourceConfig, notesCount) {
@@ -145,17 +197,67 @@ async function upsertSyncState(supabase, sourceConfig, notesCount) {
     { key: "generated_at", value: generatedAt },
     { key: "workspace_root", value: sourceConfig.workspaceRoot },
     { key: "notes_roots", value: JSON.stringify(sourceConfig.roots) },
-    { key: "resolved_roots", value: JSON.stringify(sourceConfig.resolvedRoots) },
+    {
+      key: "resolved_roots",
+      value: JSON.stringify(sourceConfig.resolvedRoots),
+    },
     { key: "notes_count", value: String(notesCount) },
   ].map((row) => ({ ...row, updated_at: generatedAt }));
 
-  const { error } = await supabase.from("ops_sync_state").upsert(rows, { onConflict: "key" });
-  if (error) throw error;
+  await upsertRowsWithSchemaFallback(supabase, "ops_sync_state", rows, "key");
 }
 
 async function insertSyncRun(supabase, row) {
   const { error } = await supabase.from("ops_sync_runs").insert(row);
   if (error) throw error;
+}
+
+async function upsertRowsWithSchemaFallback(
+  supabase,
+  tableName,
+  rows,
+  onConflict,
+) {
+  let candidateRows = rows.map((row) => ({ ...row }));
+  const removedColumns = new Set();
+
+  while (true) {
+    const { error } = await supabase
+      .from(tableName)
+      .upsert(candidateRows, { onConflict });
+
+    if (!error) return;
+
+    const missingColumn = parseMissingColumnError(error, tableName);
+    if (!missingColumn || removedColumns.has(missingColumn)) {
+      throw error;
+    }
+
+    removedColumns.add(missingColumn);
+    candidateRows = candidateRows.map((row) => {
+      const nextRow = { ...row };
+      delete nextRow[missingColumn];
+      return nextRow;
+    });
+
+    console.warn(
+      `Supabase table ${tableName} is missing column ${missingColumn}; retrying without that field.`,
+    );
+  }
+}
+
+function parseMissingColumnError(error, tableName) {
+  const message = error?.message ?? String(error);
+  const match = message.match(
+    /Could not find the '([^']+)' column of '([^']+)' in the schema cache\.?/i,
+  );
+
+  if (!match) return null;
+
+  const [, columnName, foundTableName] = match;
+  if (foundTableName !== tableName) return null;
+
+  return columnName;
 }
 
 const DEFAULT_SOURCE_CONFIG = {
@@ -203,22 +305,32 @@ async function resolveSourceConfig() {
 
 async function loadNotes(sourceConfig) {
   const markdownFiles = (
-    await Promise.all(sourceConfig.resolvedRoots.map((root) => collectMarkdownFiles(root.path)))
+    await Promise.all(
+      sourceConfig.resolvedRoots.map((root) => collectMarkdownFiles(root.path)),
+    )
   ).flat();
 
-  const uniqueFiles = [...new Set(markdownFiles.map((filePath) => path.resolve(filePath)))];
-  const notes = await Promise.all(uniqueFiles.map((filePath) => buildNoteItem(sourceConfig, filePath)));
+  const uniqueFiles = [
+    ...new Set(markdownFiles.map((filePath) => path.resolve(filePath))),
+  ];
+  const notes = await Promise.all(
+    uniqueFiles.map((filePath) => buildNoteItem(sourceConfig, filePath)),
+  );
 
-  return notes.filter(Boolean).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  return notes
+    .filter(Boolean)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 async function collectMarkdownFiles(rootPath) {
   const entries = await fs.readdir(rootPath, { withFileTypes: true });
-  const nested = await Promise.all(entries.map(async (entry) => {
-    const entryPath = path.join(rootPath, entry.name);
-    if (entry.isDirectory()) return collectMarkdownFiles(entryPath);
-    return /\.mdx?$/i.test(entry.name) ? [entryPath] : [];
-  }));
+  const nested = await Promise.all(
+    entries.map(async (entry) => {
+      const entryPath = path.join(rootPath, entry.name);
+      if (entry.isDirectory()) return collectMarkdownFiles(entryPath);
+      return /\.mdx?$/i.test(entry.name) ? [entryPath] : [];
+    }),
+  );
 
   return nested.flat();
 }
@@ -229,13 +341,26 @@ async function buildNoteItem(sourceConfig, filePath) {
   const parsed = parseFrontmatter(raw);
   const content = parsed.content.trim();
   const relativePath = toExportRelativePath(sourceConfig, filePath);
-  const contentLines = content.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const contentLines = content
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
 
-  const headings = contentLines.filter((line) => line.startsWith("#")).map((line) => line.replace(/^#+\s*/, "").trim()).slice(0, 6);
-  const bullets = contentLines.filter((line) => /^[-*]\s+/.test(line)).map((line) => line.replace(/^[-*]\s+/, "").trim()).slice(0, 5);
-  const preview = contentLines.filter((line) => !line.startsWith("#") && !/^[-*]\s+/.test(line)).slice(0, 4);
+  const headings = contentLines
+    .filter((line) => line.startsWith("#"))
+    .map((line) => line.replace(/^#+\s*/, "").trim())
+    .slice(0, 6);
+  const bullets = contentLines
+    .filter((line) => /^[-*]\s+/.test(line))
+    .map((line) => line.replace(/^[-*]\s+/, "").trim())
+    .slice(0, 5);
+  const preview = contentLines
+    .filter((line) => !line.startsWith("#") && !/^[-*]\s+/.test(line))
+    .slice(0, 4);
 
-  const title = headings[0] || prettifyTitle(path.basename(relativePath, path.extname(relativePath)));
+  const title =
+    headings[0] ||
+    prettifyTitle(path.basename(relativePath, path.extname(relativePath)));
   const summary = preview[0] || bullets[0] || `${title} note`;
   const rawExcerpt = contentLines.slice(0, 18).join("\n");
 
@@ -258,18 +383,31 @@ async function buildNoteItem(sourceConfig, filePath) {
 }
 
 function toExportRelativePath(sourceConfig, filePath) {
-  const matchedRoot = sourceConfig.resolvedRoots.find((root) => filePath.startsWith(root.path + path.sep) || filePath === root.path);
+  const matchedRoot = sourceConfig.resolvedRoots.find(
+    (root) =>
+      filePath.startsWith(root.path + path.sep) || filePath === root.path,
+  );
   if (!matchedRoot) return path.relative(sourceConfig.workspaceRoot, filePath);
-  return path.join(matchedRoot.label, path.relative(matchedRoot.path, filePath));
+  return path.join(
+    matchedRoot.label,
+    path.relative(matchedRoot.path, filePath),
+  );
 }
 
 function resolveWorkspaceRoot() {
-  return path.resolve(process.env.OPENCLAW_WORKSPACE || process.env.WORKSPACE_ROOT || path.join(os.homedir(), ".openclaw", "workspace"));
+  return path.resolve(
+    process.env.OPENCLAW_WORKSPACE ||
+      process.env.WORKSPACE_ROOT ||
+      path.join(os.homedir(), ".openclaw", "workspace"),
+  );
 }
 
 function parseList(value) {
   if (!value) return [];
-  return value.split(path.delimiter).map((item) => item.trim()).filter(Boolean);
+  return value
+    .split(path.delimiter)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function inferRootLabel(rootPath) {
@@ -298,31 +436,49 @@ function parseFrontmatter(raw) {
 
 function normalizeTags(rawTags) {
   if (!rawTags) return [];
-  return rawTags.replace(/^\[/, "").replace(/\]$/, "").split(",").map((tag) => tag.trim().replace(/^[\'\"]|[\'\"]$/g, "")).filter(Boolean);
+  return rawTags
+    .replace(/^\[/, "")
+    .replace(/\]$/, "")
+    .split(",")
+    .map((tag) => tag.trim().replace(/^[\'\"]|[\'\"]$/g, ""))
+    .filter(Boolean);
 }
 
 function normalizeOptionalValue(value) {
   if (!value) return undefined;
   const normalized = value.replace(/^[\'\"]|[\'\"]$/g, "").trim();
-  return !normalized || normalized === "undefined" || normalized === "null" ? undefined : normalized;
+  return !normalized || normalized === "undefined" || normalized === "null"
+    ? undefined
+    : normalized;
 }
 
 function normalizeNoteType(rawType, relativePath) {
   const normalized = rawType?.replace(/^[\'\"]|[\'\"]$/g, "").trim();
-  if (["daily-chat-log", "project-ops", "aeyong-debug", "weekly-review"].includes(normalized)) return normalized;
+  if (
+    ["daily-chat-log", "project-ops", "aeyong-debug", "weekly-review"].includes(
+      normalized,
+    )
+  )
+    return normalized;
   if (relativePath.startsWith("docs/")) return "reference";
   return "project-ops";
 }
 
 function extractLinks(raw) {
   const links = new Set();
-  for (const match of raw.matchAll(/\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|[^\]]+)?\]\]/g)) {
+  for (const match of raw.matchAll(
+    /\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|[^\]]+)?\]\]/g,
+  )) {
     const target = match[1]?.trim();
     if (target) links.add(target);
   }
   for (const match of raw.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
     const target = match[1]?.trim();
-    if (target && !target.startsWith("http://") && !target.startsWith("https://")) {
+    if (
+      target &&
+      !target.startsWith("http://") &&
+      !target.startsWith("https://")
+    ) {
       links.add(target.replace(/^\.\//, ""));
     }
   }
@@ -345,11 +501,16 @@ function formatDateTime(value) {
 }
 
 function prettifyTitle(value) {
-  return value.replace(/[-_]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+  return value
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function slugify(value) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 main().catch(async (error) => {
