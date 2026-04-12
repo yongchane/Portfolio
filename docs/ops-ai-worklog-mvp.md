@@ -124,7 +124,7 @@ curl -X POST "$PORTFOLIO_BASE_URL/api/ops/ingest" \
   }'
 ```
 
-The server creates a synthetic note row plus matching worklog/artifact rows so `/ops` still has note detail pages and typed artifact cards.
+The server creates a synthetic note row plus matching worklog/artifact rows so `/ops` still has note detail pages and typed artifact cards. It now also derives the matching Obsidian markdown path/content from the same normalized payload and writes that file back into the local vault whenever a writable workspace root is available.
 
 ## Single-machine Mac mini setup
 

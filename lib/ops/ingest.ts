@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHash, randomUUID } from "crypto";
 import type { NoteType, OpsArtifactRecord, WorklogRecord } from "@/lib/ops/types";
+import { buildDeterministicObsidianPath, exportWorklogToObsidian } from "@/lib/ops/obsidian-export";
 import { getSupabaseAdminClient, isSupabaseConfigured, isSupabaseOpsAvailable } from "@/lib/ops/supabase";
 
 type OpsIngestArtifactType = Exclude<OpsArtifactRecord["artifactType"], "worklog">;
@@ -56,6 +57,15 @@ export type OpsIngestResult = {
   artifactIds: string[];
   insertedArtifacts: number;
   updatedAt: string;
+  obsidianExport: {
+    attempted: boolean;
+    wroteFile: boolean;
+    relativePath: string;
+    absolutePath?: string;
+    rootPath?: string;
+    reason?: "workspace-unavailable" | "write-failed";
+    error?: string;
+  };
 };
 
 export function getOpsIngestToken() {
@@ -107,13 +117,42 @@ export async function ingestOpsWorklog(input: OpsIngestWorklogInput): Promise<Op
   const syncStateResult = await supabase.from("ops_sync_state").upsert(syncStateRows, { onConflict: "key" });
   if (syncStateResult.error) throw syncStateResult.error;
 
+  const obsidianExport = await exportWorklogToObsidian({
+    noteId: noteRow.id,
+    title: normalized.title,
+    summary: normalized.summary,
+    project: normalized.project,
+    actor: normalized.actor,
+    repo: normalized.repo,
+    branch: normalized.branch,
+    status: normalized.status,
+    sourceMachine: normalized.sourceMachine,
+    sessionId: normalized.sessionId,
+    runId: normalized.runId,
+    startedAt: normalized.startedAt,
+    finishedAt: normalized.finishedAt,
+    updatedAt: normalized.updatedAt,
+    tags: normalized.tags,
+    highlights: normalized.highlights,
+    decisions: normalized.decisions,
+    blockers: normalized.blockers,
+    nextActions: normalized.nextActions,
+    noteType: normalized.noteType,
+    notePath: noteRow.path,
+    noteTitle: noteRow.title,
+    noteContent: normalized.noteContent,
+    noteLinks: normalized.noteLinks,
+    workspaceRootLabel: normalized.workspaceRootLabel,
+    artifacts: normalized.artifacts,
+  });
+
   const syncRunResult = await supabase.from("ops_sync_runs").insert({
     status: "succeeded",
     source: "assistant-ingest",
     projects_count: 0,
     tasks_count: 0,
     notes_count: 1,
-    message: `Assistant ingest saved ${worklogRow.id} (${artifactRows.length} artifacts)`,
+    message: buildSyncRunMessage(worklogRow.id, artifactRows.length, obsidianExport),
   });
   if (syncRunResult.error) throw syncRunResult.error;
 
@@ -123,6 +162,15 @@ export async function ingestOpsWorklog(input: OpsIngestWorklogInput): Promise<Op
     artifactIds: artifactRows.map((row) => row.id),
     insertedArtifacts: artifactRows.length,
     updatedAt: normalized.updatedAt,
+    obsidianExport: {
+      attempted: obsidianExport.attempted,
+      wroteFile: obsidianExport.wroteFile,
+      relativePath: obsidianExport.relativePath,
+      absolutePath: obsidianExport.absolutePath,
+      rootPath: obsidianExport.rootPath,
+      reason: obsidianExport.reason,
+      error: obsidianExport.error,
+    },
   };
 }
 
@@ -289,6 +337,16 @@ function buildSyncStateRows(updatedAt: string) {
   ];
 }
 
+function buildSyncRunMessage(worklogId: string, artifactCount: number, obsidianExport: Awaited<ReturnType<typeof exportWorklogToObsidian>>) {
+  const exportStatus = obsidianExport.wroteFile
+    ? `obsidian mirror ${obsidianExport.relativePath}`
+    : obsidianExport.reason === "workspace-unavailable"
+      ? `obsidian mirror skipped (${obsidianExport.reason})`
+      : `obsidian mirror failed (${obsidianExport.error || obsidianExport.reason || "unknown"})`;
+
+  return `Assistant ingest saved ${worklogId} (${artifactCount} artifacts, ${exportStatus})`;
+}
+
 function buildNoteContent(input: ReturnType<typeof normalizeInput>) {
   if (input.noteContent?.trim()) {
     return input.noteContent.trim();
@@ -316,14 +374,34 @@ function buildNoteContent(input: ReturnType<typeof normalizeInput>) {
 }
 
 function buildNotePath(input: ReturnType<typeof normalizeInput>) {
-  if (input.notePath?.trim()) return input.notePath.trim().replace(/\\/g, "/");
-
-  const date = new Date(input.updatedAt);
-  const year = String(date.getUTCFullYear());
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  const slug = slugify(`${input.actor}-${input.project || input.repo || input.title}`) || "assistant-worklog";
-  return `obsidian-vault/01 Worklog/${year}/${month}/${day}/${year}-${month}-${day}-${slug}.md`;
+  return buildDeterministicObsidianPath({
+    noteId: input.noteId,
+    title: input.title,
+    summary: input.summary,
+    project: input.project,
+    actor: input.actor,
+    repo: input.repo,
+    branch: input.branch,
+    status: input.status,
+    sourceMachine: input.sourceMachine,
+    sessionId: input.sessionId,
+    runId: input.runId,
+    startedAt: input.startedAt,
+    finishedAt: input.finishedAt,
+    updatedAt: input.updatedAt,
+    tags: input.tags,
+    highlights: input.highlights,
+    decisions: input.decisions,
+    blockers: input.blockers,
+    nextActions: input.nextActions,
+    noteType: input.noteType,
+    notePath: input.notePath,
+    noteTitle: input.noteTitle,
+    noteContent: input.noteContent,
+    noteLinks: input.noteLinks,
+    workspaceRootLabel: input.workspaceRootLabel,
+    artifacts: input.artifacts,
+  });
 }
 
 function deriveNoteId(input: OpsIngestWorklogInput, updatedAt: string) {
@@ -370,8 +448,4 @@ function sanitizeNullable(value?: string) {
 function sanitizeId(value?: string) {
   const trimmed = value?.trim();
   return trimmed ? trimmed.replace(/\s+/g, "-") : "";
-}
-
-function slugify(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }

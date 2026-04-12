@@ -17,7 +17,8 @@ This repo now treats Supabase as the intended runtime source for `/ops`, with di
 1. Assistant/runtime sends a structured `POST /api/ops/ingest`
 2. Next server validates ops auth cookie or `PORTFOLIO_OPS_INGEST_TOKEN`
 3. Server upserts `ops_notes`, `ops_worklogs`, `ops_artifacts`, and sync metadata directly in Supabase
-4. `/ops` polling notices the new signature and auto-refreshes without any local watcher
+4. On hosts that have a writable local workspace, the same normalized record is also written back to an Obsidian-compatible markdown path under `obsidian-vault/01 Worklog/...`
+5. `/ops` polling notices the new signature and auto-refreshes without any local watcher
 
 ## Required env
 
@@ -38,6 +39,8 @@ Source roots:
 export PORTFOLIO_OPS_WORKSPACE_ROOT="/absolute/path/to/workspace"
 # optional override for exact roots
 export PORTFOLIO_OPS_NOTE_ROOTS="/abs/path/obsidian-vault:/abs/path/docs"
+# optional explicit destination for DB-first -> Obsidian markdown mirror
+export PORTFOLIO_OPS_OBSIDIAN_EXPORT_ROOT="/absolute/path/to/workspace"
 ```
 
 ## SQL bootstrap
@@ -98,6 +101,9 @@ Behavior:
 - upserts one synthetic `ops_notes` row (for note-detail surfaces)
 - upserts one `ops_worklogs` row
 - upserts one `worklog` artifact plus optional `decision` / `learning` artifacts
+- deterministically derives the matching Obsidian markdown path/content from the same normalized payload
+- if a writable workspace is available, writes that markdown note into `obsidian-vault/01 Worklog/...`
+- returns `result.obsidianExport` so callers can see whether the local mirror was written, skipped, or failed
 - updates sync metadata so `/ops` notices and refreshes on the next poll
 
 ## Loader behavior
@@ -128,3 +134,4 @@ Still up to you / deployment:
 - running the SQL bootstrap once
 - wiring env vars in local shell / Vercel
 - optional future RLS policies for anon/browser reads if you ever want client-side access
+- if you want the DB-first ingest path to also create local vault files hands-free, point `PORTFOLIO_OPS_OBSIDIAN_EXPORT_ROOT` (or `PORTFOLIO_OPS_WORKSPACE_ROOT`) at the real Mac mini workspace and run the ingest on a host that can write there
