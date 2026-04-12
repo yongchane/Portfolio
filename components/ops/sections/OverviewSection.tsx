@@ -71,7 +71,7 @@ export function OverviewSection({ data, summary, notesById, githubReposByName, s
                 <p className="mt-2 text-xs text-white/45">{worklog.project || worklog.repo || "unassigned"} · {worklog.sourceMachine || "source unknown"} · {formatDateTime(worklog.updatedAt)}</p>
               </div>
             ))}
-            {!data.worklogs.length && <EmptyLine message="아직 감지된 AI worklog가 없습니다. `obsidian-vault/01 Worklog/...` 아래에 markdown 기록을 추가하세요." />}
+            {!data.worklogs.length && <EmptyLine message="아직 감지된 AI worklog가 없습니다. markdown sync 또는 `/api/ops/ingest` direct ingest가 들어오면 여기에 바로 나타납니다." />}
           </div>
         </Panel>
         <Panel title="Recent typed artifacts">

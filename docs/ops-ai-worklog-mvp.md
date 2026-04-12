@@ -1,10 +1,10 @@
 # Portfolio AI worklog MVP
 
-This MVP adds one narrow but useful source of truth for `/ops`:
+This MVP adds two compatible source-of-truth paths for `/ops`:
 
-- AI work gets written as markdown files first
-- the files stay Obsidian-compatible
-- a local sync loop exports + ships them to Supabase
+- markdown-first: AI work gets written as markdown files first
+- DB-first: assistant/runtime can POST structured work directly into Supabase
+- the markdown path stays Obsidian-compatible
 - `/ops` can show recent AI activity and sync health without changing the rest of the console
 
 ## Storage convention
@@ -98,6 +98,33 @@ npm run ops:watch-source
 - watches the note roots plus `data/ops/projects.json` and `data/ops/tasks.json`
 - debounces bursts of file changes
 - uses the same lock protection
+
+## Direct DB-first ingest
+
+If the assistant is running somewhere that can reach the deployed Next server, it can skip local file watching and write directly:
+
+```bash
+curl -X POST "$PORTFOLIO_BASE_URL/api/ops/ingest" \
+  -H "Authorization: Bearer $PORTFOLIO_OPS_INGEST_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Assistant shipped a /ops improvement",
+    "summary": "Structured worklog persisted directly to Supabase.",
+    "project": "Portfolio Ops Console",
+    "actor": "openclaw",
+    "repo": "portfolio",
+    "branch": "develop",
+    "status": "completed",
+    "artifacts": [
+      {
+        "artifactType": "decision",
+        "summary": "Use direct ingest when runtime-generated work should not depend on a local watcher."
+      }
+    ]
+  }'
+```
+
+The server creates a synthetic note row plus matching worklog/artifact rows so `/ops` still has note detail pages and typed artifact cards.
 
 ## Single-machine Mac mini setup
 
