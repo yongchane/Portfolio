@@ -50,9 +50,11 @@ Apply `supabase/ops-schema.sql` in Supabase before the first sync.
 ## Commands
 
 ```bash
+npm run ops:sync-notes      # existing JSON export snapshot
 npm run ops:sync-supabase   # upsert projects/tasks/notes/worklogs into Supabase
 npm run ops:source-sync     # cron-friendly sync with lock
 npm run ops:watch-source    # local watch loop with debounce + lock
+npm run ops:ingest-work     # structured work result -> task update + note mirror
 npm run dev
 ```
 
@@ -61,6 +63,7 @@ npm run dev
 `POST /api/ops/ingest`
 
 Auth options:
+
 - authenticated `/ops` cookie session, or
 - `Authorization: Bearer $PORTFOLIO_OPS_INGEST_TOKEN`
 - `x-ops-ingest-token: $PORTFOLIO_OPS_INGEST_TOKEN`
@@ -97,7 +100,42 @@ Minimal payload:
 }
 ```
 
+## Aeyong -> /ops ingest path
+
+A practical local-safe ingest path now exists for structured work results:
+
+1. Build a structured work result JSON (`taskId`, `completedWork`, `nextActions`, optional `needsDecision`, `relatedDocs`, `status`)
+2. Run `npm run ops:ingest-work -- --input path/to/result.json`
+3. The runner converts it into an ingest payload, updates `data/ops/tasks.json`, and writes an Obsidian mirror note into the workspace vault
+4. If a local/dev server is running, you can instead POST the same payload through `POST /api/ops/ingest`
+5. When Supabase is reachable, the ingest route mirrors the affected task, related project row, and generated note row into `ops_tasks`, `ops_projects`, and `ops_notes` so the active read source stays closer to the write path
+
+HTTP auth options:
+
+- existing `/ops` authenticated session cookie, or
+- `Authorization: Bearer $PORTFOLIO_OPS_INGEST_TOKEN`
+- `x-ops-ingest-token: $PORTFOLIO_OPS_INGEST_TOKEN`
+
+Example structured result:
+
+```json
+{
+  "taskId": "task-obsidian-ops",
+  "status": "doing",
+  "summary": "Aeyong ingest loop local path verified",
+  "completedWork": [
+    "Implemented structured work-result ingest runner",
+    "Added /api/ops/ingest local write path"
+  ],
+  "nextActions": ["Wire deploy env for bearer-token HTTP ingest"],
+  "needsDecision": [
+    "Whether production should accept bearer token, cookie auth only, or both"
+  ]
+}
+```
+
 Behavior:
+
 - upserts one synthetic `ops_notes` row (for note-detail surfaces)
 - upserts one `ops_worklogs` row
 - upserts one `worklog` artifact plus optional `decision` / `learning` artifacts
@@ -119,17 +157,23 @@ Behavior:
 ## Current scope
 
 Implemented now:
+
 - schema SQL for `ops_projects`, `ops_tasks`, `ops_notes`, `ops_worklogs`, `ops_artifacts`, `ops_sync_state`, `ops_sync_runs`
 - sync script for projects/tasks/Obsidian notes -> Supabase, including rich project metadata (`sectors`, `checklist`, `admin_surfaces`, `vault_views`, `github_focus`) and note link graph data
 - AI worklog extraction from `obsidian-vault/01 Worklog/**` into typed Supabase rows
 - automatic typed artifact extraction for `worklog`, `decision`, and `learning` records from synced notes/worklogs
 - cron-friendly source sync command and local watch loop with debounce + lock file protection
 - direct assistant/server ingest route (`POST /api/ops/ingest`) that writes structured worklogs/artifacts straight into Supabase without local file watching
-- server data loader that reads `/ops` data from Supabase first, with direct workspace fallback
+- server data loader that can read `/ops` data from Supabase with local fallback
+- task/project patch routes now use Supabase-first writes when the active read path is Supabase, while still updating local JSON fallback
+- `/api/ops/ingest` now mirrors task + project + generated note rows into Supabase when reachable, instead of only updating the task path
+- `/ops` settings now surfaces source-health state (preferred mode, Supabase configured/reachable, latest sync status/message)
+- `/api/ops/notes-version` now reports the active data source metadata
 - `/ops` overview/settings/notes now surface recent AI work, typed artifacts, linked decisions/learnings, and source-health state (preferred mode, Supabase configured/reachable, latest sync status/message, worklog/artifact counts)
 - `/api/ops/notes-version` now reports the active data source metadata including worklog counts
 
 Still up to you / deployment:
+
 - actual Supabase project + secrets
 - running the SQL bootstrap once
 - wiring env vars in local shell / Vercel

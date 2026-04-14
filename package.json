@@ -16,6 +16,7 @@
     "ops:ensure-watch": "node scripts/ops-automation.mjs ensure-watch",
     "ops:watch-status": "node scripts/ops-automation.mjs status",
     "ops:watch-stop": "node scripts/ops-automation.mjs stop",
+    "ops:ingest-work": "node scripts/ingest-ops-work-result.mjs",
     "ci": "npm run lint && npm run typecheck && npm run build",
     "ops:sync-github": "node scripts/sync-ops-github.mjs"
   },

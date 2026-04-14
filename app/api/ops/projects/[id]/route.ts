@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isOpsAuthenticated } from "@/lib/ops/auth";
+import { isOpsAuthenticated, isSameOriginRequest } from "@/lib/ops/auth";
 import { updateProject } from "@/lib/ops/mutations";
 import type { ProgressState, ProjectStage } from "@/lib/ops/types";
 
@@ -10,6 +10,10 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ message: "Cross-origin mutation blocked" }, { status: 403 });
+  }
+
   if (!(await isOpsAuthenticated())) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
