@@ -26,6 +26,9 @@ export type ProjectsSectionProps = OpsSectionBaseProps & {
   selectedProjectBoards: GitHubProjectBoardSnapshot[];
   selectedProjectReleases: OpsConsoleData["github"]["releases"];
   selectedProjectNotes: NoteItem[];
+  selectedProjectNotesCount: number;
+  selectedProjectNextActions: string[];
+  projectExecutionStatus: Record<Task["status"], number>;
   projectRepoHealth: {
     score: number;
     issuePressure: number;

@@ -41,6 +41,9 @@ export function ProjectsSection({
   selectedProjectBoards,
   selectedProjectReleases,
   selectedProjectNotes,
+  selectedProjectNotesCount,
+  selectedProjectNextActions,
+  projectExecutionStatus,
   projectRepoHealth,
   vaultLinksByNoteId,
 }: ProjectsSectionProps) {
@@ -171,7 +174,7 @@ export function ProjectsSection({
             />
             <InfoTile
               label="Linked notes"
-              value={String(selectedProjectNotes.length)}
+              value={String(selectedProjectNotesCount)}
             />
             <InfoTile
               label="Connected tasks"
@@ -300,6 +303,26 @@ export function ProjectsSection({
           </div>
 
           <div className="grid gap-6 xl:grid-cols-3">
+            <Panel title="Execution snapshot">
+              <div className="grid gap-3 md:grid-cols-2">
+                <InfoTile label="Planned" value={String(projectExecutionStatus.planned)} />
+                <InfoTile label="Doing" value={String(projectExecutionStatus.doing)} />
+                <InfoTile label="Verifying" value={String(projectExecutionStatus.verifying)} />
+                <InfoTile label="Shipped" value={String(projectExecutionStatus.shipped)} />
+              </div>
+              <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+                <p className="mb-3 text-sm font-semibold text-white/55">Next actions snapshot</p>
+                {selectedProjectNextActions.length ? (
+                  <ul className="list-disc space-y-2 pl-4 text-sm text-white/80">
+                    {selectedProjectNextActions.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <EmptyLine message="연결된 task에 아직 next action이 없습니다." />
+                )}
+              </div>
+            </Panel>
             <Panel title="Sector progress">
               <div className="space-y-3">
                 {(selectedProject.sectors || []).map((sector) => (

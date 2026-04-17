@@ -6,13 +6,6 @@ import {
   getSupabaseOpsDiagnostics,
 } from "@/lib/ops/supabase";
 import type {
-  Project,
-  ProjectStage,
-  ProgressState,
-  Task,
-  TaskStatus,
-} from "@/lib/ops/types";
-import type {
   NoteItem,
   Project,
   ProjectStage,

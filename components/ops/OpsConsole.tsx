@@ -21,6 +21,9 @@ import {
   filterNotes,
   getAttentionTasks,
   getProjectBoardsForRepo,
+  getProjectExecutionStatus,
+  getProjectLinkedNotesCount,
+  getProjectNextActions,
   getProjectReleases,
   getProjectRepoHealth,
   getProjectTasks,
@@ -58,6 +61,9 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
   const selectedProjectBoards = useMemo(() => getProjectBoardsForRepo(selectedRepo, projectBoardsByOwner), [selectedRepo, projectBoardsByOwner]);
   const selectedProjectReleases = useMemo(() => (safeData ? getProjectReleases(safeData, selectedRepo?.repo) : []), [safeData, selectedRepo?.repo]);
   const selectedProjectNotes = useMemo(() => getSelectedProjectNotes(safeData?.notes || [], selectedProject), [safeData?.notes, selectedProject]);
+  const selectedProjectNotesCount = useMemo(() => getProjectLinkedNotesCount(safeData?.notes || [], selectedProject), [safeData?.notes, selectedProject]);
+  const selectedProjectNextActions = useMemo(() => getProjectNextActions(projectTasks), [projectTasks]);
+  const projectExecutionStatus = useMemo(() => getProjectExecutionStatus(projectTasks), [projectTasks]);
   const vaultLinksByNoteId = useMemo(() => (safeData ? createVaultLinksByNoteId(safeData) : new Map()), [safeData]);
   const projectRepoHealth = useMemo(() => getProjectRepoHealth(selectedProject, selectedRepo, selectedProjectReleases), [selectedProject, selectedRepo, selectedProjectReleases]);
   const releaseProjects = useMemo(() => (safeData ? getReleaseProjects(safeData, githubReposByName) : []), [safeData, githubReposByName]);
@@ -187,7 +193,7 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
         <main className="p-6 lg:p-10">
           {section === "overview" && <OverviewSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} attentionTasks={attentionTasks} liveStatus={liveStatus} />}
           {section === "tasks" && <TasksSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} />}
-          {section === "projects" && selectedProject && <ProjectsSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} selectedProject={selectedProject} projectTasks={projectTasks} selectedRepo={selectedRepo} selectedProjectBoards={selectedProjectBoards} selectedProjectReleases={selectedProjectReleases} selectedProjectNotes={selectedProjectNotes} projectRepoHealth={projectRepoHealth} vaultLinksByNoteId={vaultLinksByNoteId} />}
+          {section === "projects" && selectedProject && <ProjectsSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} selectedProject={selectedProject} projectTasks={projectTasks} selectedRepo={selectedRepo} selectedProjectBoards={selectedProjectBoards} selectedProjectReleases={selectedProjectReleases} selectedProjectNotes={selectedProjectNotes} selectedProjectNotesCount={selectedProjectNotesCount} selectedProjectNextActions={selectedProjectNextActions} projectExecutionStatus={projectExecutionStatus} projectRepoHealth={projectRepoHealth} vaultLinksByNoteId={vaultLinksByNoteId} />}
           {section === "notes" && <NotesSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} filteredNotes={filteredNotes} selectedNote={selectedNote} selectedNoteId={selectedNoteId} noteQuery={noteQuery} setNoteQuery={setNoteQuery} vaultLinksByNoteId={vaultLinksByNoteId} />}
           {section === "releases" && <ReleasesSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} releaseProjects={releaseProjects} />}
           {section === "settings" && <SettingsSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} />}

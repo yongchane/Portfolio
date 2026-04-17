@@ -92,6 +92,43 @@ export function getProjectBoardsForRepo(repo: GitHubRepoSnapshot | undefined, pr
   return repo ? projectBoardsByOwner.get(repo.owner) || [] : [];
 }
 
+export function getProjectLinkedNotesCount(notes: NoteItem[], project: Project | undefined) {
+  return getSelectedProjectNotes(notes, project).length;
+}
+
+export function getProjectNextActions(tasks: Task[], limit = 3) {
+  const seen = new Set<string>();
+  const nextActions: string[] = [];
+
+  for (const task of tasks) {
+    for (const item of task.nextActions || []) {
+      const normalized = item.trim();
+      if (!normalized || seen.has(normalized)) continue;
+      seen.add(normalized);
+      nextActions.push(normalized);
+      if (nextActions.length >= limit) return nextActions;
+    }
+  }
+
+  return nextActions;
+}
+
+export function getProjectExecutionStatus(projectTasks: Task[]) {
+  const counts = {
+    planned: 0,
+    doing: 0,
+    verifying: 0,
+    shipped: 0,
+    blocked: 0,
+  } as Record<Task["status"], number>;
+
+  for (const task of projectTasks) {
+    counts[task.status] += 1;
+  }
+
+  return counts;
+}
+
 export function getProjectReleases(data: OpsConsoleData, repo?: string) {
   if (!repo) return [];
   return data.github.releases.filter((release) => release.repo === repo).slice(0, 4);
