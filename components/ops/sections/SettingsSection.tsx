@@ -136,6 +136,22 @@ export function SettingsSection({ data }: SettingsSectionProps) {
                 note: "현재는 hardcoded access code MVP 보호",
               }}
             />
+            <ChecklistRow
+              item={{
+                id: "settings-14",
+                label: "Task / Project write path 검증 완료",
+                status: "done",
+                note: "인증된 /ops에서 PATCH route로 JSON/Supabase mirror 흐름을 사용",
+              }}
+            />
+            <ChecklistRow
+              item={{
+                id: "settings-15",
+                label: "GitHub project board cache 권한/동기화 정상화",
+                status: data.github.projectBoards.length ? "done" : "blocked",
+                note: `${data.github.projectBoards.length} boards · generated ${formatDateTime(data.github.generatedAt)}`,
+              }}
+            />
           </div>
         </Panel>
         <div className="space-y-6">
