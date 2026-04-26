@@ -60,3 +60,5 @@ export type ReleasesSectionProps = OpsSectionBaseProps & {
 };
 
 export type SettingsSectionProps = OpsSectionBaseProps;
+
+export type AeyongSectionProps = OpsSectionBaseProps;

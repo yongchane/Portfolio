@@ -1,4 +1,5 @@
 import { getOpsAutomationStatus } from "@/lib/ops/automation";
+import { getOpenClawDiagnostics } from "@/lib/ops/openclaw";
 import { getNotesSourceData } from "@/lib/ops/notes-source";
 import { getSupabaseOpsConsoleData } from "@/lib/ops/supabase-data";
 import { getOpsDataMode, getSupabaseOpsDiagnostics } from "@/lib/ops/supabase";
@@ -9,10 +10,11 @@ import { extractArtifactRecords, summarizeArtifactCounts } from "@/lib/ops/artif
 import { extractWorklogRecords } from "@/lib/ops/worklog";
 
 export async function getOpsConsoleData(): Promise<OpsConsoleData> {
-  const [supabaseData, diagnostics, automation] = await Promise.all([
+  const [supabaseData, diagnostics, automation, openclaw] = await Promise.all([
     getSupabaseOpsConsoleData(),
     getSupabaseOpsDiagnostics(),
     getOpsAutomationStatus(),
+    getOpenClawDiagnostics(),
   ]);
 
   if (supabaseData) {
@@ -20,6 +22,7 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
       ...supabaseData,
       github: opsGitHubCache,
       vault: buildVaultSummary(supabaseData.notes),
+      openclaw,
       worklogs: supabaseData.worklogs,
       artifacts: supabaseData.artifacts,
       dataSource: {
@@ -66,6 +69,7 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
     artifacts,
     github: opsGitHubCache,
     vault: buildVaultSummary(notesSource.notes),
+    openclaw,
     dataSource: {
       mode: notesSource.mode,
       generatedAt: notesSource.generatedAt,

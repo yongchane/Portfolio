@@ -71,6 +71,16 @@ export function ProjectsSection({
     data.github.warnings,
     selectedRepo?.owner,
   );
+  const selectedWorkflowRuns = (data.github.workflowRuns || []).filter(
+    (run) => run.repo === selectedRepo?.repo,
+  );
+  const selectedSecurityAlerts = (data.github.securityAlerts || []).filter(
+    (alert) => alert.repo === selectedRepo?.repo,
+  );
+  const latestWorkflowRun = selectedWorkflowRuns[0];
+  const failedWorkflowRuns = selectedWorkflowRuns.filter(
+    (run) => run.conclusion === "failure" || run.conclusion === "cancelled",
+  );
 
   useEffect(() => {
     setSummaryDraft(selectedProject.summary);
@@ -447,6 +457,59 @@ export function ProjectsSection({
                     />
                   </div>
                 )}
+                <div className="grid gap-3 md:grid-cols-2">
+                  <InfoTile
+                    label="Latest Actions run"
+                    value={
+                      latestWorkflowRun
+                        ? `${latestWorkflowRun.name} · ${latestWorkflowRun.conclusion || latestWorkflowRun.status}`
+                        : "no workflow run cached"
+                    }
+                  />
+                  <InfoTile
+                    label="Security alerts"
+                    value={`${selectedSecurityAlerts.length} open · failed runs ${failedWorkflowRuns.length}`}
+                  />
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/80">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="font-semibold text-white/65">Security / CI feedback</p>
+                    <span
+                      className={clsx(
+                        "rounded-full px-3 py-1 text-xs font-semibold",
+                        selectedSecurityAlerts.length || failedWorkflowRuns.length
+                          ? "bg-rose-100 text-rose-700"
+                          : "bg-emerald-100 text-emerald-700",
+                      )}
+                    >
+                      {selectedSecurityAlerts.length || failedWorkflowRuns.length
+                        ? "needs review"
+                        : "clean cached signal"}
+                    </span>
+                  </div>
+                  {selectedSecurityAlerts.length ? (
+                    <ul className="list-disc space-y-2 pl-4 text-xs text-white/70">
+                      {selectedSecurityAlerts.slice(0, 5).map((alert) => (
+                        <li key={`${alert.kind}-${alert.id}`}>
+                          {alert.kind} · {alert.severity || "severity unknown"} · {alert.title}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-white/55">
+                      캐시에 열린 보안 알림이 없습니다. GitHub token 권한이 부족한 경우 warnings에 blocked 사유를 남깁니다.
+                    </p>
+                  )}
+                  {selectedWorkflowRuns.length > 0 && (
+                    <div className="mt-3 space-y-2 border-t border-white/10 pt-3 text-xs text-white/60">
+                      {selectedWorkflowRuns.slice(0, 3).map((run) => (
+                        <a key={run.id} href={run.url} target="_blank" rel="noreferrer" className="block hover:text-white">
+                          {run.name} · {run.branch || "branch?"} · {run.conclusion || run.status} · {run.updatedAt || "updated?"}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 {!!selectedProject.githubFocus?.length && (
                   <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/80">
                     <p className="mb-3 text-sm font-semibold text-white/55">

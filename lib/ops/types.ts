@@ -258,6 +258,30 @@ export type GitHubProjectBoardSnapshot = {
   fieldNames?: string[];
 };
 
+export type GitHubWorkflowRunSnapshot = {
+  id: string;
+  repo: string;
+  name: string;
+  status: string;
+  conclusion?: string;
+  branch?: string;
+  event?: string;
+  url: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type GitHubSecurityAlertSnapshot = {
+  id: string;
+  repo: string;
+  kind: "dependabot" | "code-scanning" | "secret-scanning";
+  severity?: string;
+  state: string;
+  title: string;
+  url?: string;
+  createdAt?: string;
+};
+
 export type GitHubCache = {
   generatedAt: string;
   mode: "live" | "fallback";
@@ -265,6 +289,8 @@ export type GitHubCache = {
   repoSnapshots: GitHubRepoSnapshot[];
   releases: GitHubReleaseSnapshot[];
   projectBoards: GitHubProjectBoardSnapshot[];
+  workflowRuns?: GitHubWorkflowRunSnapshot[];
+  securityAlerts?: GitHubSecurityAlertSnapshot[];
   warnings?: string[];
 };
 
@@ -282,6 +308,60 @@ export type OpsVersionSnapshot = {
   signature: string;
 };
 
+export type OpenClawModelSnapshot = {
+  primary?: string;
+  fallback: string[];
+  allowed: string[];
+  gpt55Configured: boolean;
+  configuredAgents: Array<{ id: string; model?: string }>;
+  openaiCodexModelCount?: number;
+};
+
+export type OpenClawPreferenceSnapshot = {
+  checklistFirst: boolean;
+  conciseKeywordReport: boolean;
+  preferredAssistantName?: string;
+  preferredModelMention?: string;
+  staleModelMention: boolean;
+};
+
+export type OpenClawFileSnapshot = {
+  id: string;
+  label: string;
+  kind: "policy" | "identity" | "profile" | "memory" | "automation" | "tooling";
+  path: string;
+  exists: boolean;
+  updatedAt?: string;
+  bytes?: number;
+  lineCount?: number;
+  summary?: string;
+};
+
+export type OpenClawOperatingIssue = {
+  id: string;
+  severity: "low" | "medium" | "high";
+  title: string;
+  detail: string;
+  recommendation: string;
+};
+
+export type OpenClawDiagnostics = {
+  generatedAt: string;
+  host: string;
+  workspaceRoot: string;
+  configPath: string;
+  model: OpenClawModelSnapshot;
+  preferences: OpenClawPreferenceSnapshot;
+  files: OpenClawFileSnapshot[];
+  issues: OpenClawOperatingIssue[];
+  health: {
+    score: number;
+    high: number;
+    medium: number;
+    low: number;
+  };
+};
+
 export type OpsConsoleData = {
   projects: Project[];
   tasks: Task[];
@@ -290,6 +370,7 @@ export type OpsConsoleData = {
   artifacts: OpsArtifactRecord[];
   github: GitHubCache;
   vault: VaultSummary;
+  openclaw: OpenClawDiagnostics;
   dataSource: {
     mode: "live" | "export" | "supabase";
     generatedAt: string;

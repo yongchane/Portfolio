@@ -11,7 +11,7 @@ import type {
   WorklogRecord,
 } from "@/lib/ops/types";
 
-export type SupabaseOpsConsoleData = Omit<OpsConsoleData, "github" | "vault">;
+export type SupabaseOpsConsoleData = Omit<OpsConsoleData, "github" | "vault" | "openclaw">;
 
 export type SyncStateRow = {
   key: string;

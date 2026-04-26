@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-17T06:51:22.457Z",
+  "generatedAt": "2026-04-26T08:04:49.881Z",
   "mode": "live",
   "account": "yongchane",
   "repoSnapshots": [
@@ -51,7 +51,7 @@
       "description": "",
       "visibility": "public",
       "defaultBranch": "main",
-      "pushedAt": "2026-04-14T13:59:34Z",
+      "pushedAt": "2026-04-17T12:02:25Z",
       "updatedAt": "2026-02-23T10:29:34Z",
       "stargazerCount": 0,
       "forkCount": 0,
@@ -408,5 +408,77 @@
       ]
     }
   ],
-  "warnings": []
+  "workflowRuns": [
+    {
+      "id": "24564039810",
+      "repo": "yongchane/Portfolio",
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "branch": "develop",
+      "event": "push",
+      "url": "https://github.com/yongchane/Portfolio/actions/runs/24564039810",
+      "createdAt": "2026-04-17T12:02:27Z",
+      "updatedAt": "2026-04-17T12:03:18Z"
+    },
+    {
+      "id": "24563544073",
+      "repo": "yongchane/Portfolio",
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "branch": "develop",
+      "event": "push",
+      "url": "https://github.com/yongchane/Portfolio/actions/runs/24563544073",
+      "createdAt": "2026-04-17T11:49:20Z",
+      "updatedAt": "2026-04-17T11:50:10Z"
+    },
+    {
+      "id": "24403231136",
+      "repo": "yongchane/Portfolio",
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "failure",
+      "branch": "develop",
+      "event": "push",
+      "url": "https://github.com/yongchane/Portfolio/actions/runs/24403231136",
+      "createdAt": "2026-04-14T13:59:37Z",
+      "updatedAt": "2026-04-14T14:00:04Z"
+    },
+    {
+      "id": "24301221920",
+      "repo": "yongchane/Portfolio",
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "branch": "develop",
+      "event": "push",
+      "url": "https://github.com/yongchane/Portfolio/actions/runs/24301221920",
+      "createdAt": "2026-04-12T07:12:59Z",
+      "updatedAt": "2026-04-12T07:13:50Z"
+    },
+    {
+      "id": "24301127016",
+      "repo": "yongchane/Portfolio",
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "branch": "develop",
+      "event": "push",
+      "url": "https://github.com/yongchane/Portfolio/actions/runs/24301127016",
+      "createdAt": "2026-04-12T07:07:17Z",
+      "updatedAt": "2026-04-12T07:08:07Z"
+    }
+  ],
+  "securityAlerts": [],
+  "warnings": [
+    "security:dependabot(yongchane/tori-admin): Command failed: gh api repos/yongchane/tori-admin/dependabot/alerts?state=open&per_page=20\ngh: Dependabot alerts are disabled for this repository. (HTTP 403)\ngh: This API operation needs the \"admin:repo_hook\" scope. To request it, run:  gh auth refresh -h github.com -s admin:repo_hook\n",
+    "security:code-scanning(yongchane/tori-admin): Command failed: gh api repos/yongchane/tori-admin/code-scanning/alerts?state=open&per_page=20\ngh: Code scanning is not enabled for this repository. Please enable code scanning in the repository settings. (HTTP 403)\n",
+    "security:secret-scanning(yongchane/tori-admin): Command failed: gh api repos/yongchane/tori-admin/secret-scanning/alerts?state=open&per_page=20\ngh: Secret scanning is disabled on this repository. (HTTP 404)\n",
+    "security:code-scanning(Pawpong/pawpong_admin_frontend): Command failed: gh api repos/Pawpong/pawpong_admin_frontend/code-scanning/alerts?state=open&per_page=20\ngh: no analysis found (HTTP 404)\ngh: This API operation needs the \"admin:repo_hook\" scope. To request it, run:  gh auth refresh -h github.com -s admin:repo_hook\n",
+    "security:secret-scanning(Pawpong/pawpong_admin_frontend): Command failed: gh api repos/Pawpong/pawpong_admin_frontend/secret-scanning/alerts?state=open&per_page=20\ngh: Secret scanning is disabled on this repository. (HTTP 404)\n",
+    "security:dependabot(yongchane/Portfolio): Command failed: gh api repos/yongchane/Portfolio/dependabot/alerts?state=open&per_page=20\ngh: Dependabot alerts are disabled for this repository. (HTTP 403)\ngh: This API operation needs the \"admin:repo_hook\" scope. To request it, run:  gh auth refresh -h github.com -s admin:repo_hook\n",
+    "security:code-scanning(yongchane/Portfolio): Command failed: gh api repos/yongchane/Portfolio/code-scanning/alerts?state=open&per_page=20\ngh: no analysis found (HTTP 404)\ngh: This API operation needs the \"admin:repo_hook\" scope. To request it, run:  gh auth refresh -h github.com -s admin:repo_hook\n",
+    "security:secret-scanning(yongchane/Portfolio): Command failed: gh api repos/yongchane/Portfolio/secret-scanning/alerts?state=open&per_page=20\ngh: Secret scanning is disabled on this repository. (HTTP 404)\n"
+  ]
 }

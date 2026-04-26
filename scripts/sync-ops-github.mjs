@@ -15,7 +15,9 @@ const fallback = {
   repoSnapshots: [],
   releases: [],
   projectBoards: [],
-  warnings: ['GitHub sync has not been run yet. Run `npm run ops:sync-github` with gh auth or a GITHUB_TOKEN to hydrate live repo/project/release data.'],
+  workflowRuns: [],
+  securityAlerts: [],
+  warnings: ['GitHub sync has not been run yet. Run `npm run ops:sync-github` with gh auth or a GITHUB_TOKEN to hydrate live repo/project/release/security data.'],
 };
 
 main().catch(async (error) => {
@@ -35,6 +37,8 @@ async function main() {
   const account = (await detectAccount()) || 'unknown';
   const repoSnapshots = [];
   const releases = [];
+  const workflowRuns = [];
+  const securityAlerts = [];
   const warnings = [];
 
   for (const repo of repos) {
@@ -42,6 +46,8 @@ async function main() {
       const snapshot = await fetchRepoSnapshot(repo);
       repoSnapshots.push(snapshot);
       releases.push(...(await fetchRepoReleases(repo)));
+      workflowRuns.push(...(await fetchWorkflowRuns(repo, warnings)));
+      securityAlerts.push(...(await fetchSecurityAlerts(repo, warnings)));
     } catch (error) {
       warnings.push(`${repo}: ${error.message}`);
     }
@@ -63,11 +69,13 @@ async function main() {
     repoSnapshots,
     releases: releases.sort((a, b) => String(b.publishedAt || '').localeCompare(String(a.publishedAt || ''))).slice(0, 12),
     projectBoards: projectBoards.sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''))),
+    workflowRuns: workflowRuns.sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''))).slice(0, 24),
+    securityAlerts: securityAlerts.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || ''))).slice(0, 40),
     warnings,
   };
 
   await fs.writeFile(outputPath, JSON.stringify(payload, null, 2) + '\n');
-  console.log(`[ops:sync-github] synced ${repoSnapshots.length} repos, ${payload.releases.length} releases, ${projectBoards.length} project boards`);
+  console.log(`[ops:sync-github] synced ${repoSnapshots.length} repos, ${payload.releases.length} releases, ${projectBoards.length} project boards, ${payload.workflowRuns.length} workflow runs, ${payload.securityAlerts.length} security alerts`);
 }
 
 async function fetchRepoSnapshot(repo) {
@@ -113,6 +121,86 @@ async function fetchRepoReleases(repo) {
     isPrerelease: Boolean(release.prerelease),
     description: release.body ? String(release.body).split('\n').filter(Boolean).slice(0, 3).join(' ') : '',
   }));
+}
+
+async function fetchWorkflowRuns(repo, warnings) {
+  try {
+    const data = await ghJson(['api', `repos/${repo}/actions/runs?per_page=5`]);
+    return (data.workflow_runs || []).map((run) => ({
+      id: String(run.id),
+      repo,
+      name: run.name || run.display_title || 'workflow',
+      status: run.status || 'unknown',
+      conclusion: run.conclusion || undefined,
+      branch: run.head_branch || undefined,
+      event: run.event || undefined,
+      url: run.html_url,
+      createdAt: run.created_at,
+      updatedAt: run.updated_at,
+    }));
+  } catch (error) {
+    warnings.push(`actions(${repo}): ${error.message}`);
+    return [];
+  }
+}
+
+async function fetchSecurityAlerts(repo, warnings) {
+  const alerts = [];
+  const readers = [
+    ['dependabot', `repos/${repo}/dependabot/alerts?state=open&per_page=20`, mapDependabotAlert],
+    ['code-scanning', `repos/${repo}/code-scanning/alerts?state=open&per_page=20`, mapCodeScanningAlert],
+    ['secret-scanning', `repos/${repo}/secret-scanning/alerts?state=open&per_page=20`, mapSecretScanningAlert],
+  ];
+
+  for (const [kind, endpoint, mapper] of readers) {
+    try {
+      const rows = await ghJson(['api', endpoint]);
+      alerts.push(...rows.map((row) => mapper(repo, row)));
+    } catch (error) {
+      warnings.push(`security:${kind}(${repo}): ${error.message}`);
+    }
+  }
+
+  return alerts;
+}
+
+function mapDependabotAlert(repo, alert) {
+  return {
+    id: `dependabot-${alert.number}`,
+    repo,
+    kind: 'dependabot',
+    severity: alert.security_vulnerability?.severity,
+    state: alert.state || 'open',
+    title: `${alert.dependency?.package?.name || 'dependency'} ${alert.security_advisory?.summary || ''}`.trim(),
+    url: alert.html_url,
+    createdAt: alert.created_at,
+  };
+}
+
+function mapCodeScanningAlert(repo, alert) {
+  return {
+    id: `code-scanning-${alert.number}`,
+    repo,
+    kind: 'code-scanning',
+    severity: alert.rule?.security_severity_level || alert.rule?.severity,
+    state: alert.state || 'open',
+    title: alert.rule?.description || alert.rule?.name || 'code scanning alert',
+    url: alert.html_url,
+    createdAt: alert.created_at,
+  };
+}
+
+function mapSecretScanningAlert(repo, alert) {
+  return {
+    id: `secret-scanning-${alert.number}`,
+    repo,
+    kind: 'secret-scanning',
+    severity: alert.secret_type_display_name || alert.secret_type,
+    state: alert.state || 'open',
+    title: alert.secret_type_display_name || alert.secret_type || 'secret scanning alert',
+    url: alert.html_url,
+    createdAt: alert.created_at,
+  };
 }
 
 async function fetchProjectBoards(login, ownerType) {
