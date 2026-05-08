@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import clsx from "clsx";
 import { EmptyLine, EmptyState, InfoTile, Panel, noteTypeMeta } from "@/components/ops/shared";
 import type { NotesSectionProps } from "@/components/ops/sections/types";
@@ -22,6 +23,21 @@ function buildNoteSections(rawExcerpt: string) {
   return sections.filter((section) => section.lines.length);
 }
 
+const libraryBuckets = [
+  { id: "spec", label: "기능명세서", query: "기능명세", helper: "백엔드/프론트 구현 기준이 되는 명세" },
+  { id: "flow", label: "IA / User Flow", query: "IA user flow", helper: "정보구조와 사용자 흐름" },
+  { id: "aarrr", label: "AARRR", query: "AARRR", helper: "획득-활성화-유지-가치-확산 설계" },
+  { id: "ai", label: "AI 활용 기록", query: "AI OpenClaw Aeyong", helper: "AI를 어떻게 써서 작업했는지" },
+  { id: "openclaw", label: "OpenClaw 세팅", query: "OpenClaw", helper: "OpenClaw 설정/자동화/운영 기록" },
+  { id: "worklog", label: "작업 로그", query: "worklog", helper: "작업 결과/변경 파일/검증 기록" },
+  { id: "decision", label: "결정 기록", query: "decision 결정", helper: "나중에 다시 볼 운영/제품 결정" },
+  { id: "reference", label: "레퍼런스 분석", query: "reference kscold", helper: "참고한 서비스/레포 분석" },
+] as const;
+
+function noteMatchesLibraryBucket(note: NotesSectionProps["data"]["notes"][number], query: string) {
+  const haystack = [note.title, note.summary, note.path, note.type, note.folder, ...note.tags, ...note.headings].join(" ").toLowerCase();
+  return query.toLowerCase().split(/\s+/).some((token) => token && haystack.includes(token));
+}
 
 function getNoteArtifacts(noteId: string, artifacts: NotesSectionProps["data"]["artifacts"]) {
   return artifacts.filter((artifact) => artifact.noteId === noteId || artifact.linkedNoteIds.includes(noteId));
@@ -37,14 +53,42 @@ export function NotesSection({ data, notesById, setSection, setSelectedNoteId, f
   const noteSections = selectedNote ? buildNoteSections(selectedNote.rawExcerpt) : [];
   const relatedNotes = selectedNote ? findRelatedNotes(selectedNote.id, vaultLinksByNoteId, notesById) : [];
   const noteArtifacts = selectedNote ? getNoteArtifacts(selectedNote.id, data.artifacts) : [];
+  const bucketStats = useMemo(() => libraryBuckets.map((bucket) => ({
+    ...bucket,
+    count: data.notes.filter((note) => noteMatchesLibraryBucket(note, bucket.query)).length,
+  })), [data.notes]);
 
   return (
     <div className="space-y-8">
       <header>
-        <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">Notes</p>
-        <h2 className="mb-3 text-4xl font-bold">Vault / Notes Console</h2>
-        <p className="max-w-3xl text-white/70">Obsidian/문서 원본을 live source로 읽고, note 간 링크/폴더/태그/작업 연결까지 함께 보여줍니다. 이제 `/ops`의 Notes는 단순 viewer가 아니라 vault operating layer 역할을 합니다.</p>
+        <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">Docs / Vault</p>
+        <h2 className="mb-3 text-4xl font-bold">작업 도서관</h2>
+        <p className="max-w-3xl text-white/70">내 기능명세서, IA, AARRR, AI 활용 기록, OpenClaw 세팅, 작업 로그와 결정 기록을 도서관처럼 쉽게 탐색합니다.</p>
       </header>
+      <Panel title="작업 도서관">
+        <div className="mb-4 rounded-2xl border border-violet-300/20 bg-violet-500/10 p-4 text-sm leading-6 text-violet-50/90">
+          <p className="font-semibold">내가 만든 명세, AARRR, AI 활용, OpenClaw 세팅 기록을 한 곳에서 보는 서가</p>
+          <p className="mt-1 text-xs text-violet-100/80">
+            Docs/Vault는 단순 파일 목록이 아니라 “내가 어떤 작업을 했고 AI를 어떻게 사용했는지”를 보여주는 작업 도서관입니다.
+          </p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {bucketStats.map((bucket) => (
+            <button
+              key={bucket.id}
+              onClick={() => setNoteQuery(bucket.query)}
+              className="rounded-2xl border border-white/10 bg-black/20 p-4 text-left transition hover:border-white/25 hover:bg-white/10"
+            >
+              <div className="mb-2 flex items-start justify-between gap-3">
+                <strong className="text-white">{bucket.label}</strong>
+                <span className="rounded-full bg-white/10 px-2 py-1 text-xs text-white/60">{bucket.count}</span>
+              </div>
+              <p className="text-xs leading-5 text-white/55">{bucket.helper}</p>
+            </button>
+          ))}
+        </div>
+      </Panel>
+
       <div className="grid gap-4 xl:grid-cols-[320px_360px_1fr]">
         <div className="space-y-3 rounded-3xl border border-white/10 bg-white/5 p-4">
           <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/80">
