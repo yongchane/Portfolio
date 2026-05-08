@@ -20,7 +20,8 @@
     "ci": "npm run lint && npm run typecheck && npm run build",
     "ops:sync-github": "node scripts/sync-ops-github.mjs",
     "ops:worker": "node scripts/ops-mac-mini-worker.mjs",
-    "ops:worker:once": "node scripts/ops-mac-mini-worker.mjs --once"
+    "ops:worker:once": "node scripts/ops-mac-mini-worker.mjs --once",
+    "ops:doctor": "node scripts/ops-supabase-doctor.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
