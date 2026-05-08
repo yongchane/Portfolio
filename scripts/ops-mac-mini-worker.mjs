@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { createClient } from "@supabase/supabase-js";
 import { execFile } from "node:child_process";
+import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -13,6 +14,31 @@ const machine = process.env.PORTFOLIO_OPS_WORKER_MACHINE || os.hostname();
 const intervalMs = Number(process.env.PORTFOLIO_OPS_WORKER_INTERVAL_MS || 30000);
 const once = process.argv.includes("--once");
 const nodeBin = process.execPath;
+const ENV_FILES = [".env.local", ".env.development.local", ".env.development", ".env"];
+
+async function loadLocalEnvFiles() {
+  for (const file of ENV_FILES) {
+    const envPath = path.join(repoRoot, file);
+    let content = "";
+    try {
+      content = await fs.readFile(envPath, "utf8");
+    } catch {
+      continue;
+    }
+
+    for (const rawLine of content.split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith("#") || !line.includes("=")) continue;
+      const index = line.indexOf("=");
+      const key = line.slice(0, index).trim();
+      let value = line.slice(index + 1).trim();
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      if (key && process.env[key] == null) process.env[key] = value;
+    }
+  }
+}
 
 function getEnv(name) {
   return process.env[name]?.trim() || "";
@@ -25,9 +51,11 @@ function createSupabase() {
   return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
 }
 
-const supabase = createSupabase();
+let supabase;
 
 async function main() {
+  await loadLocalEnvFiles();
+  supabase = createSupabase();
   if (once) {
     await tick();
     return;
