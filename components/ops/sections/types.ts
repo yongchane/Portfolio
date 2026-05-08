@@ -62,3 +62,6 @@ export type ReleasesSectionProps = OpsSectionBaseProps & {
 export type SettingsSectionProps = OpsSectionBaseProps;
 
 export type AeyongSectionProps = OpsSectionBaseProps;
+
+export type WorkerSectionProps = OpsSectionBaseProps;
+export type MacMiniSectionProps = OpsSectionBaseProps;

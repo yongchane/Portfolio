@@ -6,12 +6,14 @@ import clsx from "clsx";
 import { AccessGate } from "@/components/ops/auth/AccessGate";
 import { AeyongSection } from "@/components/ops/sections/AeyongSection";
 import { sidebarItems, type SectionId } from "@/components/ops/config";
+import { MacMiniSection } from "@/components/ops/sections/MacMiniSection";
 import { NotesSection } from "@/components/ops/sections/NotesSection";
 import { OverviewSection } from "@/components/ops/sections/OverviewSection";
 import { ProjectsSection } from "@/components/ops/sections/ProjectsSection";
 import { ReleasesSection } from "@/components/ops/sections/ReleasesSection";
 import { SettingsSection } from "@/components/ops/sections/SettingsSection";
 import { TasksSection } from "@/components/ops/sections/TasksSection";
+import { WorkerSection } from "@/components/ops/sections/WorkerSection";
 import { Panel } from "@/components/ops/shared";
 import {
   buildOpsSummary,
@@ -194,6 +196,8 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
         <main className="p-6 lg:p-10">
           {section === "overview" && <OverviewSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} attentionTasks={attentionTasks} liveStatus={liveStatus} />}
           {section === "aeyong" && <AeyongSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} />}
+          {section === "worker" && <WorkerSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} />}
+          {section === "macmini" && <MacMiniSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} />}
           {section === "tasks" && <TasksSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} />}
           {section === "projects" && selectedProject && <ProjectsSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} selectedProject={selectedProject} projectTasks={projectTasks} selectedRepo={selectedRepo} selectedProjectBoards={selectedProjectBoards} selectedProjectReleases={selectedProjectReleases} selectedProjectNotes={selectedProjectNotes} selectedProjectNotesCount={selectedProjectNotesCount} selectedProjectNextActions={selectedProjectNextActions} projectExecutionStatus={projectExecutionStatus} projectRepoHealth={projectRepoHealth} vaultLinksByNoteId={vaultLinksByNoteId} />}
           {section === "notes" && <NotesSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} filteredNotes={filteredNotes} selectedNote={selectedNote} selectedNoteId={selectedNoteId} noteQuery={noteQuery} setNoteQuery={setNoteQuery} vaultLinksByNoteId={vaultLinksByNoteId} />}

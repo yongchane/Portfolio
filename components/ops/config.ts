@@ -34,6 +34,8 @@ export const progressMeta: Record<ProgressState, { label: string; tone: string; 
 export const sidebarItems = [
   { id: "overview", label: "Overview" },
   { id: "aeyong", label: "Aeyong" },
+  { id: "worker", label: "Worker" },
+  { id: "macmini", label: "Mac mini" },
   { id: "tasks", label: "Tasks" },
   { id: "projects", label: "Projects" },
   { id: "notes", label: "Notes" },
