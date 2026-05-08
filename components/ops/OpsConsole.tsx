@@ -140,9 +140,10 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
   }
 
   return (
-    <section className="min-h-screen bg-[#0b1020] text-white">
-      <div className="grid min-h-screen lg:grid-cols-[240px_1fr]">
-        <aside className="border-r border-white/10 bg-black/20 p-6">
+    <section className="min-h-screen bg-[#070b16] text-white">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(34,211,238,0.18),transparent_28%),radial-gradient(circle_at_80%_18%,rgba(139,92,246,0.16),transparent_28%),radial-gradient(circle_at_45%_82%,rgba(16,185,129,0.10),transparent_34%)]" />
+      <div className="relative grid min-h-screen lg:grid-cols-[260px_1fr]">
+        <aside className="border-r border-white/10 bg-black/25 p-6 backdrop-blur-xl">
           <p className="mb-3 text-xs uppercase tracking-[0.28em] text-white/40">Aeyong OS</p>
           <h1 className="mb-8 text-2xl font-bold">현용찬 운영 콘솔</h1>
           <nav className="mb-8 space-y-2">
@@ -151,8 +152,8 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
                 key={item.id}
                 onClick={() => setSection(item.id)}
                 className={clsx(
-                  "w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition",
-                  section === item.id ? "bg-white text-black" : "bg-white/5 text-white/75 hover:bg-white/10",
+                  "relative w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition",
+                  section === item.id ? "bg-white text-black shadow-[0_0_24px_rgba(255,255,255,0.18)]" : "bg-white/5 text-white/75 hover:bg-white/10",
                 )}
               >
                 {item.label}
@@ -193,7 +194,7 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
           </div>
         </aside>
 
-        <main className="p-6 lg:p-10">
+        <main className="relative p-6 lg:p-10">
           {section === "overview" && <OverviewSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} attentionTasks={attentionTasks} liveStatus={liveStatus} />}
           {section === "aeyong" && <AeyongSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} />}
           {section === "worker" && <WorkerSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} />}

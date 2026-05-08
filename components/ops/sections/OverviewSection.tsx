@@ -6,6 +6,8 @@ import {
   Panel,
   ReleaseCard,
   SummaryCard,
+  SynapseMap,
+  SynapseNode,
   TaskRow,
 } from "@/components/ops/shared";
 import type { OverviewSectionProps } from "@/components/ops/sections/types";
@@ -35,6 +37,32 @@ export function OverviewSection({
           있는지 한 번에 보는 홈 화면입니다.
         </p>
       </header>
+
+
+      <SynapseMap>
+        <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/55">Synapse topology</p>
+            <h3 className="mt-2 text-2xl font-bold">운영 신호 연결 지도</h3>
+            <p className="mt-2 max-w-2xl text-sm text-white/60">
+              프로젝트·작업·문서·AI·맥미니·GitHub가 어떤 상태인지 그래프처럼 먼저 보고, 필요한 노드로 바로 이동합니다.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-xs text-white/60">
+            source {liveStatus?.mode || data.dataSource.mode} · updated {formatDateTime(liveStatus?.generatedAt || data.dataSource.generatedAt)}
+          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-4">
+          <SynapseNode label="Projects" value={String(summary.totalProjects)} helper="운영 중인 제품/레포" tone="cyan" onClick={() => setSection("projects")} />
+          <SynapseNode label="Tasks" value={String(summary.activeTasks)} helper={`${summary.verifyingTasks} verifying`} tone={summary.activeTasks ? "amber" : "emerald"} onClick={() => setSection("tasks")} />
+          <SynapseNode label="Docs / Vault" value={String(summary.notesCount)} helper={`${summary.mappedNotes} project-linked`} tone="violet" onClick={() => setSection("notes")} />
+          <SynapseNode label="Aeyong" value={String(summary.worklogsCount)} helper={`${summary.artifactCount} artifacts`} tone="emerald" onClick={() => setSection("aeyong")} />
+          <SynapseNode label="Worker" value={data.workerHeartbeats[0]?.status || "offline"} helper={data.workerHeartbeats[0]?.machine || "heartbeat waiting"} tone={data.workerHeartbeats[0]?.status === "online" ? "emerald" : "amber"} onClick={() => setSection("worker")} />
+          <SynapseNode label="Mac mini" value={data.hostStatuses[0]?.machine || "no signal"} helper={data.openclawStatuses[0]?.gatewayStatus ? `OpenClaw ${data.openclawStatuses[0].gatewayStatus}` : "status push waiting"} tone={data.hostStatuses.length ? "cyan" : "slate"} onClick={() => setSection("macmini")} />
+          <SynapseNode label="GitHub" value={String(summary.githubRepos)} helper={`${summary.githubBoards} boards`} tone="slate" onClick={() => setSection("projects")} />
+          <SynapseNode label="Releases" value={String(data.github.releases.length)} helper="deploy/release signals" tone="rose" onClick={() => setSection("releases")} />
+        </div>
+      </SynapseMap>
 
       <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-8">
         <SummaryCard

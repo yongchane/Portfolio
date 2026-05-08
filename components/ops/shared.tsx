@@ -203,3 +203,55 @@ export function EmptyLine({ message }: { message: string }) {
 }
 
 export { noteTypeMeta, projectStageMeta };
+
+export type SynapseNodeTone = "cyan" | "violet" | "emerald" | "amber" | "rose" | "slate";
+
+const synapseNodeTone: Record<SynapseNodeTone, string> = {
+  cyan: "border-cyan-300/35 bg-cyan-400/10 text-cyan-50 shadow-cyan-500/10",
+  violet: "border-violet-300/35 bg-violet-400/10 text-violet-50 shadow-violet-500/10",
+  emerald: "border-emerald-300/35 bg-emerald-400/10 text-emerald-50 shadow-emerald-500/10",
+  amber: "border-amber-300/35 bg-amber-400/10 text-amber-50 shadow-amber-500/10",
+  rose: "border-rose-300/35 bg-rose-400/10 text-rose-50 shadow-rose-500/10",
+  slate: "border-white/15 bg-white/5 text-white shadow-black/20",
+};
+
+export function SynapseNode({
+  label,
+  value,
+  helper,
+  tone = "slate",
+  onClick,
+}: {
+  label: string;
+  value: string;
+  helper?: string;
+  tone?: SynapseNodeTone;
+  onClick?: () => void;
+}) {
+  const Component = onClick ? "button" : "div";
+  return (
+    <Component
+      onClick={onClick}
+      className={clsx(
+        "group relative w-full rounded-3xl border p-4 text-left shadow-2xl backdrop-blur transition",
+        synapseNodeTone[tone],
+        onClick && "hover:-translate-y-0.5 hover:border-white/45 hover:bg-white/10",
+      )}
+    >
+      <span className="absolute right-4 top-4 h-2 w-2 rounded-full bg-current opacity-70 shadow-[0_0_18px_currentColor]" />
+      <p className="mb-2 text-xs uppercase tracking-[0.22em] opacity-60">{label}</p>
+      <strong className="text-2xl font-bold">{value}</strong>
+      {helper && <p className="mt-2 text-xs leading-5 opacity-65">{helper}</p>}
+    </Component>
+  );
+}
+
+export function SynapseMap({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_50%_35%,rgba(34,211,238,0.18),transparent_32%),radial-gradient(circle_at_20%_80%,rgba(139,92,246,0.18),transparent_30%),rgba(255,255,255,0.04)] p-5 shadow-2xl shadow-black/30">
+      <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(255,255,255,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:36px_36px]" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[70%] w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-200/10" />
+      <div className="relative">{children}</div>
+    </div>
+  );
+}
