@@ -18,6 +18,21 @@ import {
 import type { ProjectsSectionProps } from "@/components/ops/sections/types";
 import type { ProgressState, ProjectStage } from "@/lib/ops/types";
 
+const aiReviewCategoryMeta = {
+  qa: { label: "QA", helper: "오류/깨진 플로우/회귀 위험" },
+  security: { label: "Security", helper: "보안/비밀값/권한/노출 위험" },
+  feature: { label: "Feature", helper: "기능 완성도/누락/우선순위" },
+  update: { label: "Update", helper: "의존성/문서/운영 업데이트" },
+  uiux: { label: "UI/UX", helper: "사용성/정보구조/AI slop 감지" },
+} as const;
+
+const aiReviewSeverityTone = {
+  high: "bg-rose-100 text-rose-700",
+  medium: "bg-amber-100 text-amber-700",
+  low: "bg-sky-100 text-sky-700",
+  info: "bg-white/10 text-white/70",
+} as const;
+
 function extractProjectBoardScopeWarning(
   warnings: string[] | undefined,
   owner?: string,
@@ -80,6 +95,9 @@ export function ProjectsSection({
   const latestWorkflowRun = selectedWorkflowRuns[0];
   const failedWorkflowRuns = selectedWorkflowRuns.filter(
     (run) => run.conclusion === "failure" || run.conclusion === "cancelled",
+  );
+  const selectedAiReviews = data.aiReviews.filter(
+    (review) => review.projectId === selectedProject.id,
   );
 
   useEffect(() => {
@@ -403,6 +421,54 @@ export function ProjectsSection({
               </div>
             </Panel>
           </div>
+
+
+
+          <Panel title="AI Review Board">
+            <div className="mb-4 rounded-2xl border border-sky-300/20 bg-sky-500/10 p-4 text-sm leading-6 text-sky-50/90">
+              <p className="font-semibold">레포별 AI 평가/코멘트 보드</p>
+              <p className="mt-1 text-xs text-sky-100/80">
+                QA, 보안, 기능, 업데이트, UI/UX 관점의 agent 리뷰를 프로젝트에
+                붙여둡니다. 리뷰 생성은 `/ops` Agent Run queue와 Mac mini worker가
+                처리하고, 이 화면은 Supabase에 push된 결과를 읽습니다.
+              </p>
+            </div>
+            <div className="grid gap-4 xl:grid-cols-5">
+              {(Object.keys(aiReviewCategoryMeta) as Array<keyof typeof aiReviewCategoryMeta>).map((category) => {
+                const reviews = selectedAiReviews.filter((review) => review.category === category);
+                const meta = aiReviewCategoryMeta[category];
+                return (
+                  <div key={category} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-white">{meta.label}</p>
+                        <p className="mt-1 text-xs text-white/45">{meta.helper}</p>
+                      </div>
+                      <span className="rounded-full bg-white/10 px-2 py-1 text-xs text-white/60">{reviews.length}</span>
+                    </div>
+                    <div className="space-y-3">
+                      {reviews.slice(0, 3).map((review) => (
+                        <article key={review.id} className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/70">
+                          <div className="mb-2 flex items-start justify-between gap-2">
+                            <strong className="text-white">{review.title}</strong>
+                            <span className={clsx("rounded-full px-2 py-0.5 font-semibold", aiReviewSeverityTone[review.severity])}>{review.severity}</span>
+                          </div>
+                          <p className="line-clamp-3">{review.comment}</p>
+                          {review.recommendation && <p className="mt-2 text-white/45">→ {review.recommendation}</p>}
+                          <p className="mt-2 uppercase tracking-[0.16em] text-white/30">{review.status}</p>
+                        </article>
+                      ))}
+                      {!reviews.length && (
+                        <p className="rounded-xl border border-dashed border-white/10 bg-white/5 p-3 text-xs text-white/40">
+                          아직 {meta.label} 리뷰가 없습니다. Floating Agent Panel에서 이 프로젝트 기준 리뷰를 요청할 수 있게 연결 예정입니다.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Panel>
 
           <div className="grid gap-6 xl:grid-cols-[1fr_0.95fr]">
             <Panel title="Connected tasks">
