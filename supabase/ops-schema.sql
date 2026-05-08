@@ -268,3 +268,21 @@ alter table public.ops_sync_runs enable row level security;
 -- Public read is intentionally NOT granted yet.
 -- Start with service-role only reads/writes from Next server and sync script.
 -- If you later want browser-side anon access, add explicit select policies per table.
+
+insert into public.ops_agents (id, name, role, provider, runtime, model, status, permissions)
+values
+  ('aeyong-manager', 'Aeyong Manager', 'manager', 'openclaw', 'openclaw', null, 'active', '{"canReadProjects":true,"canWriteOpsData":true,"requiresApprovalForCode":true}'::jsonb),
+  ('qa-agent', 'QA Agent', 'qa', 'openclaw', 'openclaw', null, 'active', '{"canReadRepos":true,"canCreateReviews":true,"requiresApprovalForCode":true}'::jsonb),
+  ('security-agent', 'Security Agent', 'security', 'openclaw', 'openclaw', null, 'active', '{"canReadRepos":true,"canCreateReviews":true,"requiresApprovalForCode":true}'::jsonb),
+  ('uiux-agent', 'UI/UX Agent', 'uiux', 'openclaw', 'openclaw', null, 'active', '{"canReadDocs":true,"canCreateReviews":true,"requiresApprovalForCode":true}'::jsonb),
+  ('docs-agent', 'Docs Agent', 'docs', 'openclaw', 'openclaw', null, 'active', '{"canReadDocs":true,"canWriteDocs":true,"requiresApprovalForCode":true}'::jsonb),
+  ('github-review-agent', 'GitHub Review Agent', 'github', 'openclaw', 'openclaw', null, 'active', '{"canReadGitHub":true,"canCreateReviews":true,"requiresApprovalForWrites":true}'::jsonb)
+on conflict (id) do update set
+  name = excluded.name,
+  role = excluded.role,
+  provider = excluded.provider,
+  runtime = excluded.runtime,
+  model = excluded.model,
+  status = excluded.status,
+  permissions = excluded.permissions,
+  updated_at = timezone('utc', now());
