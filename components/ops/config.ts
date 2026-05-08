@@ -32,15 +32,15 @@ export const progressMeta: Record<ProgressState, { label: string; tone: string; 
 };
 
 export const sidebarItems = [
-  { id: "overview", label: "Overview" },
-  { id: "aeyong", label: "Aeyong" },
-  { id: "worker", label: "Worker" },
-  { id: "macmini", label: "Mac mini" },
-  { id: "tasks", label: "Tasks" },
-  { id: "projects", label: "Projects" },
-  { id: "notes", label: "Notes" },
-  { id: "releases", label: "Releases" },
-  { id: "settings", label: "Settings" },
+  { id: "overview", label: "Overview", icon: "⌘", group: "Command" },
+  { id: "projects", label: "Projects", icon: "◆", group: "Operate" },
+  { id: "tasks", label: "Tasks", icon: "✓", group: "Operate" },
+  { id: "notes", label: "Docs/Vault", icon: "▣", group: "Library" },
+  { id: "aeyong", label: "Aeyong", icon: "✦", group: "AI" },
+  { id: "worker", label: "Worker", icon: "●", group: "System" },
+  { id: "macmini", label: "Mac mini", icon: "◉", group: "System" },
+  { id: "releases", label: "Releases", icon: "↗", group: "Ship" },
+  { id: "settings", label: "Settings", icon: "⚙", group: "Config" },
 ] as const;
 
 export type SectionId = (typeof sidebarItems)[number]["id"];

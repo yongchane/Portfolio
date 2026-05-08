@@ -26,15 +26,14 @@ export function OverviewSection({
 }: OverviewSectionProps) {
   return (
     <div className="space-y-8">
-      <header>
-        <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">
+      <header className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.02] p-6 shadow-2xl shadow-black/20">
+        <p className="mb-3 text-sm uppercase tracking-[0.24em] text-cyan-100/55">
           Overview
         </p>
-        <h2 className="mb-3 text-4xl font-bold">오늘의 운영 상황</h2>
+        <h2 className="mb-3 text-4xl font-bold">오늘의 운영 시냅스</h2>
         <p className="max-w-3xl text-white/70">
-          애옹 작업, 프로젝트 상태, notes snapshot, GitHub layer, 사용자 판단
-          필요 항목, 그리고 지금 화면이 실제로 어떤 source of truth를 읽고
-          있는지 한 번에 보는 홈 화면입니다.
+          애옹 작업, 프로젝트 상태, Docs/Vault, GitHub layer, 사용자 판단 필요 항목을 CMS처럼 관리하되,
+          첫 인지는 그래프와 연결 지도 중심으로 봅니다.
         </p>
       </header>
 
@@ -64,7 +63,7 @@ export function OverviewSection({
         </div>
       </SynapseMap>
 
-      <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-8">
+      <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
         <SummaryCard
           label="전체 프로젝트"
           value={String(summary.totalProjects)}

@@ -255,3 +255,16 @@ export function SynapseMap({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+export function CmsMetricPill({ label, value, tone = "slate" }: { label: string; value: string; tone?: SynapseNodeTone }) {
+  return (
+    <div className={clsx("rounded-2xl border px-4 py-3 backdrop-blur", synapseNodeTone[tone])}>
+      <p className="text-[10px] uppercase tracking-[0.2em] opacity-55">{label}</p>
+      <p className="mt-1 text-sm font-semibold">{value}</p>
+    </div>
+  );
+}
+
+export function VisualDivider() {
+  return <div className="h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />;
+}
