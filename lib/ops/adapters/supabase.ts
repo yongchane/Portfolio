@@ -2,7 +2,14 @@ import type {
   NoteItem,
   OpsArtifactRecord,
   OpsConsoleData,
+  OpsAgent,
+  OpsAgentRun,
+  OpsAiReview,
+  OpsHostStatus,
+  OpsOpenClawPushedStatus,
   OpsSourceHealth,
+  OpsSyncRequest,
+  OpsWorkerHeartbeat,
   Project,
   ProjectAdminSurface,
   ProjectChecklistItem,
@@ -120,6 +127,99 @@ export type ArtifactRow = {
   blockers: string[] | null;
   next_actions: string[] | null;
   linked_note_ids: string[] | null;
+  updated_at: string;
+};
+
+
+export type WorkerHeartbeatRow = {
+  id: string;
+  worker_name: string;
+  machine: string;
+  status: OpsWorkerHeartbeat["status"];
+  version: string | null;
+  last_seen_at: string;
+  payload: Record<string, unknown> | null;
+};
+
+export type HostStatusRow = {
+  id: string;
+  machine: string;
+  cpu: Record<string, unknown> | null;
+  memory: Record<string, unknown> | null;
+  disk: Record<string, unknown> | null;
+  uptime_seconds: number | null;
+  network: Record<string, unknown> | null;
+  processes: unknown[] | null;
+  created_at: string;
+};
+
+export type OpenClawStatusRow = {
+  id: string;
+  machine: string;
+  gateway_status: string;
+  model: Record<string, unknown> | null;
+  sessions: unknown[] | null;
+  cron: Record<string, unknown> | null;
+  issues: unknown[] | null;
+  created_at: string;
+};
+
+export type SyncRequestRow = {
+  id: string;
+  type: OpsSyncRequest["type"];
+  status: OpsSyncRequest["status"];
+  requested_by: string | null;
+  requested_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  error: string | null;
+  result: Record<string, unknown> | null;
+};
+
+export type AgentRow = {
+  id: string;
+  name: string;
+  role: OpsAgent["role"];
+  provider: string | null;
+  runtime: OpsAgent["runtime"];
+  model: string | null;
+  status: OpsAgent["status"];
+  permissions: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AgentRunRow = {
+  id: string;
+  agent_id: string;
+  project_id: string | null;
+  task_id: string | null;
+  status: OpsAgentRun["status"];
+  prompt: string;
+  scope: Record<string, unknown> | null;
+  result_summary: string | null;
+  changed_files: string[] | null;
+  verification: Record<string, unknown> | null;
+  worklog_id: string | null;
+  created_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  error: string | null;
+};
+
+export type AiReviewRow = {
+  id: string;
+  project_id: string;
+  repo: string | null;
+  category: OpsAiReview["category"];
+  agent_id: string | null;
+  severity: OpsAiReview["severity"];
+  title: string;
+  comment: string;
+  recommendation: string | null;
+  evidence: Record<string, unknown> | null;
+  status: OpsAiReview["status"];
+  created_at: string;
   updated_at: string;
 };
 
@@ -247,6 +347,113 @@ export function mapArtifactRow(row: ArtifactRow): OpsArtifactRecord {
     blockers: row.blockers ?? [],
     nextActions: row.next_actions ?? [],
     linkedNoteIds: row.linked_note_ids ?? [row.note_id],
+    updatedAt: row.updated_at,
+  };
+}
+
+
+export function mapWorkerHeartbeatRow(row: WorkerHeartbeatRow): OpsWorkerHeartbeat {
+  return {
+    id: row.id,
+    workerName: row.worker_name,
+    machine: row.machine,
+    status: row.status,
+    version: row.version ?? undefined,
+    lastSeenAt: row.last_seen_at,
+    payload: row.payload ?? {},
+  };
+}
+
+export function mapHostStatusRow(row: HostStatusRow): OpsHostStatus {
+  return {
+    id: row.id,
+    machine: row.machine,
+    cpu: row.cpu ?? {},
+    memory: row.memory ?? {},
+    disk: row.disk ?? {},
+    uptimeSeconds: row.uptime_seconds ?? undefined,
+    network: row.network ?? {},
+    processes: row.processes ?? [],
+    createdAt: row.created_at,
+  };
+}
+
+export function mapOpenClawStatusRow(row: OpenClawStatusRow): OpsOpenClawPushedStatus {
+  return {
+    id: row.id,
+    machine: row.machine,
+    gatewayStatus: row.gateway_status,
+    model: row.model ?? {},
+    sessions: row.sessions ?? [],
+    cron: row.cron ?? {},
+    issues: row.issues ?? [],
+    createdAt: row.created_at,
+  };
+}
+
+export function mapSyncRequestRow(row: SyncRequestRow): OpsSyncRequest {
+  return {
+    id: row.id,
+    type: row.type,
+    status: row.status,
+    requestedBy: row.requested_by ?? undefined,
+    requestedAt: row.requested_at,
+    startedAt: row.started_at ?? undefined,
+    finishedAt: row.finished_at ?? undefined,
+    error: row.error ?? undefined,
+    result: row.result ?? {},
+  };
+}
+
+export function mapAgentRow(row: AgentRow): OpsAgent {
+  return {
+    id: row.id,
+    name: row.name,
+    role: row.role,
+    provider: row.provider ?? undefined,
+    runtime: row.runtime,
+    model: row.model ?? undefined,
+    status: row.status,
+    permissions: row.permissions ?? {},
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function mapAgentRunRow(row: AgentRunRow): OpsAgentRun {
+  return {
+    id: row.id,
+    agentId: row.agent_id,
+    projectId: row.project_id ?? undefined,
+    taskId: row.task_id ?? undefined,
+    status: row.status,
+    prompt: row.prompt,
+    scope: row.scope ?? {},
+    resultSummary: row.result_summary ?? undefined,
+    changedFiles: row.changed_files ?? [],
+    verification: row.verification ?? {},
+    worklogId: row.worklog_id ?? undefined,
+    createdAt: row.created_at,
+    startedAt: row.started_at ?? undefined,
+    finishedAt: row.finished_at ?? undefined,
+    error: row.error ?? undefined,
+  };
+}
+
+export function mapAiReviewRow(row: AiReviewRow): OpsAiReview {
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    repo: row.repo ?? undefined,
+    category: row.category,
+    agentId: row.agent_id ?? undefined,
+    severity: row.severity,
+    title: row.title,
+    comment: row.comment,
+    recommendation: row.recommendation ?? undefined,
+    evidence: row.evidence ?? {},
+    status: row.status,
+    createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
 }

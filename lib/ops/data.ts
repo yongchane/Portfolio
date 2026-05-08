@@ -25,6 +25,13 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
       openclaw,
       worklogs: supabaseData.worklogs,
       artifacts: supabaseData.artifacts,
+      workerHeartbeats: supabaseData.workerHeartbeats,
+      hostStatuses: supabaseData.hostStatuses,
+      openclawStatuses: supabaseData.openclawStatuses,
+      syncRequests: supabaseData.syncRequests,
+      agents: supabaseData.agents,
+      agentRuns: supabaseData.agentRuns,
+      aiReviews: supabaseData.aiReviews,
       dataSource: {
         ...supabaseData.dataSource,
         sourceHealth: {
@@ -70,6 +77,13 @@ export async function getOpsConsoleData(): Promise<OpsConsoleData> {
     github: opsGitHubCache,
     vault: buildVaultSummary(notesSource.notes),
     openclaw,
+    workerHeartbeats: [],
+    hostStatuses: [],
+    openclawStatuses: [],
+    syncRequests: [],
+    agents: [],
+    agentRuns: [],
+    aiReviews: [],
     dataSource: {
       mode: notesSource.mode,
       generatedAt: notesSource.generatedAt,

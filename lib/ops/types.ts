@@ -194,6 +194,110 @@ export type OpsAutomationStatus = {
   lockPath?: string;
 };
 
+
+export type OpsWorkerStatus = "online" | "offline" | "error" | "stale";
+export type OpsSyncRequestType = "worklogs" | "github" | "openclaw" | "host" | "all";
+export type OpsSyncRequestStatus = "queued" | "running" | "completed" | "failed" | "cancelled";
+export type OpsAgentRole = "manager" | "qa" | "security" | "uiux" | "docs" | "github" | "coding";
+export type OpsAgentRuntime = "openclaw" | "acp" | "codex" | "manual";
+export type OpsAgentStatus = "active" | "inactive" | "error";
+export type OpsAgentRunStatus = "queued" | "running" | "completed" | "failed" | "cancelled" | "needs_approval";
+export type OpsAiReviewCategory = "qa" | "security" | "feature" | "update" | "uiux";
+export type OpsAiReviewSeverity = "low" | "medium" | "high" | "info";
+export type OpsAiReviewStatus = "open" | "resolved" | "ignored";
+
+export type OpsWorkerHeartbeat = {
+  id: string;
+  workerName: string;
+  machine: string;
+  status: OpsWorkerStatus;
+  version?: string;
+  lastSeenAt: string;
+  payload: Record<string, unknown>;
+};
+
+export type OpsHostStatus = {
+  id: string;
+  machine: string;
+  cpu: Record<string, unknown>;
+  memory: Record<string, unknown>;
+  disk: Record<string, unknown>;
+  uptimeSeconds?: number;
+  network: Record<string, unknown>;
+  processes: unknown[];
+  createdAt: string;
+};
+
+export type OpsOpenClawPushedStatus = {
+  id: string;
+  machine: string;
+  gatewayStatus: string;
+  model: Record<string, unknown>;
+  sessions: unknown[];
+  cron: Record<string, unknown>;
+  issues: unknown[];
+  createdAt: string;
+};
+
+export type OpsSyncRequest = {
+  id: string;
+  type: OpsSyncRequestType;
+  status: OpsSyncRequestStatus;
+  requestedBy?: string;
+  requestedAt: string;
+  startedAt?: string;
+  finishedAt?: string;
+  error?: string;
+  result: Record<string, unknown>;
+};
+
+export type OpsAgent = {
+  id: string;
+  name: string;
+  role: OpsAgentRole;
+  provider?: string;
+  runtime: OpsAgentRuntime;
+  model?: string;
+  status: OpsAgentStatus;
+  permissions: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OpsAgentRun = {
+  id: string;
+  agentId: string;
+  projectId?: string;
+  taskId?: string;
+  status: OpsAgentRunStatus;
+  prompt: string;
+  scope: Record<string, unknown>;
+  resultSummary?: string;
+  changedFiles: string[];
+  verification: Record<string, unknown>;
+  worklogId?: string;
+  createdAt: string;
+  startedAt?: string;
+  finishedAt?: string;
+  error?: string;
+};
+
+export type OpsAiReview = {
+  id: string;
+  projectId: string;
+  repo?: string;
+  category: OpsAiReviewCategory;
+  agentId?: string;
+  severity: OpsAiReviewSeverity;
+  title: string;
+  comment: string;
+  recommendation?: string;
+  evidence: Record<string, unknown>;
+  status: OpsAiReviewStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type OpsSourceHealth = {
   supabaseConfigured: boolean;
   supabaseReachable: boolean;
@@ -371,6 +475,13 @@ export type OpsConsoleData = {
   github: GitHubCache;
   vault: VaultSummary;
   openclaw: OpenClawDiagnostics;
+  workerHeartbeats: OpsWorkerHeartbeat[];
+  hostStatuses: OpsHostStatus[];
+  openclawStatuses: OpsOpenClawPushedStatus[];
+  syncRequests: OpsSyncRequest[];
+  agents: OpsAgent[];
+  agentRuns: OpsAgentRun[];
+  aiReviews: OpsAiReview[];
   dataSource: {
     mode: "live" | "export" | "supabase";
     generatedAt: string;

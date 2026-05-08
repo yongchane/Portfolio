@@ -7,20 +7,34 @@ import {
 } from "@/lib/ops/supabase";
 import {
   buildSupabaseSourceHealth,
+  mapAgentRow,
+  mapAgentRunRow,
+  mapAiReviewRow,
   mapArtifactRow,
+  mapHostStatusRow,
   mapNoteRow,
+  mapOpenClawStatusRow,
   mapProjectRow,
+  mapSyncRequestRow,
   mapTaskRow,
+  mapWorkerHeartbeatRow,
   mapWorklogRow,
   parseJsonArray,
   parseResolvedRoots,
+  type AgentRow,
+  type AgentRunRow,
+  type AiReviewRow,
   type SupabaseOpsConsoleData,
+  type SyncRequestRow,
   type SyncRunRow,
   type SyncStateRow,
   type ArtifactRow,
+  type HostStatusRow,
   type NoteRow,
+  type OpenClawStatusRow,
   type ProjectRow,
   type TaskRow,
+  type WorkerHeartbeatRow,
   type WorklogRow,
 } from "@/lib/ops/adapters/supabase";
 
@@ -49,6 +63,13 @@ export async function getSupabaseOpsConsoleData(): Promise<SupabaseOpsConsoleDat
     notesResult,
     worklogsResult,
     artifactsResult,
+    workerHeartbeatsResult,
+    hostStatusesResult,
+    openclawStatusesResult,
+    syncRequestsResult,
+    agentsResult,
+    agentRunsResult,
+    aiReviewsResult,
     syncStateResult,
     syncRunResult,
   ] = await Promise.all([
@@ -69,6 +90,40 @@ export async function getSupabaseOpsConsoleData(): Promise<SupabaseOpsConsoleDat
       .from("ops_artifacts")
       .select("*")
       .order("updated_at", { ascending: false }),
+    client
+      .from("ops_worker_heartbeats")
+      .select("*")
+      .order("last_seen_at", { ascending: false })
+      .limit(10),
+    client
+      .from("ops_host_status")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(10),
+    client
+      .from("ops_openclaw_status")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(10),
+    client
+      .from("ops_sync_requests")
+      .select("*")
+      .order("requested_at", { ascending: false })
+      .limit(20),
+    client
+      .from("ops_agents")
+      .select("*")
+      .order("name", { ascending: true }),
+    client
+      .from("ops_agent_runs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(20),
+    client
+      .from("ops_ai_reviews")
+      .select("*")
+      .order("updated_at", { ascending: false })
+      .limit(100),
     client
       .from("ops_sync_state")
       .select("key,value,updated_at")
@@ -98,6 +153,13 @@ export async function getSupabaseOpsConsoleData(): Promise<SupabaseOpsConsoleDat
   const { data: notes, error: notesError } = notesResult;
   const { data: worklogs, error: worklogsError } = worklogsResult;
   const { data: artifacts, error: artifactsError } = artifactsResult;
+  const { data: workerHeartbeats, error: workerHeartbeatsError } = workerHeartbeatsResult;
+  const { data: hostStatuses, error: hostStatusesError } = hostStatusesResult;
+  const { data: openclawStatuses, error: openclawStatusesError } = openclawStatusesResult;
+  const { data: syncRequests, error: syncRequestsError } = syncRequestsResult;
+  const { data: agents, error: agentsError } = agentsResult;
+  const { data: agentRuns, error: agentRunsError } = agentRunsResult;
+  const { data: aiReviews, error: aiReviewsError } = aiReviewsResult;
   const { data: syncState, error: syncStateError } = syncStateResult;
   const { data: latestSyncRun, error: syncRunError } = syncRunResult;
   const latestSyncRunRow = latestSyncRun as SyncRunRow | null | undefined;
@@ -108,6 +170,13 @@ export async function getSupabaseOpsConsoleData(): Promise<SupabaseOpsConsoleDat
     notesError?.message,
     worklogsError?.message,
     artifactsError?.message,
+    workerHeartbeatsError?.message,
+    hostStatusesError?.message,
+    openclawStatusesError?.message,
+    syncRequestsError?.message,
+    agentsError?.message,
+    agentRunsError?.message,
+    aiReviewsError?.message,
     syncStateError?.message,
     syncRunError?.message,
   ].filter(Boolean);
@@ -125,6 +194,13 @@ export async function getSupabaseOpsConsoleData(): Promise<SupabaseOpsConsoleDat
     notes: ((notes ?? []) as NoteRow[]).map(mapNoteRow),
     worklogs: ((worklogs ?? []) as WorklogRow[]).map(mapWorklogRow),
     artifacts: ((artifacts ?? []) as ArtifactRow[]).map(mapArtifactRow),
+    workerHeartbeats: ((workerHeartbeats ?? []) as WorkerHeartbeatRow[]).map(mapWorkerHeartbeatRow),
+    hostStatuses: ((hostStatuses ?? []) as HostStatusRow[]).map(mapHostStatusRow),
+    openclawStatuses: ((openclawStatuses ?? []) as OpenClawStatusRow[]).map(mapOpenClawStatusRow),
+    syncRequests: ((syncRequests ?? []) as SyncRequestRow[]).map(mapSyncRequestRow),
+    agents: ((agents ?? []) as AgentRow[]).map(mapAgentRow),
+    agentRuns: ((agentRuns ?? []) as AgentRunRow[]).map(mapAgentRunRow),
+    aiReviews: ((aiReviews ?? []) as AiReviewRow[]).map(mapAiReviewRow),
     dataSource: {
       mode: "supabase",
       generatedAt: state.get("generated_at") || new Date().toISOString(),
