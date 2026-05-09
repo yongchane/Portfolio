@@ -493,6 +493,135 @@ export type OpsConsoleData = {
   };
 };
 
+export type OpsProjectCommandStatus = "healthy" | "attention" | "risk";
+export type OpsProjectActionSeverity = "critical" | "warning" | "info";
+export type OpsProjectActionCategory =
+  | "blocked"
+  | "verification"
+  | "review"
+  | "security"
+  | "ci"
+  | "docs"
+  | "release"
+  | "setup";
+
+export type OpsProjectActionItem = {
+  id: string;
+  severity: OpsProjectActionSeverity;
+  category: OpsProjectActionCategory;
+  title: string;
+  reason: string;
+  source: {
+    table: string;
+    id?: string;
+  };
+  cta: string;
+  createdAt?: string;
+};
+
+export type OpsProjectRailItem = {
+  projectId: string;
+  name: string;
+  stage: ProjectStage;
+  repo?: string;
+  status: OpsProjectCommandStatus;
+  score: number;
+  counts: {
+    blockedTasks: number;
+    verifyingTasks: number;
+    openReviews: number;
+    highReviews: number;
+    linkedNotes: number;
+  };
+};
+
+export type OpsProjectCommand = {
+  status: OpsProjectCommandStatus;
+  title: string;
+  summary: string;
+  score: number;
+  primaryAction?: {
+    label: string;
+    actionId: string;
+  };
+  stats: {
+    tasks: number;
+    blockedTasks: number;
+    verifyingTasks: number;
+    openReviews: number;
+    missingReviewCategories: number;
+    linkedNotes: number;
+    failedRuns: number;
+    securityAlerts: number;
+  };
+};
+
+export type OpsProjectAiReviewColumn = {
+  category: OpsAiReviewCategory;
+  label: string;
+  helper: string;
+  status: "covered" | "missing" | "risk";
+  highestSeverity: OpsAiReviewSeverity | "none";
+  counts: {
+    open: number;
+    resolved: number;
+    ignored: number;
+    total: number;
+  };
+  reviews: OpsAiReview[];
+  emptyMessage: string;
+};
+
+export type OpsProjectEvidence = {
+  execution: {
+    tasks: Task[];
+    nextActions: string[];
+    checklist: ProjectChecklistItem[];
+    sectors: ProjectSectorProgress[];
+    operatingCadence: string[];
+    adminSurfaces: ProjectAdminSurface[];
+  };
+  docs: {
+    linkedNotes: NoteItem[];
+    linkedNotesCount: number;
+    missing: boolean;
+  };
+  github: {
+    repo?: GitHubRepoSnapshot;
+    boards: GitHubProjectBoardSnapshot[];
+    releases: OpsConsoleData["github"]["releases"];
+    workflowRuns: NonNullable<OpsConsoleData["github"]["workflowRuns"]>;
+    failedWorkflowRuns: NonNullable<OpsConsoleData["github"]["workflowRuns"]>;
+    securityAlerts: NonNullable<OpsConsoleData["github"]["securityAlerts"]>;
+    boardScopeWarning?: string;
+  };
+};
+
+export type OpsProjectDataTrust = {
+  activeSource: OpsConsoleData["dataSource"]["mode"];
+  generatedAt: string;
+  counts: {
+    projects: number;
+    tasks: number;
+    aiReviews: number;
+    linkedNotes: number;
+    workflowRuns: number;
+    securityAlerts: number;
+  };
+  warnings: string[];
+};
+
+export type OpsProjectModel = {
+  generatedAt: string;
+  selectedProject: Project;
+  rail: OpsProjectRailItem[];
+  command: OpsProjectCommand;
+  actions: OpsProjectActionItem[];
+  aiReviewBoard: OpsProjectAiReviewColumn[];
+  evidence: OpsProjectEvidence;
+  dataTrust: OpsProjectDataTrust;
+};
+
 export type OpsOverviewSeverity = "critical" | "warning" | "info" | "healthy" | "empty";
 export type OpsOverviewCommandStatus = "healthy" | "attention" | "risk";
 export type OpsOverviewFreshness = "fresh" | "stale" | "unknown";
