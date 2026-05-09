@@ -36,7 +36,29 @@ function byOccurredAtDesc<T extends { occurredAt: string }>(items: T[]) {
   });
 }
 
+function latestTimestamp(values: Array<string | undefined>) {
+  const latest = values
+    .map((value) => (value ? new Date(value).getTime() : 0))
+    .filter((value) => !Number.isNaN(value))
+    .sort((a, b) => b - a)[0];
+  return latest ? new Date(latest).toISOString() : new Date().toISOString();
+}
+
+function getOverviewGeneratedAt(data: OpsConsoleData) {
+  return latestTimestamp([
+    data.dataSource.generatedAt,
+    data.github.generatedAt,
+    data.workerHeartbeats[0]?.lastSeenAt,
+    data.hostStatuses[0]?.createdAt,
+    data.openclawStatuses[0]?.createdAt,
+    data.syncRequests[0]?.requestedAt,
+    data.agentRuns[0]?.createdAt,
+    data.tasks[0]?.updatedAt,
+  ]);
+}
+
 export function buildOpsOverviewModel(data: OpsConsoleData): OpsOverviewModel {
+  const generatedAt = getOverviewGeneratedAt(data);
   const actions = buildActionQueue(data);
   const projects = buildProjectHealth(data);
   const system = buildSystemHealth(data);
@@ -46,11 +68,11 @@ export function buildOpsOverviewModel(data: OpsConsoleData): OpsOverviewModel {
   const command = buildCommand(data, actions, projects, system);
 
   return {
-    generatedAt: data.dataSource.generatedAt,
+    generatedAt,
     source: {
       mode: data.dataSource.mode,
       supabaseReachable: Boolean(data.dataSource.sourceHealth.supabaseReachable),
-      freshness: isFresh(data.dataSource.generatedAt) ? "fresh" : "stale",
+      freshness: isFresh(generatedAt) ? "fresh" : "stale",
       warnings: dataTrust.warnings,
     },
     command,
@@ -180,7 +202,11 @@ function buildActionQueue(data: OpsConsoleData): OpsOverviewActionItem[] {
       severity: worker?.status === "error" || !worker ? "critical" : "warning",
       category: "recovery",
       title: "Mac mini worker 상태 확인 필요",
-      reason: worker ? `latest status=${worker.status}, lastSeen=${worker.lastSeenAt}` : "worker heartbeat가 없습니다.",
+      reason: worker
+        ? worker.status === "online" && !isFresh(worker.lastSeenAt)
+          ? `worker는 online이지만 heartbeat가 오래되었습니다. lastSeen=${worker.lastSeenAt}`
+          : `latest status=${worker.status}, lastSeen=${worker.lastSeenAt}`
+        : "worker heartbeat가 없습니다.",
       source: { table: "ops_worker_heartbeats", id: worker?.id },
       target: { section: "worker", id: worker?.id },
       cta: "Worker 상태 보기",
@@ -298,7 +324,7 @@ function buildSystemHealth(data: OpsConsoleData): OpsOverviewSystemHealth {
   const workerItem: OpsOverviewHealthItem = {
     status: !worker ? "unknown" : worker.status === "online" && isFresh(worker.lastSeenAt) ? "online" : worker.status === "online" ? "stale" : worker.status === "error" ? "warning" : "offline",
     label: worker?.workerName || "Worker",
-    detail: worker ? `${worker.machine} · ${worker.status}` : "heartbeat waiting",
+    detail: worker ? `${worker.machine} · ${worker.status === "online" && !isFresh(worker.lastSeenAt) ? "online but heartbeat stale" : worker.status}` : "heartbeat waiting",
     lastSeenAt: worker?.lastSeenAt,
     targetSection: "worker",
   };
@@ -308,7 +334,7 @@ function buildSystemHealth(data: OpsConsoleData): OpsOverviewSystemHealth {
     macMini: {
       status: host && isFresh(host.createdAt) ? "online" : host ? "stale" : "unknown",
       label: "Mac mini",
-      detail: host ? `${host.machine} reporting` : "host status waiting",
+      detail: host ? `${host.machine} ${isFresh(host.createdAt) ? "reporting" : "reporting but stale"}` : "host status waiting",
       lastSeenAt: host?.createdAt,
       targetSection: "macmini",
     },
@@ -360,7 +386,7 @@ function buildKnowledgeSnapshot(data: OpsConsoleData): OpsOverviewKnowledgeSnaps
     coverage: {
       totalNotes: data.notes.length,
       projectLinkedNotes: data.vault.projectMappedCount,
-      orphanNotes: data.vault.orphanNoteIds.length,
+      orphanNotes: Math.max(data.notes.length - data.vault.projectMappedCount, 0),
       worklogs: data.worklogs.length,
       artifacts: data.artifacts.length,
     },
@@ -482,8 +508,9 @@ function buildDataTrust(data: OpsConsoleData): OpsOverviewDataTrust {
 
   return {
     activeSource: data.dataSource.mode,
-    generatedAt: data.dataSource.generatedAt,
+    generatedAt: getOverviewGeneratedAt(data),
     tables: tables.map(([name, count]) => ({
+
       name,
       count,
       status: count ? "ok" : "empty",

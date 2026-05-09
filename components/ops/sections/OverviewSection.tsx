@@ -14,7 +14,7 @@ import type {
 const severityTone: Record<OpsOverviewSeverity, string> = {
   critical: "border-rose-300/40 bg-rose-400/10 text-rose-50 shadow-rose-950/20",
   warning: "border-amber-300/40 bg-amber-400/10 text-amber-50 shadow-amber-950/20",
-  info: "border-cyan-300/35 bg-cyan-400/10 text-cyan-50 shadow-cyan-950/20",
+  info: "border-cyan-300/25 bg-cyan-400/[0.07] text-cyan-50 shadow-cyan-950/10",
   healthy: "border-emerald-300/35 bg-emerald-400/10 text-emerald-50 shadow-emerald-950/20",
   empty: "border-slate-300/25 bg-slate-400/10 text-slate-100 shadow-black/10",
 };
@@ -49,8 +49,8 @@ function ActionCard({ action, onOpen }: { action: OpsOverviewActionItem; onOpen:
         <span className="text-xs text-white/45">{action.source.table}</span>
       </div>
       <h4 className="text-base font-bold text-white">{action.title}</h4>
-      <p className="mt-2 text-sm leading-6 text-white/70">{action.reason}</p>
-      <p className="mt-4 text-sm font-semibold text-white transition group-hover:text-cyan-100">
+      <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/70">{action.reason}</p>
+      <p className="mt-3 text-sm font-semibold text-white transition group-hover:text-cyan-100">
         {action.cta} →
       </p>
     </button>
@@ -86,7 +86,7 @@ function ProjectHealthCard({ project, onOpen }: { project: OpsOverviewProjectHea
         </div>
         <div className="text-right">
           <StatusPill label={project.health} tone={healthTone(project.health)} />
-          <p className="mt-2 text-2xl font-black text-white">{project.score}</p>
+          <p className="mt-2 text-2xl font-black text-white">Health {project.score}</p>
         </div>
       </div>
       <p className="text-sm leading-6 text-white/75">{project.diagnosis}</p>
@@ -130,7 +130,7 @@ export function OverviewSection({
       <header className={clsx("rounded-[2rem] border p-6 shadow-2xl", healthTone(overview.command.status))}>
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-2">
-            <StatusPill label="Action Command Center" tone="border-white/15 bg-black/20 text-white/75" />
+            <StatusPill label="오늘의 운영 커맨드" tone="border-white/15 bg-black/20 text-white/75" />
             <StatusPill label={overview.command.status} tone={healthTone(overview.command.status)} />
           </div>
           <span className="text-xs text-white/50">
@@ -146,17 +146,31 @@ export function OverviewSection({
           <SummaryCard label="Review gaps" value={String(overview.command.stats.reviewNeededProjects)} />
           <SummaryCard label="System alerts" value={String(overview.command.stats.staleSystems)} />
         </div>
-        {primaryAction && (
+        <div className="mt-5 flex flex-wrap gap-3">
+          {primaryAction && (
+            <button
+              onClick={() => setSection(primaryAction.targetSection)}
+              className="rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-100"
+            >
+              {primaryAction.label}
+            </button>
+          )}
           <button
-            onClick={() => setSection(primaryAction.targetSection)}
-            className="mt-5 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-100"
+            onClick={() => setSection("projects")}
+            className="rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
           >
-            {primaryAction.label}
+            AI 리뷰 {overview.command.stats.reviewNeededProjects}건 확인
           </button>
-        )}
+          <button
+            onClick={() => setSection("worker")}
+            className="rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+          >
+            시스템 주의 {overview.command.stats.staleSystems}건 보기
+          </button>
+        </div>
       </header>
 
-      <Panel title="Today Action Queue">
+      <Panel title="Today Action Queue / 오늘 처리할 일">
         <div className="mb-4 flex flex-wrap gap-2 text-xs text-white/55">
           {[
             "approval",
@@ -179,7 +193,17 @@ export function OverviewSection({
         </div>
       </Panel>
 
-      <Panel title="Project Operating Radar">
+      <Panel title="System Health Strip / 시스템 상태">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          {Object.values(overview.system).map((item) => (
+            <button key={item.label} onClick={() => setSection(item.targetSection)} className="text-left">
+              <HealthTile item={item} />
+            </button>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="Project Operating Radar / 프로젝트 운영 레이더">
         <div className="grid gap-4 lg:grid-cols-2">
           {overview.projects.map((project) => (
             <ProjectHealthCard
@@ -194,22 +218,12 @@ export function OverviewSection({
         </div>
       </Panel>
 
-      <Panel title="System Health Strip">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          {Object.values(overview.system).map((item) => (
-            <button key={item.label} onClick={() => setSection(item.targetSection)} className="text-left">
-              <HealthTile item={item} />
-            </button>
-          ))}
-        </div>
-      </Panel>
-
       <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
-        <Panel title="Knowledge / CMS Snapshot">
+        <Panel title="Knowledge / CMS Snapshot / 문서 커버리지">
           <div className="mb-4 grid gap-3 md:grid-cols-3">
             <SummaryCard label="Notes" value={String(overview.knowledge.coverage.totalNotes)} />
             <SummaryCard label="Linked" value={String(overview.knowledge.coverage.projectLinkedNotes)} />
-            <SummaryCard label="Orphan" value={String(overview.knowledge.coverage.orphanNotes)} />
+            <SummaryCard label="Unlinked" value={String(overview.knowledge.coverage.orphanNotes)} />
           </div>
           <div className="flex flex-wrap gap-2">
             {overview.knowledge.buckets.map((bucket) => (
@@ -236,7 +250,7 @@ export function OverviewSection({
           )}
         </Panel>
 
-        <Panel title="Recent Operations Timeline">
+        <Panel title="Recent Operations Timeline / 최근 작업 흐름">
           <div className="space-y-3">
             {overview.timeline.map((item) => (
               <TimelineRow key={item.id} item={item} />
@@ -245,12 +259,17 @@ export function OverviewSection({
         </Panel>
       </div>
 
-      <Panel title="Data Trust Footer">
+      <Panel title="Data Trust Footer / 데이터 신뢰도">
         <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-4">
           {overview.dataTrust.tables.map((table) => (
             <div
               key={table.name}
-              className={clsx("rounded-2xl border p-4", table.status === "ok" ? severityTone.healthy : severityTone.empty)}
+              className={clsx(
+                "rounded-2xl border p-4",
+                table.status === "ok"
+                  ? "border-white/10 bg-white/[0.03] text-white/65"
+                  : severityTone.empty,
+              )}
             >
               <p className="text-xs uppercase tracking-[0.18em] text-white/45">{table.name}</p>
               <p className="mt-2 text-2xl font-bold text-white">{table.count ?? 0}</p>

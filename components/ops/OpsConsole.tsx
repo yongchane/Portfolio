@@ -38,6 +38,15 @@ import {
 import type { OpsConsoleData, OpsVersionSnapshot } from "@/lib/ops/types";
 import { buildOpsVersionSnapshot } from "@/lib/ops/version";
 
+const STALE_MINUTES = 10;
+
+function isFreshTimestamp(value?: string) {
+  if (!value) return false;
+  const timestamp = new Date(value).getTime();
+  if (Number.isNaN(timestamp)) return false;
+  return Date.now() - timestamp <= STALE_MINUTES * 60 * 1000;
+}
+
 export default function OpsConsole({ authenticated, data }: { authenticated: boolean; data: OpsConsoleData | null }) {
   const router = useRouter();
   const [input, setInput] = useState("");
@@ -70,6 +79,9 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
   const vaultLinksByNoteId = useMemo(() => (safeData ? createVaultLinksByNoteId(safeData) : new Map()), [safeData]);
   const projectRepoHealth = useMemo(() => getProjectRepoHealth(selectedProject, selectedRepo, selectedProjectReleases), [selectedProject, selectedRepo, selectedProjectReleases]);
   const releaseProjects = useMemo(() => (safeData ? getReleaseProjects(safeData, githubReposByName) : []), [safeData, githubReposByName]);
+  const latestWorker = safeData?.workerHeartbeats[0];
+  const workerFresh = isFreshTimestamp(latestWorker?.lastSeenAt);
+  const workerLabel = latestWorker ? (latestWorker.status === "online" && !workerFresh ? "stale" : latestWorker.status) : "offline";
 
   useEffect(() => {
     if (!filteredNotes.length) return;
@@ -218,10 +230,10 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-white/40">CMS Command Surface</p>
                 <h2 className="mt-2 text-2xl font-bold">{sidebarItems.find((item) => item.id === section)?.label || "Overview"}</h2>
-                <p className="mt-1 text-sm text-white/55">그래프/도형/연결 관계 중심으로 운영 신호를 먼저 보고, 상세 관리는 아래 패널에서 수행합니다.</p>
+                <p className="mt-1 text-sm text-white/55">오늘 처리할 액션을 먼저 보고, 상태/문서/GitHub 신호는 근거로 확인합니다.</p>
               </div>
               <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                <CmsMetricPill label="Worker" value={safeData.workerHeartbeats[0]?.status || "offline"} tone={safeData.workerHeartbeats[0]?.status === "online" ? "emerald" : "amber"} />
+                <CmsMetricPill label="Worker" value={workerLabel} tone={workerLabel === "online" ? "emerald" : "amber"} />
                 <CmsMetricPill label="Mac" value={safeData.hostStatuses[0]?.machine || "no signal"} tone="cyan" />
                 <CmsMetricPill label="Source" value={safeData.dataSource.mode} tone="slate" />
                 <CmsMetricPill label="GitHub" value={String(safeData.github.repoSnapshots.length)} tone="violet" />
