@@ -241,7 +241,7 @@ export default function OpsConsole({ authenticated, data }: { authenticated: boo
             </div>
           </div>
           {section === "overview" && <OverviewSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} attentionTasks={attentionTasks} liveStatus={liveStatus} />}
-          {section === "aeyong" && <AeyongSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} />}
+          {(section === "openclaw" || section === "aeyong") && <AeyongSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} />}
           {section === "worker" && <WorkerSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} />}
           {section === "macmini" && <MacMiniSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} />}
           {section === "tasks" && <TasksSection data={safeData} summary={summary} notesById={notesById} githubReposByName={githubReposByName} setSection={setSection} setSelectedProjectId={setSelectedProjectId} setSelectedNoteId={setSelectedNoteId} />}

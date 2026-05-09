@@ -71,6 +71,18 @@ function nowStamp() {
   return formatter.format(new Date()).replace("T", " ");
 }
 
+function jsonArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (typeof value !== "string") return [];
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return Array.isArray(parsed) ? (parsed as T[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 async function resolveMutationBackend(): Promise<MutationBackend> {
   const mode = getOpsDataMode();
   if (mode === "local") return "local";
@@ -352,22 +364,12 @@ async function updateTaskInSupabase(input: {
     category: data.category as Task["category"],
     status: data.status as TaskStatus,
     summary: String(data.summary),
-    completedWork: Array.isArray(data.completed_work)
-      ? (data.completed_work as string[])
-      : [],
-    nextActions: Array.isArray(data.next_actions)
-      ? (data.next_actions as string[])
-      : [],
-    relatedDocs: Array.isArray(data.related_docs)
-      ? (data.related_docs as string[])
-      : [],
-    relatedCommits: Array.isArray(data.related_commits)
-      ? (data.related_commits as string[])
-      : [],
-    noteIds: Array.isArray(data.note_ids) ? (data.note_ids as string[]) : [],
-    needsDecision: Array.isArray(data.needs_decision)
-      ? (data.needs_decision as string[])
-      : [],
+    completedWork: jsonArray<string>(data.completed_work),
+    nextActions: jsonArray<string>(data.next_actions),
+    relatedDocs: jsonArray<string>(data.related_docs),
+    relatedCommits: jsonArray<string>(data.related_commits),
+    noteIds: jsonArray<string>(data.note_ids),
+    needsDecision: jsonArray<string>(data.needs_decision),
     updatedAt: String(data.updated_at),
   } satisfies Task;
 }

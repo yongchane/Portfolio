@@ -1,819 +1,369 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import clsx from "clsx";
-import {
-  EmptyLine,
-  GitHubRepoDetail,
-  InfoTile,
-  Panel,
-  ProjectBoardCard,
-  ReleaseCard,
-  TaskRow,
-  SectorRow,
-  ChecklistRow,
-} from "@/components/ops/shared";
+import { InfoTile, Panel } from "@/components/ops/shared";
 import type { ProjectsSectionProps } from "@/components/ops/sections/types";
-import { buildOpsProjectModel } from "@/lib/ops/projects";
-import type {
-  GitHubProjectBoardSnapshot,
-  OpsProjectActionItem,
-  OpsProjectAiReviewColumn,
-  OpsProjectCommand,
-  OpsProjectRailItem,
-  ProgressState,
-  Project,
-  ProjectStage,
-} from "@/lib/ops/types";
+import type { GitHubRepoSnapshot } from "@/lib/ops/types";
 
-const aiReviewSeverityTone = {
-  high: "bg-rose-100 text-rose-700",
-  medium: "bg-amber-100 text-amber-700",
-  low: "bg-sky-100 text-sky-700",
-  info: "bg-white/10 text-white/70",
-  none: "bg-white/10 text-white/50",
-} as const;
+type CanvasNodeType = "repo" | "frontend" | "api" | "database" | "ia" | "deploy" | "docs" | "agent";
 
-const missionStatusTone = {
-  risk: "border-rose-300/40 bg-rose-400/10 text-rose-50 shadow-rose-950/20",
-  attention: "border-amber-300/40 bg-amber-400/10 text-amber-50 shadow-amber-950/20",
-  healthy: "border-emerald-300/35 bg-emerald-400/10 text-emerald-50 shadow-emerald-950/20",
-} as const;
+type CanvasNode = {
+  id: string;
+  type: CanvasNodeType;
+  label: string;
+  description: string;
+  x: number;
+  y: number;
+  source: "github-analysis" | "user-created" | "ai-suggestion";
+  meta: string[];
+};
 
-const projectActionTone = {
-  critical: "border-rose-300/40 bg-rose-400/10 text-rose-50",
-  warning: "border-amber-300/40 bg-amber-400/10 text-amber-50",
-  info: "border-cyan-300/25 bg-cyan-400/[0.07] text-cyan-50",
-} as const;
+type CanvasEdge = {
+  id: string;
+  source: string;
+  target: string;
+  label: string;
+};
 
-function extractProjectBoardScopeWarning(
-  warnings: string[] | undefined,
-  owner?: string,
-) {
-  return warnings?.find(
-    (warning) =>
-      warning.includes("read:project") &&
-      (!owner || warning.includes(`projects(${owner})`)),
-  );
+const nodeTone: Record<CanvasNodeType, string> = {
+  repo: "border-slate-200/30 bg-slate-300/10 text-slate-50",
+  frontend: "border-cyan-300/40 bg-cyan-400/10 text-cyan-50",
+  api: "border-violet-300/40 bg-violet-400/10 text-violet-50",
+  database: "border-emerald-300/40 bg-emerald-400/10 text-emerald-50",
+  ia: "border-amber-300/40 bg-amber-400/10 text-amber-50",
+  deploy: "border-sky-300/40 bg-sky-400/10 text-sky-50",
+  docs: "border-fuchsia-300/40 bg-fuchsia-400/10 text-fuchsia-50",
+  agent: "border-rose-300/40 bg-rose-400/10 text-rose-50",
+};
+
+const nodeLabel: Record<CanvasNodeType, string> = {
+  repo: "GitHub Repo",
+  frontend: "Frontend",
+  api: "Backend API",
+  database: "Database",
+  ia: "IA / Flow",
+  deploy: "Deploy",
+  docs: "Docs",
+  agent: "AI Agent",
+};
+
+const mockEdges: CanvasEdge[] = [
+  { id: "edge-repo-frontend", source: "repo", target: "frontend", label: "contains UI" },
+  { id: "edge-repo-api", source: "repo", target: "api", label: "contains routes" },
+  { id: "edge-api-db", source: "api", target: "database", label: "reads / writes" },
+  { id: "edge-frontend-api", source: "frontend", target: "api", label: "fetches" },
+  { id: "edge-ia-frontend", source: "ia", target: "frontend", label: "drives screens" },
+  { id: "edge-repo-docs", source: "repo", target: "docs", label: "documents" },
+  { id: "edge-agent-ia", source: "agent", target: "ia", label: "reviews" },
+  { id: "edge-deploy-repo", source: "deploy", target: "repo", label: "ships" },
+];
+
+function buildMockNodes(repo?: GitHubRepoSnapshot): CanvasNode[] {
+  const repoName = repo?.repo || "yongchane/Portfolio";
+  return [
+    {
+      id: "repo",
+      type: "repo",
+      label: repoName,
+      description: "선택한 GitHub 레포지토리입니다. 이후 API 연동 단계에서 실제 GitHub tree 분석 결과를 기준으로 canvas를 생성합니다.",
+      x: 80,
+      y: 210,
+      source: "github-analysis",
+      meta: [repo?.defaultBranch ? `default ${repo.defaultBranch}` : "default branch", repo?.visibility || "visibility", "repo tree source"],
+    },
+    {
+      id: "frontend",
+      type: "frontend",
+      label: "App Router / UI Layer",
+      description: "사용자가 보는 페이지, 레이아웃, 컴포넌트 구조입니다. 화면 IA와 연결해서 유지보수 방향을 설계합니다.",
+      x: 420,
+      y: 70,
+      source: "github-analysis",
+      meta: ["app/", "components/", "client fetch"],
+    },
+    {
+      id: "api",
+      type: "api",
+      label: "Next.js Backend API",
+      description: "프론트엔드가 호출하는 실제 API 계층입니다. 앞으로 모든 기능은 이 API 응답을 기준으로 렌더링합니다.",
+      x: 420,
+      y: 260,
+      source: "github-analysis",
+      meta: ["app/api/", "route.ts", "auth guard"],
+    },
+    {
+      id: "database",
+      type: "database",
+      label: "Supabase DB",
+      description: "프로젝트, canvas nodes/edges, export, AI review 결과가 저장될 데이터베이스입니다.",
+      x: 760,
+      y: 260,
+      source: "user-created",
+      meta: ["ops_projects", "ops_project_canvas_nodes", "ops_project_exports"],
+    },
+    {
+      id: "ia",
+      type: "ia",
+      label: "IA / User Flow",
+      description: "홈 → 프로젝트 리스트 → 프로젝트 canvas → export/AI review로 이어지는 사용자 흐름입니다.",
+      x: 760,
+      y: 70,
+      source: "user-created",
+      meta: ["project list", "canvas", "inspector", "export"],
+    },
+    {
+      id: "deploy",
+      type: "deploy",
+      label: "Deploy / Status",
+      description: "배포 상태, 보안 상태, 마지막 수정일을 프로젝트 리스트에 보여주는 운영 신호입니다.",
+      x: 80,
+      y: 430,
+      source: "github-analysis",
+      meta: ["Vercel", "GitHub Actions", "security"],
+    },
+    {
+      id: "docs",
+      type: "docs",
+      label: "Spec / Markdown Export",
+      description: "canvas를 기능 명세서, IA 문서, AI 작업 프롬프트로 변환하는 산출물 영역입니다.",
+      x: 420,
+      y: 450,
+      source: "user-created",
+      meta: ["markdown", "png", "prompt"],
+    },
+    {
+      id: "agent",
+      type: "agent",
+      label: "AI Agent Review",
+      description: "Cursor처럼 설계 방향이 유지보수에 적절한지 AI 에이전트와 함께 검토하는 영역입니다.",
+      x: 760,
+      y: 450,
+      source: "ai-suggestion",
+      meta: ["architecture review", "IA review", "risk"],
+    },
+  ];
 }
 
-function MissionPill({ label, tone }: { label: string; tone: string }) {
-  return <span className={clsx("rounded-full border px-3 py-1 text-xs font-semibold", tone)}>{label}</span>;
+function statusTone(status: string) {
+  if (status === "healthy") return "bg-emerald-100 text-emerald-700";
+  if (status === "warning") return "bg-amber-100 text-amber-700";
+  if (status === "risk") return "bg-rose-100 text-rose-700";
+  return "bg-slate-100 text-slate-700";
 }
 
-function ProjectSelectorCard({ item, selected, onSelect }: { item: OpsProjectRailItem; selected: boolean; onSelect: () => void }) {
+function ProjectListCard({ repo, selected, onClick }: { repo: GitHubRepoSnapshot; selected: boolean; onClick: () => void }) {
+  const securityStatus = repo.openIssuesCount && repo.openIssuesCount > 5 ? "warning" : "healthy";
+  const deployStatus = repo.pushedAt ? "healthy" : "unknown";
+
   return (
     <button
-      onClick={onSelect}
+      onClick={onClick}
       className={clsx(
-        "w-full rounded-3xl border p-4 text-left shadow-lg transition hover:-translate-y-0.5 hover:bg-white/10",
-        selected ? missionStatusTone[item.status] : "border-white/10 bg-white/5",
+        "w-full rounded-3xl border p-4 text-left transition hover:-translate-y-0.5 hover:bg-white/10",
+        selected ? "border-cyan-200/50 bg-cyan-400/10 shadow-xl shadow-cyan-950/30" : "border-white/10 bg-white/5",
       )}
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
-          <strong className="text-lg text-white">{item.name}</strong>
-          <p className="mt-1 text-xs text-white/45">{item.repo || "repo 미연결"}</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-white/40">repository</p>
+          <strong className="mt-1 block text-lg text-white">{repo.name}</strong>
+          <p className="mt-1 text-xs text-white/45">{repo.repo}</p>
         </div>
-        <MissionPill label={item.status} tone={missionStatusTone[item.status]} />
+        <span className="rounded-full bg-white/10 px-2 py-1 text-xs text-white/65">{repo.visibility}</span>
       </div>
-      <div className="flex flex-wrap gap-2 text-xs text-white/60">
-        <span className="rounded-full bg-white/10 px-2 py-1">score {item.score}</span>
-        <span className="rounded-full bg-white/10 px-2 py-1">blocked {item.counts.blockedTasks}</span>
-        <span className="rounded-full bg-white/10 px-2 py-1">verify {item.counts.verifyingTasks}</span>
-        <span className="rounded-full bg-white/10 px-2 py-1">review {item.counts.openReviews}</span>
-        <span className="rounded-full bg-white/10 px-2 py-1">docs {item.counts.linkedNotes}</span>
+      <p className="mb-4 line-clamp-2 text-sm leading-6 text-white/65">{repo.description || "설명 없음"}</p>
+      <div className="grid gap-2 text-xs text-white/70 md:grid-cols-2">
+        <span className="rounded-full bg-black/20 px-2 py-1">수정 {repo.pushedAt || repo.updatedAt || "미기록"}</span>
+        <span className={clsx("rounded-full px-2 py-1 font-semibold", statusTone(deployStatus))}>배포 {deployStatus}</span>
+        <span className={clsx("rounded-full px-2 py-1 font-semibold", statusTone(securityStatus))}>보안 {securityStatus}</span>
+        <span className="rounded-full bg-black/20 px-2 py-1">PR {repo.openPullRequestsCount ?? 0} · Issue {repo.openIssuesCount ?? 0}</span>
       </div>
     </button>
   );
 }
 
-function ProjectCommandHeader({ command, project }: { command: OpsProjectCommand; project: Project }) {
+function CanvasEdgeLayer({ nodes, edges }: { nodes: CanvasNode[]; edges: CanvasEdge[] }) {
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+
   return (
-    <header className={clsx("rounded-[2rem] border p-6 shadow-2xl", missionStatusTone[command.status])}>
-      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+    <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1040 640" preserveAspectRatio="none">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,255,255,0.45)" />
+        </marker>
+      </defs>
+      {edges.map((edge) => {
+        const source = nodeMap.get(edge.source);
+        const target = nodeMap.get(edge.target);
+        if (!source || !target) return null;
+        const x1 = source.x + 120;
+        const y1 = source.y + 44;
+        const x2 = target.x + 120;
+        const y2 = target.y + 44;
+        const midX = (x1 + x2) / 2;
+        return (
+          <g key={edge.id}>
+            <path
+              d={`M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`}
+              fill="none"
+              stroke="rgba(255,255,255,0.28)"
+              strokeWidth="2"
+              markerEnd="url(#arrow)"
+            />
+            <text x={midX} y={(y1 + y2) / 2 - 8} textAnchor="middle" className="fill-white/45 text-[10px]">
+              {edge.label}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function CanvasNodeCard({ node, selected, onClick }: { node: CanvasNode; selected: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{ left: node.x, top: node.y }}
+      className={clsx(
+        "absolute w-[240px] rounded-3xl border p-4 text-left shadow-2xl backdrop-blur transition hover:-translate-y-1",
+        nodeTone[node.type],
+        selected && "ring-2 ring-white/45",
+      )}
+    >
+      <div className="mb-3 flex items-start justify-between gap-2">
         <div>
-          <div className="mb-3 flex flex-wrap gap-2">
-            <MissionPill label="Project Mission Control" tone="border-white/15 bg-black/20 text-white/75" />
-            <MissionPill label={command.status} tone={missionStatusTone[command.status]} />
-            <MissionPill label={`Health ${command.score}`} tone="border-white/15 bg-black/20 text-white/80" />
-          </div>
-          <h3 className="text-3xl font-black text-white md:text-4xl">{command.title}</h3>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-white/75">{command.summary}</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] opacity-55">{nodeLabel[node.type]}</p>
+          <strong className="mt-1 block text-base leading-5">{node.label}</strong>
         </div>
-        {command.primaryAction && (
-          <div className="rounded-2xl border border-white/15 bg-black/20 p-4 text-sm text-white/80">
-            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Primary action</p>
-            <p className="mt-2 font-bold text-white">{command.primaryAction.label}</p>
-          </div>
-        )}
+        <span className="rounded-full bg-black/20 px-2 py-1 text-[10px] opacity-70">{node.source}</span>
       </div>
-      <div className="grid gap-3 text-sm md:grid-cols-3 xl:grid-cols-6">
-        <InfoTile label="Project" value={project.name} />
-        <InfoTile label="Stage" value={project.stage} />
-        <InfoTile label="Repo" value={project.repo || "-"} />
-        <InfoTile label="Tasks" value={String(command.stats.tasks)} />
-        <InfoTile label="Open reviews" value={String(command.stats.openReviews)} />
-        <InfoTile label="Missing reviews" value={String(command.stats.missingReviewCategories)} />
-      </div>
-    </header>
+      <p className="line-clamp-3 text-xs leading-5 opacity-70">{node.description}</p>
+    </button>
   );
 }
 
-function ProjectActionQueue({ actions }: { actions: OpsProjectActionItem[] }) {
-  return (
-    <Panel title="Project Action Queue">
-      {actions.length ? (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {actions.map((action) => (
-            <article key={action.id} className={clsx("rounded-2xl border p-4", projectActionTone[action.severity])}>
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <MissionPill label={action.category} tone="border-white/15 bg-black/20 text-white/75" />
-                <span className="text-xs text-white/45">{action.source.table}</span>
-              </div>
-              <h4 className="font-bold text-white">{action.title}</h4>
-              <p className="mt-2 text-sm leading-6 text-white/70">{action.reason}</p>
-              <p className="mt-3 text-sm font-semibold text-white">{action.cta} →</p>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <EmptyLine message="지금 즉시 처리할 프로젝트 액션이 없습니다." />
-      )}
-    </Panel>
-  );
-}
-
-function AiReviewBoardV2({ columns }: { columns: OpsProjectAiReviewColumn[] }) {
-  return (
-    <Panel title="AI Review Board v2">
-      <div className="mb-4 rounded-2xl border border-violet-300/20 bg-violet-500/10 p-4 text-sm leading-6 text-violet-50/90">
-        <p className="font-semibold">레포별 AI 평가/코멘트 보드</p>
-        <p className="mt-1 text-xs text-violet-100/80">
-          QA, 보안, 기능, 업데이트, UI/UX 관점의 open review를 운영 액션 후보로 다룹니다. 실제 실행은 Agent Run queue와 Mac mini worker 연결을 따릅니다.
-        </p>
-      </div>
-      <div className="grid gap-4 xl:grid-cols-5">
-        {columns.map((column) => (
-          <div key={column.category} className={clsx("rounded-2xl border p-4", column.status === "risk" ? projectActionTone.warning : column.status === "covered" ? missionStatusTone.healthy : "border-white/10 bg-black/20 text-white/70")}>
-            <div className="mb-3 flex items-start justify-between gap-3">
-              <div>
-                <p className="font-semibold text-white">{column.label}</p>
-                <p className="mt-1 text-xs text-white/45">{column.helper}</p>
-              </div>
-              <MissionPill label={column.status} tone={column.status === "risk" ? projectActionTone.warning : column.status === "covered" ? missionStatusTone.healthy : "border-white/15 bg-white/5 text-white/55"} />
-            </div>
-            <div className="mb-3 flex flex-wrap gap-2 text-xs text-white/60">
-              <span className="rounded-full bg-white/10 px-2 py-1">open {column.counts.open}</span>
-              <span className="rounded-full bg-white/10 px-2 py-1">resolved {column.counts.resolved}</span>
-              <span className={clsx("rounded-full px-2 py-1 font-semibold", aiReviewSeverityTone[column.highestSeverity])}>{column.highestSeverity}</span>
-            </div>
-            <div className="space-y-3">
-              {column.reviews.slice(0, 3).map((review) => (
-                <article key={review.id} className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/70">
-                  <div className="mb-2 flex items-start justify-between gap-2">
-                    <strong className="text-white">{review.title}</strong>
-                    <span className={clsx("rounded-full px-2 py-0.5 font-semibold", aiReviewSeverityTone[review.severity])}>{review.severity}</span>
-                  </div>
-                  <p className="line-clamp-3">{review.comment}</p>
-                  {review.recommendation && <p className="mt-2 font-semibold text-white/75">→ {review.recommendation}</p>}
-                  <p className="mt-2 uppercase tracking-[0.16em] text-white/30">{review.status}</p>
-                </article>
-              ))}
-              {!column.reviews.length && (
-                <p className="rounded-xl border border-dashed border-white/10 bg-white/5 p-3 text-xs text-white/40">{column.emptyMessage}</p>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </Panel>
-  );
-}
-
-function ProjectDataTrustCard({ model }: { model: ReturnType<typeof buildOpsProjectModel> }) {
-  return (
-    <Panel title="Project Data Trust">
-      <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
-        <InfoTile label="Source" value={model.dataTrust.activeSource} />
-        <InfoTile label="Generated" value={model.dataTrust.generatedAt} />
-        <InfoTile label="Tasks" value={String(model.dataTrust.counts.tasks)} />
-        <InfoTile label="AI reviews" value={String(model.dataTrust.counts.aiReviews)} />
-        <InfoTile label="Linked docs" value={String(model.dataTrust.counts.linkedNotes)} />
-        <InfoTile label="Workflow runs" value={String(model.dataTrust.counts.workflowRuns)} />
-      </div>
-      {!!model.dataTrust.warnings.length && (
-        <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/65">
-          {model.dataTrust.warnings.map((warning) => (
-            <p key={warning}>• {warning}</p>
-          ))}
-        </div>
-      )}
-    </Panel>
-  );
-}
-
-export function ProjectsSection({
-  data,
-  notesById,
-  githubReposByName,
-  setSection,
-  setSelectedProjectId,
-  setSelectedNoteId,
-  selectedProject,
-  projectTasks,
-  selectedRepo,
-  selectedProjectBoards,
-  selectedProjectReleases,
-  selectedProjectNotes,
-  selectedProjectNotesCount,
-  selectedProjectNextActions,
-  projectExecutionStatus,
-  projectRepoHealth,
-  vaultLinksByNoteId,
-}: ProjectsSectionProps) {
-  const router = useRouter();
-  const [summaryDraft, setSummaryDraft] = useState(selectedProject.summary);
-  const [stageDraft, setStageDraft] = useState<ProjectStage>(
-    selectedProject.stage,
-  );
-  const [checklistDraft, setChecklistDraft] = useState<
-    Record<string, ProgressState>
-  >({});
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  const checklistPayload = useMemo(
-    () =>
-      (selectedProject.checklist || []).map((item) => ({
-        id: item.id,
-        status: checklistDraft[item.id] || item.status,
-      })),
-    [selectedProject.checklist, checklistDraft],
-  );
-
-  const boardScopeWarning = extractProjectBoardScopeWarning(
-    data.github.warnings,
-    selectedRepo?.owner,
-  );
-  const selectedWorkflowRuns = (data.github.workflowRuns || []).filter(
-    (run) => run.repo === selectedRepo?.repo,
-  );
-  const selectedSecurityAlerts = (data.github.securityAlerts || []).filter(
-    (alert) => alert.repo === selectedRepo?.repo,
-  );
-  const latestWorkflowRun = selectedWorkflowRuns[0];
-  const failedWorkflowRuns = selectedWorkflowRuns.filter(
-    (run) => run.conclusion === "failure" || run.conclusion === "cancelled",
-  );
-  const projectBoardsByOwner = useMemo(() => {
-    const map = new Map<string, GitHubProjectBoardSnapshot[]>();
-    for (const board of data.github.projectBoards) {
-      map.set(board.owner, [...(map.get(board.owner) || []), board]);
-    }
-    return map;
-  }, [data.github.projectBoards]);
-  const projectModel = useMemo(
-    () =>
-      buildOpsProjectModel({
-        data,
-        selectedProject,
-        githubReposByName,
-        projectBoardsByOwner,
-      }),
-    [data, selectedProject, githubReposByName, projectBoardsByOwner],
-  );
-
-  useEffect(() => {
-    setSummaryDraft(selectedProject.summary);
-    setStageDraft(selectedProject.stage);
-    setChecklistDraft({});
-    setSaveMessage(null);
-  }, [selectedProject.id, selectedProject.stage, selectedProject.summary]);
-
-  async function saveProject() {
-    setSaveMessage(null);
-    const response = await fetch(`/api/ops/projects/${selectedProject.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        stage: stageDraft,
-        summary: summaryDraft,
-        checklist: checklistPayload,
-      }),
-    });
-
-    const payload = await response.json().catch(() => null);
-    if (!response.ok) {
-      setSaveMessage(payload?.message || "프로젝트 저장에 실패했습니다.");
-      return;
-    }
-
-    setSaveMessage(
-      data.dataSource.mode === "supabase"
-        ? "Supabase project row를 먼저 맞추고 local projects fallback도 함께 갱신한 뒤 화면을 새로고침합니다."
-        : "로컬 fallback source에 반영했고 화면을 새로고침합니다.",
-    );
-    startTransition(() => router.refresh());
-  }
+export function ProjectsSection({ data }: ProjectsSectionProps) {
+  const repos = useMemo(() => data.github.repoSnapshots.slice(0, 6), [data.github.repoSnapshots]);
+  const fallbackRepo = repos[0];
+  const [selectedRepoName, setSelectedRepoName] = useState(fallbackRepo?.repo || "");
+  const selectedRepo = repos.find((repo) => repo.repo === selectedRepoName) || fallbackRepo;
+  const nodes = useMemo(() => buildMockNodes(selectedRepo), [selectedRepo]);
+  const [selectedNodeId, setSelectedNodeId] = useState("repo");
+  const selectedNode = nodes.find((node) => node.id === selectedNodeId) || nodes[0];
 
   return (
     <div className="space-y-8">
-      <header>
-        <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">
-          Projects
-        </p>
-        <h2 className="mb-3 text-4xl font-bold">프로젝트 운영 관리</h2>
-        <p className="max-w-3xl text-white/70">
-          기획 → 개발 → 배포 → 운영 흐름을 프로젝트 단위로 봅니다. stage,
-          checklist, GitHub 상태뿐 아니라 이 프로젝트가 지금 어느 저장 경로를
-          믿고 있는지도 같이 보여줍니다.
-        </p>
-      </header>
-      <div className="grid gap-6 xl:grid-cols-[300px_1fr]">
-        <div className="space-y-3">
-          {projectModel.rail.map((item) => (
-            <ProjectSelectorCard
-              key={item.projectId}
-              item={item}
-              selected={selectedProject.id === item.projectId}
-              onSelect={() => setSelectedProjectId(item.projectId)}
-            />
+      <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <p className="mb-3 text-sm uppercase tracking-[0.24em] text-white/45">Project Management</p>
+          <h2 className="mb-3 text-4xl font-black">프로젝트 관리 캔버스</h2>
+          <p className="max-w-3xl text-sm leading-6 text-white/70">
+            GitHub 레포를 선택하면 시스템 아키텍처와 IA를 n8n처럼 시각화하고, 직접 수정한 설계를 Markdown / 이미지 / AI 작업 프롬프트로 출력하는 화면입니다. 현재는 UI 검증용 목업입니다.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {["GitHub Sync", "Analyze Repo", "Save Canvas", "Export Markdown", "Export PNG", "Ask AI"].map((action) => (
+            <button key={action} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/75 transition hover:bg-white/10">
+              {action}
+            </button>
           ))}
         </div>
-        <div className="space-y-6 rounded-3xl border border-white/10 bg-white/5 p-6">
-          <ProjectCommandHeader command={projectModel.command} project={selectedProject} />
-          <ProjectActionQueue actions={projectModel.actions} />
+      </header>
 
-          <div className="grid gap-4 text-sm text-white/75 md:grid-cols-2 xl:grid-cols-8">
-            <InfoTile label="Repository" value={selectedProject.repo || "-"} />
-            <InfoTile label="Branch" value={selectedProject.branch || "-"} />
-            <InfoTile label="Deploy" value={selectedProject.deployUrl || "-"} />
-            <InfoTile
-              label="Docs"
-              value={selectedProject.docs?.join(", ") || "-"}
-            />
-            <InfoTile
-              label="Linked notes"
-              value={String(selectedProjectNotesCount)}
-            />
-            <InfoTile
-              label="Connected tasks"
-              value={String(projectTasks.length)}
-            />
-            <InfoTile
-              label="Boards / releases"
-              value={`${selectedProjectBoards.length} / ${selectedProjectReleases.length}`}
-            />
-            <InfoTile
-              label="Repo health"
-              value={projectRepoHealth ? `${projectRepoHealth.score}/100` : "-"}
-            />
+      <div className="grid gap-6 xl:grid-cols-[360px_1fr]">
+        <aside className="space-y-4">
+          <Panel title="GitHub 프로젝트 리스트">
+            <div className="mb-4 rounded-2xl border border-cyan-300/20 bg-cyan-400/10 p-4 text-xs leading-6 text-cyan-50/90">
+              <p className="font-semibold">다음 단계에서 실제 API로 교체할 영역</p>
+              <p className="mt-1">GET /api/ops/github/repositories → POST /api/ops/projects → GET /api/ops/projects 흐름으로 연결 예정입니다.</p>
+            </div>
+            <div className="space-y-3">
+              {repos.map((repo) => (
+                <ProjectListCard
+                  key={repo.repo}
+                  repo={repo}
+                  selected={repo.repo === selectedRepo?.repo}
+                  onClick={() => {
+                    setSelectedRepoName(repo.repo);
+                    setSelectedNodeId("repo");
+                  }}
+                />
+              ))}
+            </div>
+          </Panel>
+        </aside>
+
+        <section className="grid gap-6 2xl:grid-cols-[1fr_340px]">
+          <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] shadow-2xl">
+            <div className="flex flex-col gap-4 border-b border-white/10 bg-black/20 p-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.22em] text-white/40">Architecture / IA Canvas</p>
+                <h3 className="mt-1 text-xl font-bold">{selectedRepo?.repo || "레포 선택 필요"}</h3>
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs text-white/60">
+                <span className="rounded-full bg-white/10 px-3 py-1">nodes {nodes.length}</span>
+                <span className="rounded-full bg-white/10 px-3 py-1">edges {mockEdges.length}</span>
+                <span className="rounded-full bg-white/10 px-3 py-1">mode mock</span>
+              </div>
+            </div>
+
+            <div className="relative h-[640px] overflow-auto bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.11)_1px,transparent_0)] [background-size:28px_28px]">
+              <div className="relative h-[640px] min-w-[1040px]">
+                <CanvasEdgeLayer nodes={nodes} edges={mockEdges} />
+                {nodes.map((node) => (
+                  <CanvasNodeCard
+                    key={node.id}
+                    node={node}
+                    selected={node.id === selectedNode?.id}
+                    onClick={() => setSelectedNodeId(node.id)}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-2">
-            <Panel title="Project save behavior">
-              <div className="space-y-4 text-sm text-white/80">
-                <div className="rounded-2xl border border-emerald-300/20 bg-emerald-500/10 p-4 text-xs leading-6 text-emerald-50/90">
-                  <p className="font-semibold">현재 저장 경로</p>
-                  <p className="mt-2">
-                    Supabase 읽기 모드에서는 <code>ops_projects</code>를 먼저
-                    갱신하고 <code>data/ops/projects.json</code> fallback도 같이
-                    맞춥니다.
-                  </p>
-                  <p className="mt-1">
-                    로컬 모드에서는 기존처럼 JSON fallback만 갱신합니다. 그래서
-                    카드/세부화면이 서로 다른 source를 가리키는 상황을
-                    줄였습니다.
-                  </p>
-                  <p className="mt-2">
-                    현재는 인증된 `/ops`에서만 project stage / summary /
-                    checklist를 수정합니다.
-                  </p>
-                </div>
-                <label className="block">
-                  <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-white/45">
-                    Stage
-                  </span>
-                  <select
-                    value={stageDraft}
-                    onChange={(event) =>
-                      setStageDraft(event.target.value as ProjectStage)
-                    }
-                    className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 outline-none"
-                  >
-                    <option value="idea">idea</option>
-                    <option value="planning">planning</option>
-                    <option value="building">building</option>
-                    <option value="verifying">verifying</option>
-                    <option value="live">live</option>
-                  </select>
-                </label>
-                <label className="block">
-                  <span className="mb-2 block text-xs uppercase tracking-[0.2em] text-white/45">
-                    Summary
-                  </span>
-                  <textarea
-                    value={summaryDraft}
-                    onChange={(event) => setSummaryDraft(event.target.value)}
-                    rows={5}
-                    className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 outline-none"
-                  />
-                </label>
-                <div>
-                  <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">
-                    Checklist quick updates
-                  </p>
-                  <div className="space-y-3">
-                    {(selectedProject.checklist || []).map((item) => {
-                      const value = checklistDraft[item.id] || item.status;
-                      return (
-                        <div
-                          key={item.id}
-                          className="rounded-2xl border border-white/10 bg-black/20 p-4"
-                        >
-                          <div className="mb-2 flex items-start justify-between gap-3">
-                            <strong>{item.label}</strong>
-                            <select
-                              value={value}
-                              onChange={(event) =>
-                                setChecklistDraft((current) => ({
-                                  ...current,
-                                  [item.id]: event.target
-                                    .value as ProgressState,
-                                }))
-                              }
-                              className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs outline-none"
-                            >
-                              <option value="todo">todo</option>
-                              <option value="doing">doing</option>
-                              <option value="done">done</option>
-                              <option value="blocked">blocked</option>
-                            </select>
-                          </div>
-                          {item.note && (
-                            <p className="text-xs text-white/55">{item.note}</p>
-                          )}
-                        </div>
-                      );
-                    })}
+          <aside className="space-y-4">
+            <Panel title="Node Inspector">
+              {selectedNode ? (
+                <div className="space-y-4 text-sm text-white/80">
+                  <div className={clsx("rounded-3xl border p-4", nodeTone[selectedNode.type])}>
+                    <p className="mb-2 text-xs uppercase tracking-[0.2em] opacity-60">{nodeLabel[selectedNode.type]}</p>
+                    <h4 className="text-xl font-bold">{selectedNode.label}</h4>
+                    <p className="mt-3 text-sm leading-6 opacity-75">{selectedNode.description}</p>
                   </div>
-                </div>
-                <button
-                  onClick={() => void saveProject()}
-                  disabled={isPending}
-                  className="w-full rounded-2xl bg-white px-4 py-3 font-semibold text-black disabled:opacity-60"
-                >
-                  {isPending ? "저장 후 새로고침 중..." : "프로젝트 저장"}
-                </button>
-                {saveMessage && (
-                  <p className="text-xs text-white/60">{saveMessage}</p>
-                )}
-              </div>
-            </Panel>
-            <Panel title="Spec checklist">
-              <div className="space-y-3">
-                {(selectedProject.checklist || []).map((item) => (
-                  <ChecklistRow key={item.id} item={item} />
-                ))}
-                {!selectedProject.checklist?.length && (
-                  <EmptyLine message="아직 checklist가 정의되지 않았습니다." />
-                )}
-              </div>
-            </Panel>
-          </div>
-
-          <div className="grid gap-6 xl:grid-cols-3">
-            <Panel title="Execution snapshot">
-              <div className="grid gap-3 md:grid-cols-2">
-                <InfoTile label="Planned" value={String(projectExecutionStatus.planned)} />
-                <InfoTile label="Doing" value={String(projectExecutionStatus.doing)} />
-                <InfoTile label="Verifying" value={String(projectExecutionStatus.verifying)} />
-                <InfoTile label="Shipped" value={String(projectExecutionStatus.shipped)} />
-              </div>
-              <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
-                <p className="mb-3 text-sm font-semibold text-white/55">Next actions snapshot</p>
-                {selectedProjectNextActions.length ? (
-                  <ul className="list-disc space-y-2 pl-4 text-sm text-white/80">
-                    {selectedProjectNextActions.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <EmptyLine message="연결된 task에 아직 next action이 없습니다." />
-                )}
-              </div>
-            </Panel>
-            <Panel title="Sector progress">
-              <div className="space-y-3">
-                {(selectedProject.sectors || []).map((sector) => (
-                  <SectorRow key={sector.id} sector={sector} />
-                ))}
-                {!selectedProject.sectors?.length && (
-                  <EmptyLine message="아직 sector progress가 정의되지 않았습니다." />
-                )}
-              </div>
-            </Panel>
-            <Panel title="Operating cadence">
-              <div className="space-y-3">
-                {(selectedProject.operatingCadence || []).map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80"
-                  >
-                    {item}
+                  <div className="grid gap-3">
+                    <InfoTile label="Source" value={selectedNode.source} />
+                    <InfoTile label="Position" value={`${selectedNode.x}, ${selectedNode.y}`} />
+                    <InfoTile label="Editable" value="true · next API phase" />
                   </div>
-                ))}
-                {!selectedProject.operatingCadence?.length && (
-                  <EmptyLine message="운영 cadence가 아직 정의되지 않았습니다." />
-                )}
-              </div>
-            </Panel>
-            <Panel title="Admin surfaces">
-              <div className="space-y-3">
-                {(selectedProject.adminSurfaces || []).map((surface) => (
-                  <a
-                    key={surface.id}
-                    href={surface.href || "#"}
-                    target={surface.href ? "_blank" : undefined}
-                    rel={surface.href ? "noreferrer" : undefined}
-                    className="block rounded-2xl border border-white/10 bg-black/20 p-4 text-sm transition hover:bg-white/10"
-                  >
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                      <strong>{surface.label}</strong>
-                      <span
-                        className={clsx(
-                          "rounded-full px-3 py-1 text-xs font-semibold",
-                          surface.status === "todo"
-                            ? "bg-slate-100 text-slate-700"
-                            : surface.status === "doing"
-                              ? "bg-amber-100 text-amber-700"
-                              : surface.status === "done"
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-rose-100 text-rose-700",
-                        )}
-                      >
-                        {surface.status === "todo"
-                          ? "대기"
-                          : surface.status === "doing"
-                            ? "진행 중"
-                            : surface.status === "done"
-                              ? "완료"
-                              : "막힘"}
-                      </span>
-                    </div>
-                    <p className="text-white/70">{surface.summary}</p>
-                    <p className="mt-2 text-xs uppercase tracking-[0.18em] text-white/40">
-                      {surface.kind}
-                    </p>
-                  </a>
-                ))}
-                {!selectedProject.adminSurfaces?.length && (
-                  <EmptyLine message="연결된 운영 surface가 없습니다." />
-                )}
-              </div>
-            </Panel>
-          </div>
-
-
-
-          <AiReviewBoardV2 columns={projectModel.aiReviewBoard} />
-
-          <div className="grid gap-6 xl:grid-cols-[1fr_0.95fr]">
-            <Panel title="Connected tasks">
-              <div className="space-y-4">
-                {projectTasks.map((task) => (
-                  <TaskRow
-                    key={task.id}
-                    task={task}
-                    projectName={selectedProject.name}
-                    notesById={notesById}
-                    compact
-                    repo={selectedRepo}
-                  />
-                ))}
-                {!projectTasks.length && (
-                  <EmptyLine message="연결된 task가 없습니다." />
-                )}
-              </div>
-            </Panel>
-            <Panel title="GitHub repo / project layer">
-              <div className="space-y-4">
-                {selectedRepo ? (
-                  <GitHubRepoDetail repo={selectedRepo} />
-                ) : (
-                  <EmptyLine message="이 프로젝트는 repo가 연결되지 않았습니다." />
-                )}
-                {projectRepoHealth && (
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <InfoTile
-                      label="Health score"
-                      value={`${projectRepoHealth.score}/100`}
-                    />
-                    <InfoTile
-                      label="Branch alignment"
-                      value={
-                        projectRepoHealth.branchAligned
-                          ? "tracked branch aligned"
-                          : "project branch != repo default"
-                      }
-                    />
-                    <InfoTile
-                      label="Issue pressure"
-                      value={String(projectRepoHealth.issuePressure)}
-                    />
-                    <InfoTile
-                      label="Days since push"
-                      value={
-                        projectRepoHealth.daysSincePush != null
-                          ? String(projectRepoHealth.daysSincePush)
-                          : "-"
-                      }
-                    />
-                  </div>
-                )}
-                <div className="grid gap-3 md:grid-cols-2">
-                  <InfoTile
-                    label="Latest Actions run"
-                    value={
-                      latestWorkflowRun
-                        ? `${latestWorkflowRun.name} · ${latestWorkflowRun.conclusion || latestWorkflowRun.status}`
-                        : "no workflow run cached"
-                    }
-                  />
-                  <InfoTile
-                    label="Security alerts"
-                    value={`${selectedSecurityAlerts.length} open · failed runs ${failedWorkflowRuns.length}`}
-                  />
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/80">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <p className="font-semibold text-white/65">Security / CI feedback</p>
-                    <span
-                      className={clsx(
-                        "rounded-full px-3 py-1 text-xs font-semibold",
-                        selectedSecurityAlerts.length || failedWorkflowRuns.length
-                          ? "bg-rose-100 text-rose-700"
-                          : "bg-emerald-100 text-emerald-700",
-                      )}
-                    >
-                      {selectedSecurityAlerts.length || failedWorkflowRuns.length
-                        ? "needs review"
-                        : "clean cached signal"}
-                    </span>
-                  </div>
-                  {selectedSecurityAlerts.length ? (
-                    <ul className="list-disc space-y-2 pl-4 text-xs text-white/70">
-                      {selectedSecurityAlerts.slice(0, 5).map((alert) => (
-                        <li key={`${alert.kind}-${alert.id}`}>
-                          {alert.kind} · {alert.severity || "severity unknown"} · {alert.title}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-xs text-white/55">
-                      캐시에 열린 보안 알림이 없습니다. GitHub token 권한이 부족한 경우 warnings에 blocked 사유를 남깁니다.
-                    </p>
-                  )}
-                  {selectedWorkflowRuns.length > 0 && (
-                    <div className="mt-3 space-y-2 border-t border-white/10 pt-3 text-xs text-white/60">
-                      {selectedWorkflowRuns.slice(0, 3).map((run) => (
-                        <a key={run.id} href={run.url} target="_blank" rel="noreferrer" className="block hover:text-white">
-                          {run.name} · {run.branch || "branch?"} · {run.conclusion || run.status} · {run.updatedAt || "updated?"}
-                        </a>
+                  <div>
+                    <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">Metadata</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedNode.meta.map((item) => (
+                        <span key={item} className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">{item}</span>
                       ))}
                     </div>
-                  )}
-                </div>
-                {!!selectedProject.githubFocus?.length && (
-                  <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/80">
-                    <p className="mb-3 text-sm font-semibold text-white/55">
-                      GitHub focus
-                    </p>
-                    <ul className="list-disc space-y-2 pl-4">
-                      {selectedProject.githubFocus.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
                   </div>
-                )}
-                {selectedProjectBoards.length > 0 ? (
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold text-white/55">
-                      Project boards
-                    </p>
-                    {selectedProjectBoards.slice(0, 4).map((board) => (
-                      <ProjectBoardCard key={board.id} board={board} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-amber-300/20 bg-amber-500/10 p-4 text-sm text-amber-50/90">
-                    <p className="font-semibold">
-                      GitHub Project board real data unavailable
-                    </p>
-                    <p className="mt-2 text-xs leading-6 text-amber-100/85">
-                      {boardScopeWarning
-                        ? "현재 GitHub token에 `read:project` scope가 없어 board API 응답이 차단됩니다. repo/release 데이터는 계속 실데이터로 읽고 있고, board는 권한 확보 전까지 explicit blocked 상태로 남깁니다."
-                        : selectedRepo
-                          ? "조회 가능한 GitHub Project board가 없거나 해당 owner에 board가 없습니다."
-                          : "repo 연결 후 project board를 표시합니다."}
-                    </p>
-                  </div>
-                )}
-                <div className="space-y-3 rounded-2xl border border-white/10 bg-black/20 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-white/55">
-                      Release signal
-                    </p>
-                    <span
-                      className={clsx(
-                        "rounded-full px-3 py-1 text-xs font-semibold",
-                        selectedProjectReleases.length
-                          ? "bg-sky-100 text-sky-700"
-                          : "bg-amber-100 text-amber-700",
-                      )}
-                    >
-                      {selectedProjectReleases.length
-                        ? `${selectedProjectReleases.length} GitHub releases`
-                        : "no GitHub releases"}
-                    </span>
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <InfoTile
-                      label="Default / tracked branch"
-                      value={`${selectedRepo?.defaultBranch || "-"} / ${selectedProject.branch || "-"}`}
-                    />
-                    <InfoTile
-                      label="Latest push"
-                      value={selectedRepo?.pushedAt || "미기록"}
-                    />
-                    <InfoTile
-                      label="Deploy URL"
-                      value={selectedProject.deployUrl || "-"}
-                    />
-                    <InfoTile
-                      label="Real-data mode"
-                      value={`${data.github.mode} cache @ ${data.github.generatedAt}`}
-                    />
-                  </div>
-                  {selectedProjectReleases.length > 0 ? (
-                    selectedProjectReleases.map((release) => (
-                      <ReleaseCard key={release.id} release={release} compact />
-                    ))
-                  ) : (
-                    <p className="text-xs text-white/55">
-                      릴리즈가 없더라도 마지막 push, branch alignment, deploy
-                      target, verifying task를 함께 보여줘서 배포 판단에 필요한
-                      실제 운영 신호는 유지합니다.
-                    </p>
-                  )}
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                  <p className="mb-3 text-sm font-semibold text-white/55">
-                    Linked vault notes
-                  </p>
-                  <p className="mb-3 text-xs text-white/45">
-                    {selectedProjectNotes.length}개 note · active source{" "}
-                    {data.dataSource.mode} · vault mapped{" "}
-                    {data.vault.projectMappedCount}
-                  </p>
-                  <div className="space-y-3">
-                    {selectedProjectNotes.slice(0, 5).map((note) => {
-                      const linkStats = vaultLinksByNoteId.get(note.id);
-                      return (
-                        <button
-                          key={note.id}
-                          onClick={() => {
-                            setSelectedNoteId(note.id);
-                            setSection("notes");
-                          }}
-                          className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:bg-white/10"
-                        >
-                          <div className="flex items-center justify-between gap-3">
-                            <strong>{note.title}</strong>
-                            <span className="text-xs text-white/45">
-                              ↗ {linkStats?.linkedBy.length || 0} · →{" "}
-                              {linkStats?.linksTo.length || 0}
-                            </span>
-                          </div>
-                          <p className="mt-2 text-sm text-white/70">
-                            {note.summary}
-                          </p>
-                        </button>
-                      );
-                    })}
-                    {!selectedProjectNotes.length && (
-                      <EmptyLine message="아직 project와 연결된 vault note가 부족합니다." />
-                    )}
+                  <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-xs leading-6 text-white/60">
+                    이 패널은 다음 단계에서 노드 label/description/type/source/metadata를 직접 수정하고 PATCH /api/ops/projects/:id/canvas로 저장하는 편집 폼이 됩니다.
                   </div>
                 </div>
+              ) : (
+                <p className="text-sm text-white/60">노드를 선택해 주세요.</p>
+              )}
+            </Panel>
+
+            <Panel title="Export Preview">
+              <div className="space-y-3 text-sm text-white/75">
+                <button className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left transition hover:bg-white/10">Markdown 기능명세서 생성</button>
+                <button className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left transition hover:bg-white/10">Canvas PNG 다운로드</button>
+                <button className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left transition hover:bg-white/10">AI 리뷰 요청 프롬프트 생성</button>
               </div>
             </Panel>
-          </div>
-
-          <ProjectDataTrustCard model={projectModel} />
-        </div>
+          </aside>
+        </section>
       </div>
     </div>
   );

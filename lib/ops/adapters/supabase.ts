@@ -241,6 +241,19 @@ export function buildSupabaseSourceHealth(args: {
   };
 }
 
+function jsonArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      return Array.isArray(parsed) ? (parsed as T[]) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 export function mapProjectRow(row: ProjectRow): Project {
   return {
     id: row.id,
@@ -250,13 +263,13 @@ export function mapProjectRow(row: ProjectRow): Project {
     repo: row.repo ?? undefined,
     branch: row.branch ?? undefined,
     deployUrl: row.deploy_url ?? undefined,
-    docs: row.docs ?? [],
-    sectors: row.sectors ?? [],
-    checklist: row.checklist ?? [],
-    operatingCadence: row.operating_cadence ?? [],
-    adminSurfaces: row.admin_surfaces ?? [],
-    vaultViews: row.vault_views ?? [],
-    githubFocus: row.github_focus ?? [],
+    docs: jsonArray(row.docs),
+    sectors: jsonArray(row.sectors),
+    checklist: jsonArray(row.checklist),
+    operatingCadence: jsonArray(row.operating_cadence),
+    adminSurfaces: jsonArray(row.admin_surfaces),
+    vaultViews: jsonArray(row.vault_views),
+    githubFocus: jsonArray(row.github_focus),
   };
 }
 
@@ -268,12 +281,12 @@ export function mapTaskRow(row: TaskRow): Task {
     category: row.category,
     status: row.status,
     summary: row.summary,
-    completedWork: row.completed_work ?? [],
-    nextActions: row.next_actions ?? [],
-    relatedDocs: row.related_docs ?? [],
-    relatedCommits: row.related_commits ?? [],
-    noteIds: row.note_ids ?? [],
-    needsDecision: row.needs_decision ?? [],
+    completedWork: jsonArray(row.completed_work),
+    nextActions: jsonArray(row.next_actions),
+    relatedDocs: jsonArray(row.related_docs),
+    relatedCommits: jsonArray(row.related_commits),
+    noteIds: jsonArray(row.note_ids),
+    needsDecision: jsonArray(row.needs_decision),
     updatedAt: row.updated_at,
   };
 }
@@ -285,16 +298,16 @@ export function mapNoteRow(row: NoteRow): NoteItem {
     title: row.title,
     type: row.type,
     project: row.project ?? undefined,
-    tags: row.tags ?? [],
+    tags: jsonArray(row.tags),
     updatedAt: row.updated_at,
     path: normalizedPath,
     workspaceRootLabel: row.workspace_root_label,
     folder: normalizedPath.split("/").slice(0, -1).join("/") || "(root)",
-    links: row.links ?? [],
+    links: jsonArray(row.links),
     summary: row.summary,
-    highlights: row.highlights ?? [],
-    headings: row.headings ?? [],
-    preview: row.preview ?? [],
+    highlights: jsonArray(row.highlights),
+    headings: jsonArray(row.headings),
+    preview: jsonArray(row.preview),
     rawExcerpt: row.raw_excerpt,
   };
 }
@@ -317,11 +330,11 @@ export function mapWorklogRow(row: WorklogRow): WorklogRecord {
     startedAt: row.started_at ?? undefined,
     finishedAt: row.finished_at ?? undefined,
     updatedAt: row.updated_at,
-    tags: row.tags ?? [],
-    highlights: row.highlights ?? [],
-    decisions: row.decisions ?? [],
-    blockers: row.blockers ?? [],
-    nextActions: row.next_actions ?? [],
+    tags: jsonArray(row.tags),
+    highlights: jsonArray(row.highlights),
+    decisions: jsonArray(row.decisions),
+    blockers: jsonArray(row.blockers),
+    nextActions: jsonArray(row.next_actions),
   };
 }
 
@@ -340,13 +353,15 @@ export function mapArtifactRow(row: ArtifactRow): OpsArtifactRecord {
     repo: row.repo ?? undefined,
     branch: row.branch ?? undefined,
     status: row.status ?? undefined,
-    tags: row.tags ?? [],
-    highlights: row.highlights ?? [],
-    decisions: row.decisions ?? [],
-    learnings: row.learnings ?? [],
-    blockers: row.blockers ?? [],
-    nextActions: row.next_actions ?? [],
-    linkedNoteIds: row.linked_note_ids ?? [row.note_id],
+    tags: jsonArray(row.tags),
+    highlights: jsonArray(row.highlights),
+    decisions: jsonArray(row.decisions),
+    learnings: jsonArray(row.learnings),
+    blockers: jsonArray(row.blockers),
+    nextActions: jsonArray(row.next_actions),
+    linkedNoteIds: jsonArray(row.linked_note_ids).length
+      ? jsonArray(row.linked_note_ids)
+      : [row.note_id],
     updatedAt: row.updated_at,
   };
 }

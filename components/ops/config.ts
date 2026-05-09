@@ -32,15 +32,12 @@ export const progressMeta: Record<ProgressState, { label: string; tone: string; 
 };
 
 export const sidebarItems = [
-  { id: "overview", label: "Overview", icon: "⌘", group: "Command" },
-  { id: "projects", label: "Projects", icon: "◆", group: "Operate" },
-  { id: "tasks", label: "Tasks", icon: "✓", group: "Operate" },
-  { id: "notes", label: "Docs/Vault", icon: "▣", group: "Library" },
-  { id: "aeyong", label: "Aeyong", icon: "✦", group: "AI" },
-  { id: "worker", label: "Worker", icon: "●", group: "System" },
-  { id: "macmini", label: "Mac mini", icon: "◉", group: "System" },
-  { id: "releases", label: "Releases", icon: "↗", group: "Ship" },
-  { id: "settings", label: "Settings", icon: "⚙", group: "Config" },
+  { id: "overview", label: "홈", icon: "⌂", group: "Home" },
+  { id: "projects", label: "프로젝트 관리", icon: "◆", group: "Design" },
+  { id: "macmini", label: "맥미니 관리", icon: "◉", group: "System" },
+  { id: "openclaw", label: "오픈클로 관리", icon: "✦", group: "AI Ops" },
+  { id: "notes", label: "옵시디언 문서", icon: "▣", group: "Docs" },
 ] as const;
 
-export type SectionId = (typeof sidebarItems)[number]["id"];
+export type SidebarSectionId = (typeof sidebarItems)[number]["id"];
+export type SectionId = SidebarSectionId | "tasks" | "aeyong" | "worker" | "releases" | "settings";

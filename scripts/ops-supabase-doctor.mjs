@@ -61,7 +61,7 @@ try {
 const supabase = createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
 let failures = 0;
 for (const table of REQUIRED_TABLES) {
-  const { error } = await supabase.from(table).select("*", { count: "exact", head: true });
+  const { error } = await supabase.from(table).select("*").limit(1);
   if (error) {
     failures += 1;
     fail(`${table}: ${error.message}`);
