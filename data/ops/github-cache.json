@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-09T15:32:56.707Z",
+  "generatedAt": "2026-05-09T16:30:20.231Z",
   "mode": "live",
   "account": "yongchane",
   "repoSnapshots": [
@@ -51,7 +51,7 @@
       "description": "",
       "visibility": "public",
       "defaultBranch": "main",
-      "pushedAt": "2026-05-08T11:52:36Z",
+      "pushedAt": "2026-05-09T16:11:36Z",
       "updatedAt": "2026-02-23T10:29:34Z",
       "stargazerCount": 0,
       "forkCount": 0,
@@ -410,6 +410,18 @@
   ],
   "workflowRuns": [
     {
+      "id": "25605630142",
+      "repo": "yongchane/Portfolio",
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "failure",
+      "branch": "develop",
+      "event": "push",
+      "url": "https://github.com/yongchane/Portfolio/actions/runs/25605630142",
+      "createdAt": "2026-05-09T16:11:39Z",
+      "updatedAt": "2026-05-09T16:12:11Z"
+    },
+    {
       "id": "25554084422",
       "repo": "yongchane/Portfolio",
       "name": "CI",
@@ -456,18 +468,6 @@
       "url": "https://github.com/yongchane/Portfolio/actions/runs/25553009180",
       "createdAt": "2026-05-08T11:26:42Z",
       "updatedAt": "2026-05-08T11:27:30Z"
-    },
-    {
-      "id": "25552939956",
-      "repo": "yongchane/Portfolio",
-      "name": "CI",
-      "status": "completed",
-      "conclusion": "success",
-      "branch": "develop",
-      "event": "push",
-      "url": "https://github.com/yongchane/Portfolio/actions/runs/25552939956",
-      "createdAt": "2026-05-08T11:25:00Z",
-      "updatedAt": "2026-05-08T11:25:56Z"
     }
   ],
   "securityAlerts": [],

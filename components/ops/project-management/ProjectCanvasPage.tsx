@@ -21,6 +21,35 @@ const CANVAS_HEIGHT = 3600;
 
 type CanvasModuleKey = "ia" | "architecture" | "export" | "deploy";
 
+const editableNodeTypes: ProjectCanvasNodeType[] = [
+  "page",
+  "feature",
+  "api",
+  "database",
+  "deploy",
+  "docs",
+  "agent",
+  "repo",
+];
+
+const editableNodeShapes: ProjectCanvasNodeShape[] = ["rect", "note", "circle", "diamond"];
+
+const createEmptyNodeDraft = () => ({
+  type: "feature" as ProjectCanvasNodeType,
+  shape: "rect" as ProjectCanvasNodeShape,
+  icon: "✨",
+  label: "새 기능 노드",
+  description: "이 노드가 담당하는 페이지/기능/시스템 역할을 적어주세요.",
+  codeRefs: "components/example.tsx",
+  interactions: "사용자가 버튼을 클릭한다\n상태가 변경된다",
+  apiLinks: "future: GET /api/example",
+  meta: "custom, draft",
+});
+
+const splitLines = (value: string) => value.split("\n").map((item) => item.trim()).filter(Boolean);
+const splitTags = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
+const stopCanvasWheel = (event: React.WheelEvent<HTMLElement>) => event.stopPropagation();
+
 const canvasModules: Array<{
   key: CanvasModuleKey;
   title: string;
@@ -283,6 +312,8 @@ export function ProjectCanvasPage({
   const [actionsOpen, setActionsOpen] = useState(true);
   const [controlsOpen, setControlsOpen] = useState(true);
   const [activeModule, setActiveModule] = useState<CanvasModuleKey>("ia");
+  const [nodeCreatorOpen, setNodeCreatorOpen] = useState(false);
+  const [nodeDraft, setNodeDraft] = useState(createEmptyNodeDraft);
   const selectedNode =
     nodes.find((node) => node.id === selectedNodeId) || nodes[0];
 
@@ -308,6 +339,46 @@ export function ProjectCanvasPage({
   };
 
   const resetView = () => focusModule("ia");
+
+  const updateSelectedNode = (patch: Partial<ProjectCanvasNode>) => {
+    setNodes((current) =>
+      current.map((node) =>
+        node.id === selectedNode.id ? { ...node, ...patch } : node,
+      ),
+    );
+  };
+
+  const addNode = () => {
+    const id = `custom-${Date.now()}`;
+    const newNode: ProjectCanvasNode = {
+      id,
+      type: nodeDraft.type,
+      shape: nodeDraft.shape,
+      icon: nodeDraft.icon || "✨",
+      label: nodeDraft.label || "새 노드",
+      description: nodeDraft.description || "설명을 입력해 주세요.",
+      x: Math.max(80, Math.min(CANVAS_WIDTH - 240, (window.innerWidth / 2 - pan.x) / zoom)),
+      y: Math.max(80, Math.min(CANVAS_HEIGHT - 180, (window.innerHeight / 2 - pan.y) / zoom)),
+      source: "user-created",
+      meta: splitTags(nodeDraft.meta),
+      codeRefs: splitLines(nodeDraft.codeRefs),
+      interactions: splitLines(nodeDraft.interactions),
+      apiLinks: splitLines(nodeDraft.apiLinks),
+    };
+    setNodes((current) => [...current, newNode]);
+    setSelectedNodeId(id);
+    setInspectorOpen(true);
+    setNodeCreatorOpen(false);
+    setNodeDraft(createEmptyNodeDraft());
+  };
+
+  const deleteSelectedNode = () => {
+    if (!selectedNode) return;
+    const remainingNodes = nodes.filter((node) => node.id !== selectedNode.id);
+    if (!remainingNodes.length) return;
+    setNodes(remainingNodes);
+    setSelectedNodeId(remainingNodes[0].id);
+  };
 
   const beginNodeDrag = (
     node: ProjectCanvasNode,
@@ -402,6 +473,7 @@ export function ProjectCanvasPage({
       <div
         className="absolute inset-x-4 bottom-4 z-30 rounded-[1.4rem] border border-white/10 bg-black/45 p-3 shadow-2xl backdrop-blur-xl"
         data-canvas-control="true"
+        onWheel={stopCanvasWheel}
       >
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -490,6 +562,7 @@ export function ProjectCanvasPage({
           modulesOpen ? "w-72 p-3" : "w-12 p-2",
         )}
         data-canvas-control="true"
+        onWheel={stopCanvasWheel}
       >
         <button
           type="button"
@@ -535,20 +608,68 @@ export function ProjectCanvasPage({
         <div
           className="absolute left-4 right-4 top-4 z-20 flex flex-wrap justify-end gap-2"
           data-canvas-control="true"
+          onWheel={stopCanvasWheel}
         >
-          {[
-            "+ Node 추가",
-            "Markdown Export",
-            "Canvas PNG 다운로드",
-            "AI Agent 리뷰",
-          ].map((action) => (
+          <button
+            onClick={() => setNodeCreatorOpen((value) => !value)}
+            className="rounded-xl border border-cyan-200/30 bg-cyan-300/15 px-3 py-2 text-xs font-semibold text-cyan-50 shadow-xl backdrop-blur transition hover:bg-cyan-300/25"
+          >
+            + Node 추가
+          </button>
+          <button
+            onClick={deleteSelectedNode}
+            className="rounded-xl border border-rose-200/30 bg-rose-300/15 px-3 py-2 text-xs font-semibold text-rose-50 shadow-xl backdrop-blur transition hover:bg-rose-300/25"
+          >
+            선택 노드 삭제
+          </button>
+          {["Markdown Export", "Canvas PNG 다운로드", "AI Agent 리뷰"].map((action) => (
             <button
               key={action}
               className="rounded-xl border border-white/10 bg-black/45 px-3 py-2 text-xs text-white/75 shadow-xl backdrop-blur transition hover:bg-white/10"
             >
               {action}
             </button>
-          ))}
+          ))}        </div>
+      )}
+
+      {nodeCreatorOpen && (
+        <div
+          className="absolute left-4 top-24 z-40 w-80 rounded-[1.4rem] border border-cyan-200/20 bg-black/70 p-4 shadow-2xl backdrop-blur-xl"
+          data-canvas-control="true"
+          onWheel={stopCanvasWheel}
+        >
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.22em] text-cyan-100/45">Create node</p>
+              <h3 className="text-base font-bold text-white">새 노드 추가</h3>
+            </div>
+            <button onClick={() => setNodeCreatorOpen(false)} className="rounded-lg border border-white/10 px-2 py-1 text-xs text-white/60 hover:bg-white/10">닫기</button>
+          </div>
+          <div className="space-y-3 text-xs text-white/70">
+            <div className="grid grid-cols-[64px_1fr] items-center gap-2">
+              <label>아이콘</label>
+              <input value={nodeDraft.icon} onChange={(event) => setNodeDraft((draft) => ({ ...draft, icon: event.target.value }))} className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-white outline-none focus:border-cyan-200/50" />
+            </div>
+            <div className="grid grid-cols-[64px_1fr] items-center gap-2">
+              <label>타입</label>
+              <select value={nodeDraft.type} onChange={(event) => setNodeDraft((draft) => ({ ...draft, type: event.target.value as ProjectCanvasNodeType }))} className="rounded-xl border border-white/10 bg-[#111827] px-3 py-2 text-white outline-none focus:border-cyan-200/50">
+                {editableNodeTypes.map((type) => <option key={type} value={type}>{nodeLabel[type]}</option>)}
+              </select>
+            </div>
+            <div className="grid grid-cols-[64px_1fr] items-center gap-2">
+              <label>모양</label>
+              <select value={nodeDraft.shape} onChange={(event) => setNodeDraft((draft) => ({ ...draft, shape: event.target.value as ProjectCanvasNodeShape }))} className="rounded-xl border border-white/10 bg-[#111827] px-3 py-2 text-white outline-none focus:border-cyan-200/50">
+                {editableNodeShapes.map((shape) => <option key={shape} value={shape}>{shape}</option>)}
+              </select>
+            </div>
+            <input value={nodeDraft.label} onChange={(event) => setNodeDraft((draft) => ({ ...draft, label: event.target.value }))} placeholder="노드 제목" className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-white outline-none focus:border-cyan-200/50" />
+            <textarea value={nodeDraft.description} onChange={(event) => setNodeDraft((draft) => ({ ...draft, description: event.target.value }))} placeholder="노드 설명" rows={3} className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-white outline-none focus:border-cyan-200/50" />
+            <textarea value={nodeDraft.codeRefs} onChange={(event) => setNodeDraft((draft) => ({ ...draft, codeRefs: event.target.value }))} placeholder="관련 코드/GitHub refs, 줄바꿈 구분" rows={2} className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-white outline-none focus:border-cyan-200/50" />
+            <textarea value={nodeDraft.interactions} onChange={(event) => setNodeDraft((draft) => ({ ...draft, interactions: event.target.value }))} placeholder="인터랙션, 줄바꿈 구분" rows={2} className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-white outline-none focus:border-cyan-200/50" />
+            <textarea value={nodeDraft.apiLinks} onChange={(event) => setNodeDraft((draft) => ({ ...draft, apiLinks: event.target.value }))} placeholder="API/Data links, 줄바꿈 구분" rows={2} className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-white outline-none focus:border-cyan-200/50" />
+            <input value={nodeDraft.meta} onChange={(event) => setNodeDraft((draft) => ({ ...draft, meta: event.target.value }))} placeholder="tags, comma separated" className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-white outline-none focus:border-cyan-200/50" />
+            <button onClick={addNode} className="w-full rounded-xl bg-white px-3 py-2 font-bold text-black transition hover:bg-cyan-100">현재 화면 중앙에 노드 추가</button>
+          </div>
         </div>
       )}
 
@@ -601,6 +722,7 @@ export function ProjectCanvasPage({
           inspectorOpen ? "w-80 p-3" : "w-12 p-2",
         )}
         data-canvas-control="true"
+        onWheel={stopCanvasWheel}
       >
         <button
           type="button"
@@ -641,53 +763,70 @@ export function ProjectCanvasPage({
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
               <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-white/40">
+                Edit selected node
+              </p>
+              <div className="space-y-2 text-xs">
+                <div className="grid grid-cols-[56px_1fr] items-center gap-2">
+                  <label className="text-white/50">Icon</label>
+                  <input value={selectedNode.icon} onChange={(event) => updateSelectedNode({ icon: event.target.value })} className="rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-white outline-none focus:border-cyan-200/50" />
+                </div>
+                <div className="grid grid-cols-[56px_1fr] items-center gap-2">
+                  <label className="text-white/50">Type</label>
+                  <select value={selectedNode.type} onChange={(event) => updateSelectedNode({ type: event.target.value as ProjectCanvasNodeType })} className="rounded-lg border border-white/10 bg-[#111827] px-2 py-1.5 text-white outline-none focus:border-cyan-200/50">
+                    {editableNodeTypes.map((type) => <option key={type} value={type}>{nodeLabel[type]}</option>)}
+                  </select>
+                </div>
+                <div className="grid grid-cols-[56px_1fr] items-center gap-2">
+                  <label className="text-white/50">Shape</label>
+                  <select value={selectedNode.shape} onChange={(event) => updateSelectedNode({ shape: event.target.value as ProjectCanvasNodeShape })} className="rounded-lg border border-white/10 bg-[#111827] px-2 py-1.5 text-white outline-none focus:border-cyan-200/50">
+                    {editableNodeShapes.map((shape) => <option key={shape} value={shape}>{shape}</option>)}
+                  </select>
+                </div>
+                <input value={selectedNode.label} onChange={(event) => updateSelectedNode({ label: event.target.value })} className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-white outline-none focus:border-cyan-200/50" />
+                <textarea value={selectedNode.description} onChange={(event) => updateSelectedNode({ description: event.target.value })} rows={3} className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-white outline-none focus:border-cyan-200/50" />
+                <button onClick={deleteSelectedNode} className="w-full rounded-lg border border-rose-200/30 bg-rose-300/15 px-2 py-1.5 font-semibold text-rose-50 hover:bg-rose-300/25">선택 노드 삭제</button>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+              <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-white/40">
                 Code / GitHub refs
               </p>
-              <div className="space-y-2">
-                {selectedNode.codeRefs.map((item) => (
-                  <code
-                    key={item}
-                    className="block rounded-lg bg-black/30 px-2 py-1 text-[11px] text-cyan-100"
-                  >
-                    {item}
-                  </code>
-                ))}
-              </div>
+              <textarea
+                value={selectedNode.codeRefs.join("\n")}
+                onChange={(event) => updateSelectedNode({ codeRefs: splitLines(event.target.value) })}
+                rows={3}
+                className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-[11px] text-cyan-100 outline-none focus:border-cyan-200/50"
+              />
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
               <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-white/40">
                 Interactions
               </p>
-              <ul className="list-disc space-y-1 pl-4 text-xs leading-5 text-white/70">
-                {selectedNode.interactions.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+              <textarea
+                value={selectedNode.interactions.join("\n")}
+                onChange={(event) => updateSelectedNode({ interactions: splitLines(event.target.value) })}
+                rows={4}
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-xs leading-5 text-white outline-none focus:border-cyan-200/50"
+              />
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
               <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-white/40">
                 API / Data links
               </p>
-              <div className="flex flex-wrap gap-2">
-                {selectedNode.apiLinks.map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full bg-violet-400/10 px-3 py-1 text-[11px] text-violet-100"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
+              <textarea
+                value={selectedNode.apiLinks.join("\n")}
+                onChange={(event) => updateSelectedNode({ apiLinks: splitLines(event.target.value) })}
+                rows={3}
+                className="w-full rounded-lg border border-white/10 bg-violet-400/10 px-2 py-1.5 text-[11px] text-violet-100 outline-none focus:border-cyan-200/50"
+              />
             </div>
-            <div className="flex flex-wrap gap-2">
-              {selectedNode.meta.map((item) => (
-                <span
-                  key={item}
-                  className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70"
-                >
-                  {item}
-                </span>
-              ))}
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+              <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-white/40">Tags</p>
+              <input
+                value={selectedNode.meta.join(", ")}
+                onChange={(event) => updateSelectedNode({ meta: splitTags(event.target.value) })}
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-white outline-none focus:border-cyan-200/50"
+              />
             </div>
           </div>
         )}
