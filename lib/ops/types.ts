@@ -492,3 +492,181 @@ export type OpsConsoleData = {
     sourceHealth: OpsSourceHealth;
   };
 };
+
+export type OpsOverviewSeverity = "critical" | "warning" | "info" | "healthy" | "empty";
+export type OpsOverviewCommandStatus = "healthy" | "attention" | "risk";
+export type OpsOverviewFreshness = "fresh" | "stale" | "unknown";
+
+export type OpsOverviewTargetSection =
+  | "overview"
+  | "projects"
+  | "tasks"
+  | "notes"
+  | "aeyong"
+  | "worker"
+  | "macmini"
+  | "releases"
+  | "settings";
+
+export type OpsOverviewCommand = {
+  status: OpsOverviewCommandStatus;
+  title: string;
+  summary: string;
+  primaryAction?: {
+    label: string;
+    targetSection: OpsOverviewTargetSection;
+    targetId?: string;
+  };
+  stats: {
+    activeTasks: number;
+    verifyingTasks: number;
+    blockedTasks: number;
+    reviewNeededProjects: number;
+    staleSystems: number;
+  };
+};
+
+export type OpsOverviewActionCategory =
+  | "approval"
+  | "verification"
+  | "blocked"
+  | "recovery"
+  | "review"
+  | "cms"
+  | "sync";
+
+export type OpsOverviewActionItem = {
+  id: string;
+  severity: Exclude<OpsOverviewSeverity, "healthy" | "empty">;
+  category: OpsOverviewActionCategory;
+  title: string;
+  reason: string;
+  source: {
+    table: string;
+    id?: string;
+  };
+  target: {
+    section: OpsOverviewTargetSection;
+    id?: string;
+  };
+  cta: string;
+  createdAt?: string;
+};
+
+export type OpsOverviewProjectHealth = {
+  projectId: string;
+  name: string;
+  stage: ProjectStage;
+  health: "healthy" | "attention" | "risk";
+  score: number;
+  diagnosis: string;
+  nextAction: string;
+  counts: {
+    tasks: number;
+    activeTasks: number;
+    verifyingTasks: number;
+    blockedTasks: number;
+    notes: number;
+    aiReviews: number;
+  };
+  signals: {
+    docsCoverage: "good" | "partial" | "missing";
+    aiReviewCoverage: "good" | "missing";
+    githubRisk: "clean" | "attention" | "unknown";
+    releaseState: "ready" | "missing" | "unknown";
+  };
+  links: {
+    repo?: string;
+    deployUrl?: string;
+  };
+};
+
+export type OpsOverviewHealthItem = {
+  status: "online" | "stale" | "offline" | "warning" | "unknown";
+  label: string;
+  detail: string;
+  lastSeenAt?: string;
+  targetSection: OpsOverviewTargetSection;
+};
+
+export type OpsOverviewSystemHealth = {
+  worker: OpsOverviewHealthItem;
+  macMini: OpsOverviewHealthItem;
+  openclaw: OpsOverviewHealthItem;
+  supabase: OpsOverviewHealthItem;
+  github: OpsOverviewHealthItem;
+};
+
+export type OpsOverviewCmsBucketStatus = {
+  id: string;
+  label: string;
+  count: number;
+  status: "healthy" | "empty" | "attention";
+};
+
+export type OpsOverviewKnowledgeSnapshot = {
+  coverage: {
+    totalNotes: number;
+    projectLinkedNotes: number;
+    orphanNotes: number;
+    worklogs: number;
+    artifacts: number;
+  };
+  buckets: OpsOverviewCmsBucketStatus[];
+  recentNotes: {
+    id: string;
+    title: string;
+    type: NoteType;
+    project?: string;
+    updatedAt: string;
+  }[];
+  missing: {
+    id: string;
+    label: string;
+    reason: string;
+    targetSection: OpsOverviewTargetSection;
+  }[];
+};
+
+export type OpsOverviewTimelineItem = {
+  id: string;
+  kind: "sync" | "agent_run" | "worker" | "task" | "project" | "review" | "release" | "worklog";
+  status: "completed" | "queued" | "running" | "failed" | "info" | "warning";
+  title: string;
+  detail: string;
+  source: string;
+  occurredAt: string;
+  target?: {
+    section: OpsOverviewTargetSection;
+    id?: string;
+  };
+};
+
+export type OpsOverviewDataTrust = {
+  activeSource: "live" | "export" | "supabase";
+  generatedAt: string;
+  tables: {
+    name: string;
+    status: "ok" | "empty" | "error";
+    count?: number;
+  }[];
+  warnings: string[];
+  emptyButExpected: string[];
+};
+
+export type OpsOverviewModel = {
+  generatedAt: string;
+  source: {
+    mode: "live" | "export" | "supabase";
+    supabaseReachable: boolean;
+    freshness: OpsOverviewFreshness;
+    warnings: string[];
+  };
+  command: OpsOverviewCommand;
+  actions: OpsOverviewActionItem[];
+  projects: OpsOverviewProjectHealth[];
+  system: OpsOverviewSystemHealth;
+  knowledge: OpsOverviewKnowledgeSnapshot;
+  timeline: OpsOverviewTimelineItem[];
+  dataTrust: OpsOverviewDataTrust;
+};
