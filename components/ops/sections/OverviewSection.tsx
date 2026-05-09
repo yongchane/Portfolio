@@ -1,371 +1,271 @@
 import clsx from "clsx";
-import {
-  EmptyLine,
-  GitHubRepoCard,
-  noteTypeMeta,
-  Panel,
-  ReleaseCard,
-  SummaryCard,
-  SynapseMap,
-  SynapseNode,
-  TaskRow,
-} from "@/components/ops/shared";
+import { EmptyLine, Panel, SummaryCard } from "@/components/ops/shared";
 import type { OverviewSectionProps } from "@/components/ops/sections/types";
 import { formatDateTime } from "@/components/ops/utils";
+import { buildOpsOverviewModel } from "@/lib/ops/overview";
+import type {
+  OpsOverviewActionItem,
+  OpsOverviewHealthItem,
+  OpsOverviewProjectHealth,
+  OpsOverviewSeverity,
+  OpsOverviewTimelineItem,
+} from "@/lib/ops/types";
+
+const severityTone: Record<OpsOverviewSeverity, string> = {
+  critical: "border-rose-300/40 bg-rose-400/10 text-rose-50 shadow-rose-950/20",
+  warning: "border-amber-300/40 bg-amber-400/10 text-amber-50 shadow-amber-950/20",
+  info: "border-cyan-300/35 bg-cyan-400/10 text-cyan-50 shadow-cyan-950/20",
+  healthy: "border-emerald-300/35 bg-emerald-400/10 text-emerald-50 shadow-emerald-950/20",
+  empty: "border-slate-300/25 bg-slate-400/10 text-slate-100 shadow-black/10",
+};
+
+function healthTone(status: string) {
+  if (["risk", "critical", "offline", "failed", "blocked"].includes(status)) return severityTone.critical;
+  if (["attention", "warning", "stale", "queued", "running", "verifying"].includes(status)) return severityTone.warning;
+  if (["healthy", "online", "completed", "shipped"].includes(status)) return severityTone.healthy;
+  if (["info", "monitoring"].includes(status)) return severityTone.info;
+  return severityTone.empty;
+}
+
+function StatusPill({ label, tone }: { label: string; tone: string }) {
+  return (
+    <span className={clsx("rounded-full border px-3 py-1 text-xs font-semibold", tone)}>
+      {label}
+    </span>
+  );
+}
+
+function ActionCard({ action, onOpen }: { action: OpsOverviewActionItem; onOpen: () => void }) {
+  return (
+    <button
+      onClick={onOpen}
+      className={clsx(
+        "group w-full rounded-3xl border p-4 text-left shadow-xl transition hover:-translate-y-0.5 hover:bg-white/10",
+        severityTone[action.severity],
+      )}
+    >
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <StatusPill label={action.category} tone="border-white/15 bg-black/20 text-white/75" />
+        <span className="text-xs text-white/45">{action.source.table}</span>
+      </div>
+      <h4 className="text-base font-bold text-white">{action.title}</h4>
+      <p className="mt-2 text-sm leading-6 text-white/70">{action.reason}</p>
+      <p className="mt-4 text-sm font-semibold text-white transition group-hover:text-cyan-100">
+        {action.cta} →
+      </p>
+    </button>
+  );
+}
+
+function HealthTile({ item }: { item: OpsOverviewHealthItem }) {
+  return (
+    <div className={clsx("h-full rounded-2xl border p-4", healthTone(item.status))}>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <strong className="text-white">{item.label}</strong>
+        <StatusPill label={item.status} tone={healthTone(item.status)} />
+      </div>
+      <p className="text-sm text-white/70">{item.detail}</p>
+      <p className="mt-2 text-xs text-white/45">{formatDateTime(item.lastSeenAt)}</p>
+    </div>
+  );
+}
+
+function ProjectHealthCard({ project, onOpen }: { project: OpsOverviewProjectHealth; onOpen: () => void }) {
+  return (
+    <button
+      onClick={onOpen}
+      className={clsx(
+        "rounded-3xl border bg-black/20 p-5 text-left shadow-xl transition hover:-translate-y-0.5 hover:bg-white/10",
+        healthTone(project.health),
+      )}
+    >
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <h4 className="text-lg font-bold text-white">{project.name}</h4>
+          <p className="text-xs uppercase tracking-[0.18em] text-white/45">{project.stage}</p>
+        </div>
+        <div className="text-right">
+          <StatusPill label={project.health} tone={healthTone(project.health)} />
+          <p className="mt-2 text-2xl font-black text-white">{project.score}</p>
+        </div>
+      </div>
+      <p className="text-sm leading-6 text-white/75">{project.diagnosis}</p>
+      <p className="mt-3 text-sm font-semibold text-white">{project.nextAction}</p>
+      <div className="mt-4 flex flex-wrap gap-2 text-xs text-white/60">
+        <span className="rounded-full bg-white/10 px-3 py-1">tasks {project.counts.tasks}</span>
+        <span className="rounded-full bg-white/10 px-3 py-1">verify {project.counts.verifyingTasks}</span>
+        <span className="rounded-full bg-white/10 px-3 py-1">docs {project.counts.notes}</span>
+        <span className="rounded-full bg-white/10 px-3 py-1">AI review {project.counts.aiReviews}</span>
+        <span className="rounded-full bg-white/10 px-3 py-1">GitHub {project.signals.githubRisk}</span>
+      </div>
+    </button>
+  );
+}
+
+function TimelineRow({ item }: { item: OpsOverviewTimelineItem }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
+      <div className="flex items-center justify-between gap-3">
+        <strong className="text-white">{item.title}</strong>
+        <StatusPill label={item.status} tone={healthTone(item.status)} />
+      </div>
+      <p className="mt-2 line-clamp-2">{item.detail}</p>
+      <p className="mt-2 text-xs text-white/45">
+        {item.source} · {formatDateTime(item.occurredAt)}
+      </p>
+    </div>
+  );
+}
 
 export function OverviewSection({
   data,
-  summary,
-  notesById,
-  githubReposByName,
   setSection,
   setSelectedProjectId,
-  setSelectedNoteId,
-  attentionTasks,
-  liveStatus,
 }: OverviewSectionProps) {
+  const overview = buildOpsOverviewModel(data);
+  const primaryAction = overview.command.primaryAction;
+
   return (
     <div className="space-y-8">
-      <header className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.02] p-6 shadow-2xl shadow-black/20">
-        <p className="mb-3 text-sm uppercase tracking-[0.24em] text-cyan-100/55">
-          Overview
-        </p>
-        <h2 className="mb-3 text-4xl font-bold">오늘의 운영 시냅스</h2>
-        <p className="max-w-3xl text-white/70">
-          애옹 작업, 프로젝트 상태, Docs/Vault, GitHub layer, 사용자 판단 필요 항목을 CMS처럼 관리하되,
-          첫 인지는 그래프와 연결 지도 중심으로 봅니다.
-        </p>
+      <header className={clsx("rounded-[2rem] border p-6 shadow-2xl", healthTone(overview.command.status))}>
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusPill label="Action Command Center" tone="border-white/15 bg-black/20 text-white/75" />
+            <StatusPill label={overview.command.status} tone={healthTone(overview.command.status)} />
+          </div>
+          <span className="text-xs text-white/50">
+            source {overview.source.mode} · updated {formatDateTime(overview.generatedAt)}
+          </span>
+        </div>
+        <h2 className="mb-3 text-3xl font-bold md:text-4xl">{overview.command.title}</h2>
+        <p className="max-w-3xl text-white/70">{overview.command.summary}</p>
+        <div className="mt-5 grid gap-3 md:grid-cols-5">
+          <SummaryCard label="Active" value={String(overview.command.stats.activeTasks)} />
+          <SummaryCard label="Verify" value={String(overview.command.stats.verifyingTasks)} />
+          <SummaryCard label="Blocked" value={String(overview.command.stats.blockedTasks)} />
+          <SummaryCard label="Review gaps" value={String(overview.command.stats.reviewNeededProjects)} />
+          <SummaryCard label="System alerts" value={String(overview.command.stats.staleSystems)} />
+        </div>
+        {primaryAction && (
+          <button
+            onClick={() => setSection(primaryAction.targetSection)}
+            className="mt-5 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-100"
+          >
+            {primaryAction.label}
+          </button>
+        )}
       </header>
 
-
-      <SynapseMap>
-        <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/55">Synapse topology</p>
-            <h3 className="mt-2 text-2xl font-bold">운영 신호 연결 지도</h3>
-            <p className="mt-2 max-w-2xl text-sm text-white/60">
-              프로젝트·작업·문서·AI·맥미니·GitHub가 어떤 상태인지 그래프처럼 먼저 보고, 필요한 노드로 바로 이동합니다.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-xs text-white/60">
-            source {liveStatus?.mode || data.dataSource.mode} · updated {formatDateTime(liveStatus?.generatedAt || data.dataSource.generatedAt)}
-          </div>
+      <Panel title="Today Action Queue">
+        <div className="mb-4 flex flex-wrap gap-2 text-xs text-white/55">
+          {[
+            "approval",
+            "verification",
+            "blocked",
+            "recovery",
+            "review",
+            "cms",
+          ].map((category) => (
+            <span key={category} className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+              {category}
+            </span>
+          ))}
         </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {overview.actions.map((action) => (
+            <ActionCard key={action.id} action={action} onOpen={() => setSection(action.target.section)} />
+          ))}
+          {!overview.actions.length && <EmptyLine message="오늘 바로 처리해야 할 운영 액션이 없습니다." />}
+        </div>
+      </Panel>
+
+      <Panel title="Project Operating Radar">
+        <div className="grid gap-4 lg:grid-cols-2">
+          {overview.projects.map((project) => (
+            <ProjectHealthCard
+              key={project.projectId}
+              project={project}
+              onOpen={() => {
+                setSelectedProjectId(project.projectId);
+                setSection("projects");
+              }}
+            />
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="System Health Strip">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          {Object.values(overview.system).map((item) => (
+            <button key={item.label} onClick={() => setSection(item.targetSection)} className="text-left">
+              <HealthTile item={item} />
+            </button>
+          ))}
+        </div>
+      </Panel>
+
+      <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
+        <Panel title="Knowledge / CMS Snapshot">
+          <div className="mb-4 grid gap-3 md:grid-cols-3">
+            <SummaryCard label="Notes" value={String(overview.knowledge.coverage.totalNotes)} />
+            <SummaryCard label="Linked" value={String(overview.knowledge.coverage.projectLinkedNotes)} />
+            <SummaryCard label="Orphan" value={String(overview.knowledge.coverage.orphanNotes)} />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {overview.knowledge.buckets.map((bucket) => (
+              <span
+                key={bucket.id}
+                className={clsx(
+                  "rounded-full border px-3 py-2 text-xs",
+                  bucket.status === "healthy" ? severityTone.healthy : severityTone.empty,
+                )}
+              >
+                {bucket.label} · {bucket.count}
+              </span>
+            ))}
+          </div>
+          {!!overview.knowledge.missing.length && (
+            <div className="mt-4 rounded-2xl border border-amber-300/25 bg-amber-400/10 p-4 text-sm text-amber-50">
+              <strong>누락된 CMS 버킷</strong>
+              <ul className="mt-2 space-y-1 text-white/70">
+                {overview.knowledge.missing.map((item) => (
+                  <li key={item.id}>• {item.reason}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </Panel>
+
+        <Panel title="Recent Operations Timeline">
+          <div className="space-y-3">
+            {overview.timeline.map((item) => (
+              <TimelineRow key={item.id} item={item} />
+            ))}
+          </div>
+        </Panel>
+      </div>
+
+      <Panel title="Data Trust Footer">
         <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-4">
-          <SynapseNode label="Projects" value={String(summary.totalProjects)} helper="운영 중인 제품/레포" tone="cyan" onClick={() => setSection("projects")} />
-          <SynapseNode label="Tasks" value={String(summary.activeTasks)} helper={`${summary.verifyingTasks} verifying`} tone={summary.activeTasks ? "amber" : "emerald"} onClick={() => setSection("tasks")} />
-          <SynapseNode label="Docs / Vault" value={String(summary.notesCount)} helper={`${summary.mappedNotes} project-linked`} tone="violet" onClick={() => setSection("notes")} />
-          <SynapseNode label="Aeyong" value={String(summary.worklogsCount)} helper={`${summary.artifactCount} artifacts`} tone="emerald" onClick={() => setSection("aeyong")} />
-          <SynapseNode label="Worker" value={data.workerHeartbeats[0]?.status || "offline"} helper={data.workerHeartbeats[0]?.machine || "heartbeat waiting"} tone={data.workerHeartbeats[0]?.status === "online" ? "emerald" : "amber"} onClick={() => setSection("worker")} />
-          <SynapseNode label="Mac mini" value={data.hostStatuses[0]?.machine || "no signal"} helper={data.openclawStatuses[0]?.gatewayStatus ? `OpenClaw ${data.openclawStatuses[0].gatewayStatus}` : "status push waiting"} tone={data.hostStatuses.length ? "cyan" : "slate"} onClick={() => setSection("macmini")} />
-          <SynapseNode label="GitHub" value={String(summary.githubRepos)} helper={`${summary.githubBoards} boards`} tone="slate" onClick={() => setSection("projects")} />
-          <SynapseNode label="Releases" value={String(data.github.releases.length)} helper="deploy/release signals" tone="rose" onClick={() => setSection("releases")} />
+          {overview.dataTrust.tables.map((table) => (
+            <div
+              key={table.name}
+              className={clsx("rounded-2xl border p-4", table.status === "ok" ? severityTone.healthy : severityTone.empty)}
+            >
+              <p className="text-xs uppercase tracking-[0.18em] text-white/45">{table.name}</p>
+              <p className="mt-2 text-2xl font-bold text-white">{table.count ?? 0}</p>
+              <p className="text-xs text-white/50">{table.status}</p>
+            </div>
+          ))}
         </div>
-      </SynapseMap>
-
-      <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
-        <SummaryCard
-          label="전체 프로젝트"
-          value={String(summary.totalProjects)}
-        />
-        <SummaryCard label="진행 중 작업" value={String(summary.activeTasks)} />
-        <SummaryCard
-          label="검증 중 작업"
-          value={String(summary.verifyingTasks)}
-        />
-        <SummaryCard label="저장된 노트" value={String(summary.notesCount)} />
-        <SummaryCard
-          label="AI worklogs"
-          value={String(summary.worklogsCount)}
-        />
-        <SummaryCard
-          label="Typed artifacts"
-          value={String(summary.artifactCount)}
-        />
-        <SummaryCard label="Decisions" value={String(summary.decisionCount)} />
-        <SummaryCard label="Learnings" value={String(summary.learningCount)} />
-        <SummaryCard
-          label="Project-linked notes"
-          value={String(summary.mappedNotes)}
-        />
-        <SummaryCard label="Vault orphan" value={String(summary.orphanNotes)} />
-        <SummaryCard label="GitHub repos" value={String(summary.githubRepos)} />
-        <SummaryCard
-          label="GitHub boards"
-          value={String(summary.githubBoards)}
-        />
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <Panel title="사용자 판단 필요">
-          <div className="space-y-4">
-            {attentionTasks.map((task) => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                projectName={
-                  data.projects.find((p) => p.id === task.projectId)?.name ||
-                  "-"
-                }
-                notesById={notesById}
-                compact
-              />
+        {!!overview.dataTrust.warnings.length && (
+          <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/65">
+            {overview.dataTrust.warnings.map((warning) => (
+              <p key={warning}>• {warning}</p>
             ))}
           </div>
-        </Panel>
-        <Panel title="최근 synced 노트">
-          <div className="space-y-3">
-            {data.notes.slice(0, 4).map((note) => (
-              <button
-                key={note.id}
-                onClick={() => {
-                  setSelectedNoteId(note.id);
-                  setSection("notes");
-                }}
-                className="w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-left transition hover:bg-white/10"
-              >
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <strong>{note.title}</strong>
-                  <span
-                    className={clsx(
-                      "rounded-full px-3 py-1 text-xs font-semibold",
-                      noteTypeMeta[note.type].tone,
-                    )}
-                  >
-                    {noteTypeMeta[note.type].label}
-                  </span>
-                </div>
-                <p className="mb-2 text-sm text-white/70">{note.summary}</p>
-                <p className="text-xs text-white/45">{note.path}</p>
-              </button>
-            ))}
-          </div>
-        </Panel>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <Panel title="Recent AI work">
-          <div className="space-y-3">
-            {data.worklogs.slice(0, 4).map((worklog) => (
-              <div
-                key={worklog.id}
-                className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <strong className="text-white">{worklog.title}</strong>
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">
-                    {worklog.actor} · {worklog.status}
-                  </span>
-                </div>
-                <p className="mt-2 text-white/70">{worklog.summary}</p>
-                <p className="mt-2 text-xs text-white/45">
-                  {worklog.project || worklog.repo || "unassigned"} ·{" "}
-                  {worklog.sourceMachine || "source unknown"} ·{" "}
-                  {formatDateTime(worklog.updatedAt)}
-                </p>
-              </div>
-            ))}
-            {!data.worklogs.length && (
-              <EmptyLine message="아직 감지된 AI worklog가 없습니다. markdown sync 또는 `/api/ops/ingest` direct ingest가 들어오면 여기에 바로 나타납니다." />
-            )}
-          </div>
-        </Panel>
-        <Panel title="Recent typed artifacts">
-          <div className="space-y-3">
-            {data.artifacts.slice(0, 6).map((artifact) => (
-              <div
-                key={artifact.id}
-                className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <strong className="text-white">{artifact.title}</strong>
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">
-                    {artifact.artifactType}
-                  </span>
-                </div>
-                <p className="mt-2 text-white/70">{artifact.summary}</p>
-                <p className="mt-2 text-xs text-white/45">
-                  {artifact.project || artifact.repo || "unassigned"} ·{" "}
-                  {artifact.actor || "unknown actor"} ·{" "}
-                  {formatDateTime(artifact.updatedAt)}
-                </p>
-              </div>
-            ))}
-            {!data.artifacts.length && (
-              <EmptyLine message="아직 typed artifact가 없습니다. worklog / decision / learning 신호가 노트에 쌓이면 여기에 나타납니다." />
-            )}
-          </div>
-        </Panel>
-        <Panel title="Data source verification">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
-              <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">
-                Active read source
-              </p>
-              <p className="text-lg font-semibold text-white">
-                {liveStatus?.mode || data.dataSource.mode}
-              </p>
-              <p className="mt-2 text-xs text-white/55">
-                preferred {data.dataSource.sourceHealth.preferredMode} · notes{" "}
-                {liveStatus?.notesCount ?? data.dataSource.notesCount} ·
-                worklogs {liveStatus?.worklogsCount ?? data.worklogs.length} ·
-                projects {liveStatus?.projectsCount ?? data.projects.length} ·
-                tasks {liveStatus?.tasksCount ?? data.tasks.length}
-              </p>
-              <p className="mt-2 text-xs text-white/50">
-                updated{" "}
-                {formatDateTime(
-                  liveStatus?.generatedAt || data.dataSource.generatedAt,
-                )}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
-              <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">
-                Write behavior
-              </p>
-              <p className="text-lg font-semibold text-white">
-                {data.dataSource.mode === "supabase"
-                  ? "Supabase first + local mirror"
-                  : "local fallback first"}
-              </p>
-              <p className="mt-2 text-xs text-white/55">
-                Supabase read mode에서는 write도 DB-first로 맞추고 local
-                JSON/notes mirror를 함께 남깁니다. 로컬 모드에서는 기존
-                fallback-first를 유지합니다.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75 md:col-span-2">
-              <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">
-                Supabase + automation health
-              </p>
-              <p className="text-lg font-semibold text-white">
-                {data.dataSource.sourceHealth.supabaseConfigured
-                  ? data.dataSource.sourceHealth.supabaseReachable
-                    ? "configured + reachable"
-                    : "configured but unreachable"
-                  : "not configured"}
-              </p>
-              <p className="mt-2 text-xs text-white/55">
-                last sync {data.dataSource.sourceHealth.lastSyncStatus || "-"} ·{" "}
-                {formatDateTime(data.dataSource.sourceHealth.lastSyncAt)}
-              </p>
-              <p className="mt-2 text-xs text-white/55">
-                automation{" "}
-                {liveStatus?.sourceHealth.automation?.mode ||
-                  data.dataSource.sourceHealth.automation?.mode ||
-                  "manual"}{" "}
-                ·{" "}
-                {liveStatus?.sourceHealth.automation?.state ||
-                  data.dataSource.sourceHealth.automation?.state ||
-                  "manual"}{" "}
-                · heartbeat{" "}
-                {formatDateTime(
-                  liveStatus?.sourceHealth.automation?.heartbeatAt ||
-                    data.dataSource.sourceHealth.automation?.heartbeatAt,
-                )}
-              </p>
-              <p className="mt-2 text-xs text-white/55">
-                worklogs{" "}
-                {data.dataSource.sourceHealth.worklogsCount ??
-                  data.worklogs.length}{" "}
-                · artifacts{" "}
-                {data.dataSource.sourceHealth.artifactsCount ??
-                  data.artifacts.length}{" "}
-                · latest{" "}
-                {formatDateTime(
-                  data.dataSource.sourceHealth.artifactsUpdatedAt ||
-                    data.dataSource.sourceHealth.worklogsUpdatedAt ||
-                    data.artifacts[0]?.updatedAt ||
-                    data.worklogs[0]?.updatedAt,
-                )}
-              </p>
-              {(liveStatus?.sourceHealth.automation?.lastRunMessage ||
-                data.dataSource.sourceHealth.automation?.lastRunMessage) && (
-                <p className="mt-2 text-xs text-white/50">
-                  {liveStatus?.sourceHealth.automation?.lastRunMessage ||
-                    data.dataSource.sourceHealth.automation?.lastRunMessage}
-                </p>
-              )}
-              {data.dataSource.sourceHealth.lastSyncMessage && (
-                <p className="mt-2 text-xs text-white/50">
-                  {data.dataSource.sourceHealth.lastSyncMessage}
-                </p>
-              )}
-            </div>
-          </div>
-        </Panel>
-        <Panel title="Vault operating signals">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
-              <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">
-                Hot folders
-              </p>
-              <div className="space-y-2">
-                {data.vault.folders.slice(0, 4).map((folder) => (
-                  <div
-                    key={folder.folder}
-                    className="flex items-center justify-between gap-3 rounded-2xl bg-white/5 px-3 py-2"
-                  >
-                    <span className="truncate">{folder.folder}</span>
-                    <span className="text-xs text-white/45">
-                      {folder.count}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/75">
-              <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">
-                Tag clusters
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {data.vault.tags.slice(0, 8).map((tag) => (
-                  <span
-                    key={tag.tag}
-                    className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70"
-                  >
-                    #{tag.tag} · {tag.count}
-                  </span>
-                ))}
-                {!data.vault.tags.length && (
-                  <EmptyLine message="아직 집계된 태그가 없습니다." />
-                )}
-              </div>
-            </div>
-          </div>
-        </Panel>
-        <Panel title="GitHub 연결 현황">
-          <div className="grid gap-4 md:grid-cols-2">
-            {data.projects
-              .filter((project) => project.repo)
-              .map((project) => (
-                <GitHubRepoCard
-                  key={project.id}
-                  project={project}
-                  repo={
-                    project.repo
-                      ? githubReposByName.get(project.repo)
-                      : undefined
-                  }
-                  onOpen={() => {
-                    setSelectedProjectId(project.id);
-                    setSection("projects");
-                  }}
-                />
-              ))}
-          </div>
-        </Panel>
-        <Panel title="최근 GitHub 릴리즈">
-          <div className="space-y-3">
-            {data.github.releases.slice(0, 5).map((release) => (
-              <ReleaseCard key={release.id} release={release} compact />
-            ))}
-            {!data.github.releases.length && (
-              <EmptyLine message="릴리즈 데이터가 아직 없습니다. sync 후 이곳에 최신 release가 표시됩니다." />
-            )}
-          </div>
-        </Panel>
-      </div>
+        )}
+      </Panel>
     </div>
   );
 }
