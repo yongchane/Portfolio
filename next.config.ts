@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Keep Next tracing scoped to the project root.
-  outputFileTracingRoot: "/Users/hyeon-yongchan/Desktop/데스크탑 - 현용찬의 노트북/Potflio/portfolio",
+  outputFileTracingRoot: process.cwd(),
 
   // Production optimizations
   productionBrowserSourceMaps: false,
