@@ -19,6 +19,19 @@ const REQUIRED_TABLES = [
   "ops_agents",
   "ops_agent_runs",
   "ops_ai_reviews",
+  "ops_project_planning_documents",
+  "ops_project_prds",
+  "ops_project_requirements",
+  "ops_project_features",
+  "ops_project_specifications",
+  "ops_project_ia_pages",
+  "ops_project_user_flows",
+  "ops_project_user_flow_steps",
+  "ops_project_wireframe_blocks",
+  "ops_project_architecture_nodes",
+  "ops_project_github_evidence",
+  "ops_project_ai_suggestions",
+  "ops_project_exports",
 ];
 
 await loadLocalEnvFiles();
@@ -78,7 +91,7 @@ if (failures) {
 ok("All required /ops tables are reachable.");
 
 async function loadLocalEnvFiles() {
-  for (const file of ENV_FILES) {
+  for (const file of [...ENV_FILES, path.join(".vercel", ".env.development.local")]) {
     const envPath = path.join(repoRoot, file);
     let content = "";
     try {

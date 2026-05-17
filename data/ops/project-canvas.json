@@ -1,0 +1,1132 @@
+{
+  "yongchane-tori-admin": {
+    "projectId": "yongchane-tori-admin",
+    "canvas": {
+      "nodes": [
+        {
+          "id": "entry",
+          "type": "start",
+          "shape": "circle",
+          "icon": "⌘",
+          "label": "Ops 진입",
+          "description": "프로젝트 관리에서 GitHub 기반 프로젝트를 선택합니다.",
+          "x": 260,
+          "y": 260,
+          "source": "user-created",
+          "meta": [
+            "/ops/projects",
+            "managed project"
+          ],
+          "codeRefs": [
+            "app/ops/projects/page.tsx",
+            "ProjectRepositoryListPage.tsx"
+          ],
+          "interactions": [
+            "프로젝트 카드 클릭",
+            "GitHub에서 프로젝트 추가"
+          ],
+          "apiLinks": [
+            "GET /ops/projects"
+          ],
+          "evidence": []
+        },
+        {
+          "id": "repo",
+          "type": "repo",
+          "shape": "rect",
+          "icon": "📦",
+          "label": "yongchane/tori-admin",
+          "description": "Tori의 집의 GitHub source입니다. Phase 1에서는 cache metadata를 쓰고 Phase 2에서 NestJS가 live file tree를 읽습니다.",
+          "x": 500,
+          "y": 245,
+          "source": "github-analysis",
+          "meta": [
+            "branch master",
+            "language JavaScript",
+            "private",
+            "184 analyzed files"
+          ],
+          "codeRefs": [
+            "data/ops/github-cache.json"
+          ],
+          "interactions": [
+            "GitHub 열기",
+            "repo tree 분석 요청",
+            "managed project로 저장"
+          ],
+          "apiLinks": [
+            "future: GET /api/github/repositories/:owner/:repo/tree"
+          ],
+          "evidence": []
+        },
+        {
+          "id": "route-ops-docs",
+          "type": "route",
+          "shape": "rect",
+          "icon": "R",
+          "label": "/ops/docs",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "x": 493.6820652173913,
+          "y": 145.51290760869568,
+          "source": "github-analysis",
+          "meta": [
+            "IA",
+            "screen",
+            "static route",
+            "3 imports",
+            "api calls pending",
+            "confidence 0.97"
+          ],
+          "codeRefs": [
+            "app/ops/docs/page.tsx"
+          ],
+          "interactions": [
+            "navigate",
+            "render screen",
+            "imports @/components/ops/OpsRouteShell"
+          ],
+          "apiLinks": [],
+          "confidence": 0.97,
+          "evidence": [
+            "app/ops/docs/page.tsx"
+          ]
+        },
+        {
+          "id": "route-ops-macmini",
+          "type": "route",
+          "shape": "rect",
+          "icon": "R",
+          "label": "/ops/macmini",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "x": 730,
+          "y": 210,
+          "source": "github-analysis",
+          "meta": [
+            "IA",
+            "screen",
+            "static route",
+            "3 imports",
+            "api calls pending",
+            "confidence 0.97"
+          ],
+          "codeRefs": [
+            "app/ops/macmini/page.tsx"
+          ],
+          "interactions": [
+            "navigate",
+            "render screen",
+            "imports @/components/ops/OpsRouteShell"
+          ],
+          "apiLinks": [],
+          "confidence": 0.97,
+          "evidence": [
+            "app/ops/macmini/page.tsx"
+          ]
+        },
+        {
+          "id": "route-ops-openclaw",
+          "type": "route",
+          "shape": "rect",
+          "icon": "R",
+          "label": "/ops/openclaw",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "x": 960,
+          "y": 210,
+          "source": "github-analysis",
+          "meta": [
+            "IA",
+            "screen",
+            "static route",
+            "3 imports",
+            "api calls pending",
+            "confidence 0.97"
+          ],
+          "codeRefs": [
+            "app/ops/openclaw/page.tsx"
+          ],
+          "interactions": [
+            "navigate",
+            "render screen",
+            "imports @/components/ops/OpsRouteShell"
+          ],
+          "apiLinks": [],
+          "confidence": 0.97,
+          "evidence": [
+            "app/ops/openclaw/page.tsx"
+          ]
+        },
+        {
+          "id": "route-ops",
+          "type": "route",
+          "shape": "rect",
+          "icon": "R",
+          "label": "/ops",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "x": 1190,
+          "y": 210,
+          "source": "github-analysis",
+          "meta": [
+            "IA",
+            "screen",
+            "static route",
+            "3 imports",
+            "api calls pending",
+            "confidence 0.97"
+          ],
+          "codeRefs": [
+            "app/ops/page.tsx"
+          ],
+          "interactions": [
+            "navigate",
+            "render screen",
+            "imports @/components/ops/OpsRouteShell"
+          ],
+          "apiLinks": [],
+          "confidence": 0.97,
+          "evidence": [
+            "app/ops/page.tsx"
+          ]
+        },
+        {
+          "id": "route-ops-projects-projectid",
+          "type": "route",
+          "shape": "rect",
+          "icon": "R",
+          "label": "/ops/projects/[projectId]",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "x": 1420,
+          "y": 210,
+          "source": "github-analysis",
+          "meta": [
+            "IA",
+            "screen",
+            "dynamic route",
+            "5 imports",
+            "api calls pending",
+            "confidence 0.97"
+          ],
+          "codeRefs": [
+            "app/ops/projects/[projectId]/page.tsx"
+          ],
+          "interactions": [
+            "navigate",
+            "render screen",
+            "imports @/components/ops/OpsRouteShell",
+            "imports @/components/ops/project-management/ProjectCanvasPage"
+          ],
+          "apiLinks": [],
+          "confidence": 0.97,
+          "evidence": [
+            "app/ops/projects/[projectId]/page.tsx"
+          ]
+        },
+        {
+          "id": "route-ops-projects-new",
+          "type": "route",
+          "shape": "rect",
+          "icon": "R",
+          "label": "/ops/projects/new",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "x": 500,
+          "y": 355,
+          "source": "github-analysis",
+          "meta": [
+            "IA",
+            "screen",
+            "static route",
+            "4 imports",
+            "api calls pending",
+            "confidence 0.97"
+          ],
+          "codeRefs": [
+            "app/ops/projects/new/page.tsx"
+          ],
+          "interactions": [
+            "navigate",
+            "render screen",
+            "imports @/components/ops/OpsRouteShell",
+            "imports @/components/ops/project-management/GitHubRepositoryBrowserPage"
+          ],
+          "apiLinks": [],
+          "confidence": 0.97,
+          "evidence": [
+            "app/ops/projects/new/page.tsx"
+          ]
+        },
+        {
+          "id": "route-ops-projects",
+          "type": "route",
+          "shape": "rect",
+          "icon": "R",
+          "label": "/ops/projects",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "x": 730,
+          "y": 355,
+          "source": "github-analysis",
+          "meta": [
+            "IA",
+            "screen",
+            "static route",
+            "4 imports",
+            "api calls pending",
+            "confidence 0.97"
+          ],
+          "codeRefs": [
+            "app/ops/projects/page.tsx"
+          ],
+          "interactions": [
+            "navigate",
+            "render screen",
+            "imports @/components/ops/OpsRouteShell",
+            "imports @/components/ops/project-management/ProjectRepositoryListPage"
+          ],
+          "apiLinks": [],
+          "confidence": 0.97,
+          "evidence": [
+            "app/ops/projects/page.tsx"
+          ]
+        },
+        {
+          "id": "route-home",
+          "type": "route",
+          "shape": "rect",
+          "icon": "R",
+          "label": "/",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "x": 960,
+          "y": 355,
+          "source": "github-analysis",
+          "meta": [
+            "IA",
+            "screen",
+            "static route",
+            "8 imports",
+            "api calls pending",
+            "confidence 0.97"
+          ],
+          "codeRefs": [
+            "app/page.tsx"
+          ],
+          "interactions": [
+            "navigate",
+            "render screen",
+            "imports @/components/Navigation",
+            "imports @/components/Hero",
+            "imports @/components/About",
+            "imports @/components/TechStack"
+          ],
+          "apiLinks": [],
+          "confidence": 0.97,
+          "evidence": [
+            "app/page.tsx"
+          ]
+        },
+        {
+          "id": "analysis-components",
+          "type": "component",
+          "shape": "rect",
+          "icon": "C",
+          "label": "UI Components",
+          "description": "화면을 구성하는 feature/shared component 계층입니다.",
+          "x": 504.475615530303,
+          "y": 951.4719460227273,
+          "source": "github-analysis",
+          "meta": [
+            "Architecture",
+            "30 files",
+            "115 component imports",
+            "confidence 0.91"
+          ],
+          "codeRefs": [
+            "components/About.tsx",
+            "components/AdminConsole.tsx",
+            "components/Awards.tsx",
+            "components/Contact.tsx",
+            "components/Experience.tsx",
+            "components/Hero.tsx",
+            "components/Navigation.tsx",
+            "components/Projects.tsx"
+          ],
+          "interactions": [
+            "uses project flow"
+          ],
+          "apiLinks": [
+            "/api/ops/notes-version",
+            "/api/ops/auth",
+            "/api/ops/auth",
+            "/api/ops/agent-runs",
+            "/api/ops/projects",
+            "/api/ops/projects/${projectId}/canvas",
+            "/api/ops/projects/${projectId}/canvas/export",
+            "/api/ops/tasks/${activeTask.id}"
+          ],
+          "confidence": 0.91,
+          "evidence": [
+            "components/About.tsx",
+            "components/AdminConsole.tsx",
+            "components/Awards.tsx",
+            "components/Contact.tsx",
+            "components/Experience.tsx",
+            "components/Hero.tsx",
+            "components/Navigation.tsx",
+            "components/Projects.tsx"
+          ]
+        },
+        {
+          "id": "analysis-api",
+          "type": "api",
+          "shape": "rect",
+          "icon": "API",
+          "label": "API Boundary",
+          "description": "외부 요청과 UI action이 들어오는 endpoint 경계입니다.",
+          "x": 798.59375,
+          "y": 882.7669270833334,
+          "source": "github-analysis",
+          "meta": [
+            "Architecture",
+            "19 files",
+            "79 api imports",
+            "confidence 0.91"
+          ],
+          "codeRefs": [
+            "app/api/ops/agent-runs/route.ts",
+            "app/api/ops/agents/route.ts",
+            "app/api/ops/ai-reviews/route.ts",
+            "app/api/ops/auth/route.ts",
+            "app/api/ops/github/repositories/[owner]/[repo]/content/route.ts",
+            "app/api/ops/github/repositories/[owner]/[repo]/tree/route.ts",
+            "app/api/ops/host-status/route.ts",
+            "app/api/ops/ingest/route.ts"
+          ],
+          "interactions": [
+            "calls project flow"
+          ],
+          "apiLinks": [],
+          "confidence": 0.91,
+          "evidence": [
+            "app/api/ops/agent-runs/route.ts",
+            "app/api/ops/agents/route.ts",
+            "app/api/ops/ai-reviews/route.ts",
+            "app/api/ops/auth/route.ts",
+            "app/api/ops/github/repositories/[owner]/[repo]/content/route.ts",
+            "app/api/ops/github/repositories/[owner]/[repo]/tree/route.ts",
+            "app/api/ops/host-status/route.ts",
+            "app/api/ops/ingest/route.ts"
+          ]
+        },
+        {
+          "id": "analysis-services",
+          "type": "service",
+          "shape": "rect",
+          "icon": "S",
+          "label": "Domain Services",
+          "description": "데이터 로드, mutation, adapter, contract 같은 도메인 책임입니다.",
+          "x": 1040,
+          "y": 970,
+          "source": "github-analysis",
+          "meta": [
+            "Architecture",
+            "26 files",
+            "69 service imports",
+            "confidence 0.91"
+          ],
+          "codeRefs": [
+            "lib/ops/adapters/supabase.test.ts",
+            "lib/ops/adapters/supabase.ts",
+            "lib/ops/artifacts.ts",
+            "lib/ops/auth.ts",
+            "lib/ops/automation.ts",
+            "lib/ops/data.ts",
+            "lib/ops/github-live.ts",
+            "lib/ops/ingest.ts"
+          ],
+          "interactions": [
+            "calls project flow"
+          ],
+          "apiLinks": [],
+          "confidence": 0.91,
+          "evidence": [
+            "lib/ops/adapters/supabase.test.ts",
+            "lib/ops/adapters/supabase.ts",
+            "lib/ops/artifacts.ts",
+            "lib/ops/auth.ts",
+            "lib/ops/automation.ts",
+            "lib/ops/data.ts",
+            "lib/ops/github-live.ts",
+            "lib/ops/ingest.ts"
+          ]
+        },
+        {
+          "id": "analysis-storage",
+          "type": "storage",
+          "shape": "rect",
+          "icon": "DB",
+          "label": "Storage / Schema",
+          "description": "Supabase schema와 local JSON fallback 저장소입니다.",
+          "x": 1300,
+          "y": 970,
+          "source": "github-analysis",
+          "meta": [
+            "Architecture",
+            "9 files",
+            "confidence 0.91"
+          ],
+          "codeRefs": [
+            "data/ops/automation-status.json",
+            "data/ops/github-cache.json",
+            "data/ops/notes-export.json",
+            "data/ops/project-canvas.json",
+            "data/ops/project-planning.json",
+            "data/ops/projects.json",
+            "data/ops/tasks.json",
+            "supabase/ops-runtime-missing-tables.sql"
+          ],
+          "interactions": [
+            "writes project flow"
+          ],
+          "apiLinks": [],
+          "confidence": 0.91,
+          "evidence": [
+            "data/ops/automation-status.json",
+            "data/ops/github-cache.json",
+            "data/ops/notes-export.json",
+            "data/ops/project-canvas.json",
+            "data/ops/project-planning.json",
+            "data/ops/projects.json",
+            "data/ops/tasks.json",
+            "supabase/ops-runtime-missing-tables.sql"
+          ]
+        },
+        {
+          "id": "analysis-jobs",
+          "type": "job",
+          "shape": "rect",
+          "icon": "J",
+          "label": "Jobs / Automation",
+          "description": "GitHub sync, ingest, cron, worker 같은 백그라운드 실행 흐름입니다.",
+          "x": 1560,
+          "y": 970,
+          "source": "github-analysis",
+          "meta": [
+            "Architecture",
+            "13 files",
+            "confidence 0.91"
+          ],
+          "codeRefs": [
+            "ops/cron/portfolio-ops-watch.cron.example",
+            "ops/macos/install-launchagent.sh",
+            "ops/macos/portfolio-ops-watch.plist.template",
+            "scripts/compress-images.js",
+            "scripts/export-ops-notes.mjs",
+            "scripts/ingest-ops-work-result.mjs",
+            "scripts/ops-automation.mjs",
+            "scripts/ops-mac-mini-worker.mjs"
+          ],
+          "interactions": [
+            "runs project flow"
+          ],
+          "apiLinks": [
+            "http://127.0.0.1:3000/api/ops/ingest"
+          ],
+          "confidence": 0.91,
+          "evidence": [
+            "ops/cron/portfolio-ops-watch.cron.example",
+            "ops/macos/install-launchagent.sh",
+            "ops/macos/portfolio-ops-watch.plist.template",
+            "scripts/compress-images.js",
+            "scripts/export-ops-notes.mjs",
+            "scripts/ingest-ops-work-result.mjs",
+            "scripts/ops-automation.mjs",
+            "scripts/ops-mac-mini-worker.mjs"
+          ]
+        },
+        {
+          "id": "analysis-docs",
+          "type": "artifact",
+          "shape": "rect",
+          "icon": "MD",
+          "label": "Docs / Decisions",
+          "description": "README, handoff, plan 문서에서 제품 의도와 설계 근거를 추출합니다.",
+          "x": 780,
+          "y": 1780,
+          "source": "github-analysis",
+          "meta": [
+            "Architecture",
+            "22 files",
+            "156 doc headings",
+            "confidence 0.91"
+          ],
+          "codeRefs": [
+            "AGENTS.md",
+            "CUSTOMIZATION.md",
+            "README.md",
+            "apps/ops-api/README.md",
+            "docs/gstack-workflow.md",
+            "docs/ops/personal-os-renewal-spec.md",
+            "docs/ops/synapse-ui-design.md",
+            "docs/ops-ai-worklog-mvp.md"
+          ],
+          "interactions": [
+            "documents project flow",
+            "AGENTS.md: AGENTS.md — Portfolio coding workflow",
+            "AGENTS.md: Token-efficient, quality-preserving workflow",
+            "AGENTS.md: Serena project",
+            "CUSTOMIZATION.md: 포트폴리오 커스터마이징 가이드",
+            "CUSTOMIZATION.md: 1. 기본 정보 수정",
+            "CUSTOMIZATION.md: Hero 섹션 (`components/Hero.tsx`)",
+            "CUSTOMIZATION.md: About 섹션 (`components/About.tsx`)",
+            "CUSTOMIZATION.md: Contact 섹션 (`components/Contact.tsx`)"
+          ],
+          "apiLinks": [
+            "/api/ops/sync-requests",
+            "/api/ops/worker/status",
+            "/api/ops/host-status",
+            "/api/ops/openclaw-status",
+            "/api/ops/agents",
+            "/api/ops/agent-runs",
+            "/api/ops/ai-reviews",
+            "/api/ops/notes-version"
+          ],
+          "confidence": 0.91,
+          "evidence": [
+            "AGENTS.md",
+            "CUSTOMIZATION.md",
+            "README.md",
+            "apps/ops-api/README.md",
+            "docs/gstack-workflow.md",
+            "docs/ops/personal-os-renewal-spec.md",
+            "docs/ops/synapse-ui-design.md",
+            "docs/ops-ai-worklog-mvp.md"
+          ]
+        },
+        {
+          "id": "analysis-security",
+          "type": "security",
+          "shape": "rect",
+          "icon": "SEC",
+          "label": "Security / Auth",
+          "description": "session, same-origin, token scope, approval gate 같은 보호 경계입니다.",
+          "x": 520,
+          "y": 1320,
+          "source": "github-analysis",
+          "meta": [
+            "Architecture",
+            "4 files",
+            "confidence 0.91"
+          ],
+          "codeRefs": [
+            "app/api/ops/auth/route.ts",
+            "apps/ops-api/src/guards/ops-api-key.guard.ts",
+            "components/ops/auth/AccessGate.tsx",
+            "lib/ops/auth.ts"
+          ],
+          "interactions": [
+            "authenticates project flow"
+          ],
+          "apiLinks": [],
+          "confidence": 0.91,
+          "evidence": [
+            "app/api/ops/auth/route.ts",
+            "apps/ops-api/src/guards/ops-api-key.guard.ts",
+            "components/ops/auth/AccessGate.tsx",
+            "lib/ops/auth.ts"
+          ]
+        },
+        {
+          "id": "analysis-deployment",
+          "type": "deployment",
+          "shape": "rect",
+          "icon": "D",
+          "label": "Config / Deploy",
+          "description": "빌드, 환경, 배포 설정과 runtime 제약을 판단하는 근거입니다.",
+          "x": 1560,
+          "y": 1320,
+          "source": "github-analysis",
+          "meta": [
+            "Architecture",
+            "7 files",
+            "confidence 0.91"
+          ],
+          "codeRefs": [
+            "apps/ops-api/tsconfig.json",
+            "eslint.config.mjs",
+            "next.config.ts",
+            "package.json",
+            "tsconfig.json",
+            "tsconfig.tsbuildinfo",
+            "vercel.json"
+          ],
+          "interactions": [
+            "deploys project flow"
+          ],
+          "apiLinks": [],
+          "confidence": 0.91,
+          "evidence": [
+            "apps/ops-api/tsconfig.json",
+            "eslint.config.mjs",
+            "next.config.ts",
+            "package.json",
+            "tsconfig.json",
+            "tsconfig.tsbuildinfo",
+            "vercel.json"
+          ]
+        },
+        {
+          "id": "canvas-editor",
+          "type": "feature",
+          "shape": "rect",
+          "icon": "✍️",
+          "label": "Sketch canvas",
+          "description": "노드를 추가/삭제/이동하며 프로젝트 구조와 새 기능 설계를 스케치합니다.",
+          "x": 1140,
+          "y": 330,
+          "source": "user-created",
+          "meta": [
+            "node edit",
+            "drag",
+            "future save"
+          ],
+          "codeRefs": [
+            "ProjectCanvasPage.tsx"
+          ],
+          "interactions": [
+            "노드 추가",
+            "노드 삭제",
+            "Inspector 편집",
+            "Canvas pan/zoom"
+          ],
+          "apiLinks": [
+            "future: PATCH /api/ops/projects/:id/canvas"
+          ],
+          "evidence": []
+        },
+        {
+          "id": "ops-api",
+          "type": "api",
+          "shape": "rect",
+          "icon": "🔌",
+          "label": "Ops API contract",
+          "description": "프로젝트 추가, canvas 조회/저장, export, agent review 요청을 담당할 API 경계입니다.",
+          "x": 503.6440577651515,
+          "y": 1059.991122159091,
+          "source": "github-analysis",
+          "meta": [
+            "Next route now",
+            "NestJS later",
+            "DTO contract"
+          ],
+          "codeRefs": [
+            "app/api/ops/projects/route.ts",
+            "lib/ops/mutations.ts"
+          ],
+          "interactions": [
+            "project create",
+            "canvas load",
+            "canvas save"
+          ],
+          "apiLinks": [
+            "POST /api/ops/projects",
+            "future: NestJS /projects/:id/canvas"
+          ],
+          "evidence": []
+        },
+        {
+          "id": "data-loader",
+          "type": "api",
+          "shape": "rect",
+          "icon": "🧩",
+          "label": "Loader / Adapter",
+          "description": "Supabase-first, local fallback 방식으로 UI가 같은 모델을 받도록 정규화합니다.",
+          "x": 820,
+          "y": 1060,
+          "source": "github-analysis",
+          "meta": [
+            "Supabase first",
+            "local fallback",
+            "typed model"
+          ],
+          "codeRefs": [
+            "lib/ops/data.ts",
+            "lib/ops/supabase-data.ts",
+            "lib/ops/project-management-contract.mjs"
+          ],
+          "interactions": [
+            "load ops data",
+            "normalize project",
+            "build canvas"
+          ],
+          "apiLinks": [
+            "getOpsConsoleData()",
+            "createProjectFromRepo()"
+          ],
+          "evidence": []
+        },
+        {
+          "id": "database",
+          "type": "database",
+          "shape": "rect",
+          "icon": "🗄️",
+          "label": "Ops storage",
+          "description": "Supabase가 있으면 ops_projects에 저장하고, 없으면 data/ops/projects.json으로 fallback합니다.",
+          "x": 1130,
+          "y": 1160,
+          "source": "user-created",
+          "meta": [
+            "ops_projects",
+            "data/ops/projects.json",
+            "local fallback"
+          ],
+          "codeRefs": [
+            "supabase/ops-schema.sql",
+            "data/ops/projects.json"
+          ],
+          "interactions": [
+            "persist managed repo",
+            "refresh list",
+            "hydrate canvas"
+          ],
+          "apiLinks": [
+            "Supabase upsert",
+            "local JSON write"
+          ],
+          "evidence": []
+        },
+        {
+          "id": "deploy",
+          "type": "deploy",
+          "shape": "rect",
+          "icon": "🚀",
+          "label": "Deploy / runtime",
+          "description": "실제 배포 주소: https://purrpurr-hub-public.vercel.app/",
+          "x": 1430,
+          "y": 1060,
+          "source": "github-analysis",
+          "meta": [
+            "https://purrpurr-hub-public.vercel.app/",
+            "2026-04-06T06:57:48Z"
+          ],
+          "codeRefs": [
+            "ProjectRepositoryListPage.tsx",
+            "project.deployUrl"
+          ],
+          "interactions": [
+            "배포 URL 열기",
+            "CI/health 확인"
+          ],
+          "apiLinks": [
+            "future: GET /api/ops/projects/:id/deployments"
+          ],
+          "evidence": []
+        },
+        {
+          "id": "export-feature",
+          "type": "export",
+          "shape": "rect",
+          "icon": "⬇️",
+          "label": "Export pipeline",
+          "description": "Canvas를 Markdown, PNG, AI prompt로 뽑아 회의 자료와 Obsidian 문서로 남깁니다.",
+          "x": 501.156589673913,
+          "y": 2014.3019701086957,
+          "source": "user-created",
+          "meta": [
+            "markdown",
+            "png",
+            "obsidian"
+          ],
+          "codeRefs": [
+            "ProjectCanvasPage.tsx actions",
+            "future export service"
+          ],
+          "interactions": [
+            "Markdown Export",
+            "Canvas PNG 다운로드",
+            "Obsidian 저장"
+          ],
+          "apiLinks": [
+            "future: POST /api/ops/projects/:id/canvas/export"
+          ],
+          "evidence": []
+        },
+        {
+          "id": "docs",
+          "type": "docs",
+          "shape": "note",
+          "icon": "📝",
+          "label": "Team material",
+          "description": "추출한 IA/architecture 내용을 팀 회의용 문서와 Obsidian vault로 저장합니다.",
+          "x": 1040,
+          "y": 1950,
+          "source": "user-created",
+          "meta": [
+            "meeting",
+            "docs",
+            "vault"
+          ],
+          "codeRefs": [
+            "docs/plans",
+            "docs/ops-supabase-sync.md"
+          ],
+          "interactions": [
+            "회의 자료 공유",
+            "결정사항 기록",
+            "worklog 연결"
+          ],
+          "apiLinks": [
+            "POST /api/ops/ingest"
+          ],
+          "evidence": []
+        },
+        {
+          "id": "agent",
+          "type": "agent",
+          "shape": "note",
+          "icon": "🤖",
+          "label": "AI agent later",
+          "description": "Cursor처럼 대화 기반으로 구조를 리뷰하고 수정 제안을 만들되, 실제 실행은 승인 뒤 수행합니다.",
+          "x": 1340,
+          "y": 1760,
+          "source": "ai-suggestion",
+          "meta": [
+            "review",
+            "approval",
+            "agent run"
+          ],
+          "codeRefs": [
+            "components/ops/agents/FloatingAgentPanel.tsx",
+            "app/api/ops/agent-runs/route.ts"
+          ],
+          "interactions": [
+            "AI 리뷰 요청",
+            "수정 방향 제안",
+            "승인 후 실행"
+          ],
+          "apiLinks": [
+            "POST /api/ops/agent-runs",
+            "POST /api/ops/ai-reviews"
+          ],
+          "evidence": []
+        }
+      ],
+      "edges": [
+        {
+          "id": "edge-entry-repo",
+          "source": "entry",
+          "target": "repo",
+          "relation": "select",
+          "label": "select"
+        },
+        {
+          "id": "edge-repo-first-route",
+          "source": "repo",
+          "target": "route-ops-docs",
+          "relation": "derives",
+          "label": "derive IA"
+        },
+        {
+          "id": "edge-route-ops-docs-components",
+          "source": "route-ops-docs",
+          "target": "analysis-components",
+          "relation": "uses",
+          "label": "uses"
+        },
+        {
+          "id": "edge-route-ops-docs-api",
+          "source": "route-ops-docs",
+          "target": "analysis-api",
+          "relation": "calls",
+          "label": "calls"
+        },
+        {
+          "id": "edge-route-ops-macmini-components",
+          "source": "route-ops-macmini",
+          "target": "analysis-components",
+          "relation": "uses",
+          "label": "uses"
+        },
+        {
+          "id": "edge-route-ops-macmini-api",
+          "source": "route-ops-macmini",
+          "target": "analysis-api",
+          "relation": "calls",
+          "label": "calls"
+        },
+        {
+          "id": "edge-route-ops-openclaw-components",
+          "source": "route-ops-openclaw",
+          "target": "analysis-components",
+          "relation": "uses",
+          "label": "uses"
+        },
+        {
+          "id": "edge-route-ops-openclaw-api",
+          "source": "route-ops-openclaw",
+          "target": "analysis-api",
+          "relation": "calls",
+          "label": "calls"
+        },
+        {
+          "id": "edge-route-ops-components",
+          "source": "route-ops",
+          "target": "analysis-components",
+          "relation": "uses",
+          "label": "uses"
+        },
+        {
+          "id": "edge-route-ops-api",
+          "source": "route-ops",
+          "target": "analysis-api",
+          "relation": "calls",
+          "label": "calls"
+        },
+        {
+          "id": "edge-route-ops-projects-projectid-components",
+          "source": "route-ops-projects-projectid",
+          "target": "analysis-components",
+          "relation": "uses",
+          "label": "uses"
+        },
+        {
+          "id": "edge-route-ops-projects-projectid-api",
+          "source": "route-ops-projects-projectid",
+          "target": "analysis-api",
+          "relation": "calls",
+          "label": "calls"
+        },
+        {
+          "id": "edge-route-ops-projects-new-components",
+          "source": "route-ops-projects-new",
+          "target": "analysis-components",
+          "relation": "uses",
+          "label": "uses"
+        },
+        {
+          "id": "edge-route-ops-projects-new-api",
+          "source": "route-ops-projects-new",
+          "target": "analysis-api",
+          "relation": "calls",
+          "label": "calls"
+        },
+        {
+          "id": "edge-route-ops-projects-components",
+          "source": "route-ops-projects",
+          "target": "analysis-components",
+          "relation": "uses",
+          "label": "uses"
+        },
+        {
+          "id": "edge-route-ops-projects-api",
+          "source": "route-ops-projects",
+          "target": "analysis-api",
+          "relation": "calls",
+          "label": "calls"
+        },
+        {
+          "id": "edge-route-home-components",
+          "source": "route-home",
+          "target": "analysis-components",
+          "relation": "uses",
+          "label": "uses"
+        },
+        {
+          "id": "edge-route-home-api",
+          "source": "route-home",
+          "target": "analysis-api",
+          "relation": "calls",
+          "label": "calls"
+        },
+        {
+          "id": "edge-api-services",
+          "source": "analysis-api",
+          "target": "analysis-services",
+          "relation": "calls",
+          "label": "calls"
+        },
+        {
+          "id": "edge-services-storage",
+          "source": "analysis-services",
+          "target": "analysis-storage",
+          "relation": "reads/writes",
+          "label": "reads/writes"
+        },
+        {
+          "id": "edge-jobs-storage",
+          "source": "analysis-jobs",
+          "target": "analysis-storage",
+          "relation": "writes",
+          "label": "writes"
+        },
+        {
+          "id": "edge-docs-ia",
+          "source": "analysis-docs",
+          "target": "route-ops-docs",
+          "relation": "documents",
+          "label": "documents"
+        },
+        {
+          "id": "edge-security-api",
+          "source": "analysis-security",
+          "target": "analysis-api",
+          "relation": "authenticates",
+          "label": "authenticates"
+        },
+        {
+          "id": "edge-deploy-route",
+          "source": "analysis-deployment",
+          "target": "route-ops-docs",
+          "relation": "deploys",
+          "label": "deploys"
+        },
+        {
+          "id": "edge-api-imports-services",
+          "source": "analysis-api",
+          "target": "analysis-services",
+          "relation": "imports",
+          "label": "imports"
+        },
+        {
+          "id": "edge-service-imports-storage",
+          "source": "analysis-services",
+          "target": "analysis-storage",
+          "relation": "reads/writes",
+          "label": "reads/writes"
+        },
+        {
+          "id": "edge-components-services",
+          "source": "analysis-components",
+          "target": "analysis-services",
+          "relation": "imports",
+          "label": "imports"
+        },
+        {
+          "id": "edge-analysis-canvas",
+          "source": "route-ops-docs",
+          "target": "canvas-editor",
+          "relation": "renders",
+          "label": "renders"
+        },
+        {
+          "id": "edge-canvas-export",
+          "source": "canvas-editor",
+          "target": "export-feature",
+          "relation": "exports",
+          "label": "export"
+        },
+        {
+          "id": "edge-export-docs",
+          "source": "export-feature",
+          "target": "docs",
+          "relation": "documents",
+          "label": "save"
+        },
+        {
+          "id": "edge-canvas-agent",
+          "source": "canvas-editor",
+          "target": "agent",
+          "relation": "suggests",
+          "label": "review"
+        }
+      ]
+    },
+    "updatedAt": "2026-05-16T15:42:19.601Z"
+  }
+}

@@ -233,6 +233,248 @@ create table if not exists public.ops_ai_reviews (
 create index if not exists idx_ops_ai_reviews_project_category on public.ops_ai_reviews(project_id, category);
 create index if not exists idx_ops_ai_reviews_status on public.ops_ai_reviews(status);
 
+create table if not exists public.ops_project_canvases (
+  project_id text primary key references public.ops_projects(id) on delete cascade,
+  canvas jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_ops_project_canvases_updated on public.ops_project_canvases(updated_at desc);
+
+create table if not exists public.ops_project_planning_documents (
+  id uuid primary key default gen_random_uuid(),
+  project_id text not null unique references public.ops_projects(id) on delete cascade,
+  source text not null check (source in ('idea', 'github', 'manual', 'ai')) default 'github',
+  status text not null check (status in ('draft', 'reviewing', 'approved', 'archived')) default 'draft',
+  summary text not null default '',
+  generated_from jsonb not null default '{}'::jsonb,
+  canvas_summary jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_ops_project_planning_documents_project on public.ops_project_planning_documents(project_id);
+create index if not exists idx_ops_project_planning_documents_status on public.ops_project_planning_documents(status);
+create index if not exists idx_ops_project_planning_documents_updated on public.ops_project_planning_documents(updated_at desc);
+
+create table if not exists public.ops_project_prds (
+  project_id text primary key references public.ops_projects(id) on delete cascade,
+  overview text not null default '',
+  goals jsonb not null default '[]'::jsonb,
+  target_users jsonb not null default '[]'::jsonb,
+  core_values jsonb not null default '[]'::jsonb,
+  scenarios jsonb not null default '[]'::jsonb,
+  success_metrics jsonb not null default '[]'::jsonb,
+  risks jsonb not null default '[]'::jsonb,
+  open_questions jsonb not null default '[]'::jsonb,
+  source text not null check (source in ('idea', 'github', 'manual', 'ai')) default 'github',
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_ops_project_prds_updated on public.ops_project_prds(updated_at desc);
+
+create table if not exists public.ops_project_requirements (
+  id text primary key,
+  project_id text not null references public.ops_projects(id) on delete cascade,
+  title text not null,
+  description text not null default '',
+  priority text not null check (priority in ('low', 'medium', 'high')) default 'medium',
+  status text not null check (status in ('todo', 'doing', 'done', 'blocked')) default 'todo',
+  source text not null check (source in ('idea', 'github', 'manual', 'ai')) default 'github',
+  sort_order integer not null default 0,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_ops_project_requirements_project on public.ops_project_requirements(project_id, sort_order);
+create index if not exists idx_ops_project_requirements_status on public.ops_project_requirements(status);
+
+create table if not exists public.ops_project_features (
+  id text primary key,
+  project_id text not null references public.ops_projects(id) on delete cascade,
+  requirement_id text not null references public.ops_project_requirements(id) on delete cascade,
+  title text not null,
+  description text not null default '',
+  user_role_ids jsonb not null default '[]'::jsonb,
+  status text not null check (status in ('todo', 'doing', 'done', 'blocked')) default 'todo',
+  source text not null check (source in ('idea', 'github', 'manual', 'ai')) default 'github',
+  sort_order integer not null default 0,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_ops_project_features_project on public.ops_project_features(project_id, sort_order);
+create index if not exists idx_ops_project_features_requirement on public.ops_project_features(requirement_id);
+create index if not exists idx_ops_project_features_status on public.ops_project_features(status);
+
+create table if not exists public.ops_project_specifications (
+  id text primary key,
+  project_id text not null references public.ops_projects(id) on delete cascade,
+  feature_id text not null references public.ops_project_features(id) on delete cascade,
+  title text not null,
+  behavior text not null default '',
+  acceptance_criteria jsonb not null default '[]'::jsonb,
+  edge_cases jsonb not null default '[]'::jsonb,
+  linked_page_ids jsonb not null default '[]'::jsonb,
+  linked_api_ids jsonb not null default '[]'::jsonb,
+  evidence_ids jsonb not null default '[]'::jsonb,
+  status text not null check (status in ('todo', 'doing', 'done', 'blocked')) default 'todo',
+  source text not null check (source in ('idea', 'github', 'manual', 'ai')) default 'github',
+  sort_order integer not null default 0,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_ops_project_specifications_project on public.ops_project_specifications(project_id, sort_order);
+create index if not exists idx_ops_project_specifications_feature on public.ops_project_specifications(feature_id);
+create index if not exists idx_ops_project_specifications_status on public.ops_project_specifications(status);
+
+create table if not exists public.ops_project_ia_pages (
+  id text primary key,
+  project_id text not null references public.ops_projects(id) on delete cascade,
+  title text not null,
+  route text,
+  depth integer not null default 1 check (depth >= 1),
+  parent_id text references public.ops_project_ia_pages(id) on delete set null,
+  description text not null default '',
+  linked_specification_ids jsonb not null default '[]'::jsonb,
+  linked_user_flow_step_ids jsonb not null default '[]'::jsonb,
+  linked_wireframe_block_ids jsonb not null default '[]'::jsonb,
+  evidence_ids jsonb not null default '[]'::jsonb,
+  source text not null check (source in ('github-analysis', 'manual', 'ai-suggestion')) default 'github-analysis',
+  confidence numeric(4,3) check (confidence is null or (confidence >= 0 and confidence <= 1)),
+  sort_order integer not null default 0,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_ops_project_ia_pages_project_depth on public.ops_project_ia_pages(project_id, depth, sort_order);
+create index if not exists idx_ops_project_ia_pages_parent on public.ops_project_ia_pages(parent_id);
+create index if not exists idx_ops_project_ia_pages_route on public.ops_project_ia_pages(project_id, route);
+
+create table if not exists public.ops_project_user_flows (
+  id text primary key,
+  project_id text not null references public.ops_projects(id) on delete cascade,
+  title text not null,
+  actor_role_id text,
+  status text not null check (status in ('draft', 'reviewing', 'approved', 'archived')) default 'draft',
+  source text not null check (source in ('idea', 'github', 'manual', 'ai')) default 'github',
+  sort_order integer not null default 0,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_ops_project_user_flows_project on public.ops_project_user_flows(project_id, sort_order);
+create index if not exists idx_ops_project_user_flows_status on public.ops_project_user_flows(status);
+
+create table if not exists public.ops_project_user_flow_steps (
+  id text primary key,
+  project_id text not null references public.ops_projects(id) on delete cascade,
+  flow_id text not null references public.ops_project_user_flows(id) on delete cascade,
+  page_id text references public.ops_project_ia_pages(id) on delete set null,
+  action text not null,
+  system_response text not null default '',
+  next_step_ids jsonb not null default '[]'::jsonb,
+  linked_specification_ids jsonb not null default '[]'::jsonb,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_ops_project_user_flow_steps_project on public.ops_project_user_flow_steps(project_id, sort_order);
+create index if not exists idx_ops_project_user_flow_steps_flow on public.ops_project_user_flow_steps(flow_id, sort_order);
+create index if not exists idx_ops_project_user_flow_steps_page on public.ops_project_user_flow_steps(page_id);
+
+create table if not exists public.ops_project_wireframe_blocks (
+  id text primary key,
+  project_id text not null references public.ops_projects(id) on delete cascade,
+  page_id text not null references public.ops_project_ia_pages(id) on delete cascade,
+  section_name text not null,
+  layout_type text not null check (layout_type in ('hero', 'list', 'form', 'table', 'kanban', 'canvas', 'modal', 'sidebar', 'chart', 'custom')) default 'custom',
+  content_purpose text not null default '',
+  linked_specification_ids jsonb not null default '[]'::jsonb,
+  evidence_ids jsonb not null default '[]'::jsonb,
+  sort_order integer not null default 0,
+  source text not null check (source in ('idea', 'github', 'manual', 'ai')) default 'github',
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_ops_project_wireframe_blocks_project on public.ops_project_wireframe_blocks(project_id, sort_order);
+create index if not exists idx_ops_project_wireframe_blocks_page on public.ops_project_wireframe_blocks(page_id, sort_order);
+
+create table if not exists public.ops_project_architecture_nodes (
+  id text primary key,
+  project_id text not null references public.ops_projects(id) on delete cascade,
+  kind text not null check (kind in ('frontend', 'api', 'service', 'database', 'storage', 'job', 'integration', 'auth', 'deploy', 'agent')),
+  label text not null,
+  description text not null default '',
+  code_refs jsonb not null default '[]'::jsonb,
+  api_links jsonb not null default '[]'::jsonb,
+  evidence_ids jsonb not null default '[]'::jsonb,
+  source text not null check (source in ('github-analysis', 'manual', 'ai-suggestion')) default 'github-analysis',
+  confidence numeric(4,3) check (confidence is null or (confidence >= 0 and confidence <= 1)),
+  sort_order integer not null default 0,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_ops_project_architecture_nodes_project on public.ops_project_architecture_nodes(project_id, sort_order);
+create index if not exists idx_ops_project_architecture_nodes_kind on public.ops_project_architecture_nodes(project_id, kind);
+
+create table if not exists public.ops_project_github_evidence (
+  id text primary key,
+  project_id text not null references public.ops_projects(id) on delete cascade,
+  repo text not null,
+  branch text not null,
+  path text not null,
+  evidence_type text not null check (evidence_type in ('route', 'component', 'api', 'service', 'schema', 'job', 'docs', 'config', 'auth')),
+  summary text not null default '',
+  imports jsonb not null default '[]'::jsonb,
+  api_calls jsonb not null default '[]'::jsonb,
+  headings jsonb not null default '[]'::jsonb,
+  confidence numeric(4,3) not null default 0.750 check (confidence >= 0 and confidence <= 1),
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create unique index if not exists idx_ops_project_github_evidence_project_path on public.ops_project_github_evidence(project_id, path);
+create index if not exists idx_ops_project_github_evidence_type on public.ops_project_github_evidence(project_id, evidence_type);
+create index if not exists idx_ops_project_github_evidence_repo on public.ops_project_github_evidence(repo, branch);
+
+create table if not exists public.ops_project_ai_suggestions (
+  id uuid primary key default gen_random_uuid(),
+  project_id text not null references public.ops_projects(id) on delete cascade,
+  target_type text not null check (target_type in ('prd', 'requirement', 'feature', 'specification', 'ia-page', 'user-flow', 'wireframe', 'architecture', 'canvas', 'agent-task')),
+  action text not null check (action in ('create', 'update', 'delete', 'link')),
+  proposed_value jsonb not null default '{}'::jsonb,
+  rationale text not null default '',
+  evidence_ids jsonb not null default '[]'::jsonb,
+  status text not null check (status in ('pending', 'approved', 'rejected')) default 'pending',
+  created_by text not null default 'ai',
+  created_at timestamptz not null default timezone('utc', now()),
+  decided_at timestamptz,
+  decided_by text
+);
+
+create index if not exists idx_ops_project_ai_suggestions_project_status on public.ops_project_ai_suggestions(project_id, status, created_at desc);
+create index if not exists idx_ops_project_ai_suggestions_target on public.ops_project_ai_suggestions(project_id, target_type);
+
+create table if not exists public.ops_project_exports (
+  id uuid primary key default gen_random_uuid(),
+  project_id text not null references public.ops_projects(id) on delete cascade,
+  export_type text not null check (export_type in ('prd', 'specifications', 'ia', 'user-flow', 'architecture', 'agent-brief', 'canvas')),
+  format text not null check (format in ('md', 'txt', 'png', 'mermaid', 'xlsx', 'json')),
+  filename text not null,
+  payload jsonb not null default '{}'::jsonb,
+  artifact_path text,
+  created_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists idx_ops_project_exports_project_created on public.ops_project_exports(project_id, created_at desc);
+create index if not exists idx_ops_project_exports_type on public.ops_project_exports(project_id, export_type, format);
+
 create table if not exists public.ops_sync_state (
   key text primary key,
   value text,
@@ -262,6 +504,20 @@ alter table public.ops_sync_requests enable row level security;
 alter table public.ops_agents enable row level security;
 alter table public.ops_agent_runs enable row level security;
 alter table public.ops_ai_reviews enable row level security;
+alter table public.ops_project_canvases enable row level security;
+alter table public.ops_project_planning_documents enable row level security;
+alter table public.ops_project_prds enable row level security;
+alter table public.ops_project_requirements enable row level security;
+alter table public.ops_project_features enable row level security;
+alter table public.ops_project_specifications enable row level security;
+alter table public.ops_project_ia_pages enable row level security;
+alter table public.ops_project_user_flows enable row level security;
+alter table public.ops_project_user_flow_steps enable row level security;
+alter table public.ops_project_wireframe_blocks enable row level security;
+alter table public.ops_project_architecture_nodes enable row level security;
+alter table public.ops_project_github_evidence enable row level security;
+alter table public.ops_project_ai_suggestions enable row level security;
+alter table public.ops_project_exports enable row level security;
 alter table public.ops_sync_state enable row level security;
 alter table public.ops_sync_runs enable row level security;
 

@@ -23,6 +23,9 @@
 # misc
 .DS_Store
 *.pem
+tmp/
+apps/ops-api/dist/
+supabase/.temp/
 
 # debug
 npm-debug.log*
@@ -40,3 +43,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env*.local

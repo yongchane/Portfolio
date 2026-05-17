@@ -1,0 +1,3441 @@
+{
+  "portfolio": {
+    "projectId": "portfolio",
+    "planning": {
+      "id": "planning-portfolio",
+      "projectId": "portfolio",
+      "source": "github",
+      "prd": {
+        "overview": "애옹 작업, 프로젝트 상태, 문서/릴리즈를 한곳에서 관리하기 위한 개인 운영 콘솔",
+        "goals": [
+          "Create a Manyfast-style planning document from the existing implementation.",
+          "Keep IA, specifications, architecture, and GitHub evidence traceable.",
+          "Support canvas-based project development and AI agent handoff."
+        ],
+        "targetUsers": [
+          {
+            "id": "role-operator",
+            "name": "Project operator",
+            "description": "Uses the ops console to understand, plan, and manage projects."
+          },
+          {
+            "id": "role-developer",
+            "name": "Developer / AI agent",
+            "description": "Uses evidence-backed specs and architecture to safely modify code."
+          }
+        ],
+        "coreValues": [
+          "Code-backed planning",
+          "Traceable IA and specs",
+          "Approval-based AI execution"
+        ],
+        "scenarios": [
+          "Analyze an existing GitHub repo into planning artifacts.",
+          "Edit IA/specs on a Figma-style canvas.",
+          "Export implementation briefs for humans or agents."
+        ],
+        "successMetrics": [
+          "182 files analyzed",
+          "8 IA pages generated",
+          "7 architecture nodes generated",
+          "182 evidence items generated"
+        ],
+        "risks": [
+          "GitHub analysis may miss runtime-only behavior.",
+          "Route-only IA can under-represent product intent until specs are reviewed."
+        ],
+        "openQuestions": [
+          "Which generated specs should become implementation tasks first?",
+          "Which AI suggestions should require explicit approval?"
+        ]
+      },
+      "requirements": [
+        {
+          "id": "req-product-navigation",
+          "title": "Product navigation and page structure",
+          "description": "Manyfast-style IA should explain how users move through the product pages.",
+          "priority": "high",
+          "status": "doing"
+        },
+        {
+          "id": "req-feature-specification",
+          "title": "Feature specification directory",
+          "description": "Requirements, features, and detailed specifications should be traceable to IA pages.",
+          "priority": "high",
+          "status": "todo"
+        },
+        {
+          "id": "req-system-architecture",
+          "title": "Evidence-backed system architecture",
+          "description": "API, service, storage, jobs, auth, and deployment boundaries should be visible with code evidence.",
+          "priority": "high",
+          "status": "doing"
+        },
+        {
+          "id": "req-github-evidence",
+          "title": "GitHub evidence and implementation traceability",
+          "description": "Planning artifacts should link back to yongchane/Portfolio files, imports, docs, and API routes.",
+          "priority": "high",
+          "status": "doing"
+        }
+      ],
+      "features": [
+        {
+          "id": "feature-ia-pages",
+          "requirementId": "req-product-navigation",
+          "title": "IA page hierarchy",
+          "description": "Render product pages as depth-based IA items linked to specs and evidence.",
+          "userRoleIds": [
+            "role-operator",
+            "role-developer"
+          ],
+          "status": "doing"
+        },
+        {
+          "id": "feature-spec-directory",
+          "requirementId": "req-feature-specification",
+          "title": "Specification directory",
+          "description": "Keep Requirement -> Feature -> Specification relationships separate from canvas layout.",
+          "userRoleIds": [
+            "role-operator",
+            "role-developer"
+          ],
+          "status": "todo"
+        },
+        {
+          "id": "feature-architecture-graph",
+          "requirementId": "req-system-architecture",
+          "title": "Architecture graph",
+          "description": "Show implementation architecture as a graph while preserving code evidence.",
+          "userRoleIds": [
+            "role-developer"
+          ],
+          "status": "doing"
+        }
+      ],
+      "specifications": [
+        {
+          "id": "spec-item-page-behavior",
+          "featureId": "feature-ia-pages",
+          "title": "Home page behavior",
+          "behavior": "User can navigate to / and complete the page's primary task.",
+          "acceptanceCriteria": [
+            "Page has a clear purpose.",
+            "Page is linked to at least one feature or planning item.",
+            "Page includes GitHub evidence when inferred from code."
+          ],
+          "edgeCases": [
+            "Route may be dynamic.",
+            "Source files may not contain enough content for high-confidence analysis."
+          ],
+          "linkedPageIds": [
+            "ia-item"
+          ],
+          "linkedApiIds": [],
+          "evidenceIds": [
+            "evidence-36-app-page-tsx"
+          ]
+        },
+        {
+          "id": "spec-ops-page-behavior",
+          "featureId": "feature-ia-pages",
+          "title": "Ops page behavior",
+          "behavior": "User can navigate to /ops and complete the page's primary task.",
+          "acceptanceCriteria": [
+            "Page has a clear purpose.",
+            "Page is linked to at least one feature or planning item.",
+            "Page includes GitHub evidence when inferred from code."
+          ],
+          "edgeCases": [
+            "Route may be dynamic.",
+            "Source files may not contain enough content for high-confidence analysis."
+          ],
+          "linkedPageIds": [
+            "ia-ops"
+          ],
+          "linkedApiIds": [],
+          "evidenceIds": [
+            "evidence-32-app-ops-page-tsx"
+          ]
+        },
+        {
+          "id": "spec-ops-docs-page-behavior",
+          "featureId": "feature-ia-pages",
+          "title": "Docs page behavior",
+          "behavior": "User can navigate to /ops/docs and complete the page's primary task.",
+          "acceptanceCriteria": [
+            "Page has a clear purpose.",
+            "Page is linked to at least one feature or planning item.",
+            "Page includes GitHub evidence when inferred from code."
+          ],
+          "edgeCases": [
+            "Route may be dynamic.",
+            "Source files may not contain enough content for high-confidence analysis."
+          ],
+          "linkedPageIds": [
+            "ia-ops-docs"
+          ],
+          "linkedApiIds": [],
+          "evidenceIds": [
+            "evidence-29-app-ops-docs-page-tsx"
+          ]
+        },
+        {
+          "id": "spec-ops-macmini-page-behavior",
+          "featureId": "feature-ia-pages",
+          "title": "Macmini page behavior",
+          "behavior": "User can navigate to /ops/macmini and complete the page's primary task.",
+          "acceptanceCriteria": [
+            "Page has a clear purpose.",
+            "Page is linked to at least one feature or planning item.",
+            "Page includes GitHub evidence when inferred from code."
+          ],
+          "edgeCases": [
+            "Route may be dynamic.",
+            "Source files may not contain enough content for high-confidence analysis."
+          ],
+          "linkedPageIds": [
+            "ia-ops-macmini"
+          ],
+          "linkedApiIds": [],
+          "evidenceIds": [
+            "evidence-30-app-ops-macmini-page-tsx"
+          ]
+        },
+        {
+          "id": "spec-ops-openclaw-page-behavior",
+          "featureId": "feature-ia-pages",
+          "title": "Openclaw page behavior",
+          "behavior": "User can navigate to /ops/openclaw and complete the page's primary task.",
+          "acceptanceCriteria": [
+            "Page has a clear purpose.",
+            "Page is linked to at least one feature or planning item.",
+            "Page includes GitHub evidence when inferred from code."
+          ],
+          "edgeCases": [
+            "Route may be dynamic.",
+            "Source files may not contain enough content for high-confidence analysis."
+          ],
+          "linkedPageIds": [
+            "ia-ops-openclaw"
+          ],
+          "linkedApiIds": [],
+          "evidenceIds": [
+            "evidence-31-app-ops-openclaw-page-tsx"
+          ]
+        },
+        {
+          "id": "spec-ops-projects-page-behavior",
+          "featureId": "feature-ia-pages",
+          "title": "Projects page behavior",
+          "behavior": "User can navigate to /ops/projects and complete the page's primary task.",
+          "acceptanceCriteria": [
+            "Page has a clear purpose.",
+            "Page is linked to at least one feature or planning item.",
+            "Page includes GitHub evidence when inferred from code."
+          ],
+          "edgeCases": [
+            "Route may be dynamic.",
+            "Source files may not contain enough content for high-confidence analysis."
+          ],
+          "linkedPageIds": [
+            "ia-ops-projects"
+          ],
+          "linkedApiIds": [],
+          "evidenceIds": [
+            "evidence-35-app-ops-projects-page-tsx"
+          ]
+        },
+        {
+          "id": "spec-ops-projects-project-id-page-behavior",
+          "featureId": "feature-ia-pages",
+          "title": "ProjectId page behavior",
+          "behavior": "User can navigate to /ops/projects/[projectId] and complete the page's primary task.",
+          "acceptanceCriteria": [
+            "Page has a clear purpose.",
+            "Page is linked to at least one feature or planning item.",
+            "Page includes GitHub evidence when inferred from code."
+          ],
+          "edgeCases": [
+            "Route may be dynamic.",
+            "Source files may not contain enough content for high-confidence analysis."
+          ],
+          "linkedPageIds": [
+            "ia-ops-projects-project-id"
+          ],
+          "linkedApiIds": [],
+          "evidenceIds": [
+            "evidence-33-app-ops-projects-project-id-page-tsx"
+          ]
+        },
+        {
+          "id": "spec-ops-projects-new-page-behavior",
+          "featureId": "feature-ia-pages",
+          "title": "New page behavior",
+          "behavior": "User can navigate to /ops/projects/new and complete the page's primary task.",
+          "acceptanceCriteria": [
+            "Page has a clear purpose.",
+            "Page is linked to at least one feature or planning item.",
+            "Page includes GitHub evidence when inferred from code."
+          ],
+          "edgeCases": [
+            "Route may be dynamic.",
+            "Source files may not contain enough content for high-confidence analysis."
+          ],
+          "linkedPageIds": [
+            "ia-ops-projects-new"
+          ],
+          "linkedApiIds": [],
+          "evidenceIds": [
+            "evidence-34-app-ops-projects-new-page-tsx"
+          ]
+        },
+        {
+          "id": "spec-arch-analysis-components-architecture-contract",
+          "featureId": "feature-architecture-graph",
+          "title": "UI Components architecture contract",
+          "behavior": "UI Components should be represented as a durable architecture item with code evidence.",
+          "acceptanceCriteria": [
+            "Architecture node has implementation evidence.",
+            "Architecture node is visually linked on the canvas.",
+            "Architecture node can be exported into implementation briefs."
+          ],
+          "edgeCases": [
+            "Generated groups may hide important file-level details."
+          ],
+          "linkedPageIds": [],
+          "linkedApiIds": [
+            "/api/ops/notes-version",
+            "/api/ops/auth",
+            "/api/ops/auth",
+            "/api/ops/agent-runs",
+            "/api/ops/projects",
+            "/api/ops/projects/${projectId}/canvas",
+            "/api/ops/projects/${projectId}/canvas/export",
+            "/api/ops/tasks/${activeTask.id}"
+          ],
+          "evidenceIds": [
+            "evidence-55-components-about-tsx",
+            "evidence-56-components-admin-console-tsx",
+            "evidence-57-components-awards-tsx",
+            "evidence-58-components-contact-tsx",
+            "evidence-59-components-experience-tsx",
+            "evidence-60-components-hero-tsx",
+            "evidence-61-components-navigation-tsx",
+            "evidence-62-components-projects-tsx"
+          ]
+        },
+        {
+          "id": "spec-arch-analysis-api-architecture-contract",
+          "featureId": "feature-architecture-graph",
+          "title": "API Boundary architecture contract",
+          "behavior": "API Boundary should be represented as a durable architecture item with code evidence.",
+          "acceptanceCriteria": [
+            "Architecture node has implementation evidence.",
+            "Architecture node is visually linked on the canvas.",
+            "Architecture node can be exported into implementation briefs."
+          ],
+          "edgeCases": [
+            "Generated groups may hide important file-level details."
+          ],
+          "linkedPageIds": [],
+          "linkedApiIds": [],
+          "evidenceIds": [
+            "evidence-5-app-api-ops-agent-runs-route-ts",
+            "evidence-6-app-api-ops-agents-route-ts",
+            "evidence-7-app-api-ops-ai-reviews-route-ts",
+            "evidence-8-app-api-ops-auth-route-ts",
+            "evidence-9-app-api-ops-github-repositories-owner-repo-content-route-ts",
+            "evidence-10-app-api-ops-github-repositories-owner-repo-tree-route-ts",
+            "evidence-11-app-api-ops-host-status-route-ts",
+            "evidence-12-app-api-ops-ingest-route-ts"
+          ]
+        },
+        {
+          "id": "spec-arch-analysis-services-architecture-contract",
+          "featureId": "feature-architecture-graph",
+          "title": "Domain Services architecture contract",
+          "behavior": "Domain Services should be represented as a durable architecture item with code evidence.",
+          "acceptanceCriteria": [
+            "Architecture node has implementation evidence.",
+            "Architecture node is visually linked on the canvas.",
+            "Architecture node can be exported into implementation briefs."
+          ],
+          "edgeCases": [
+            "Generated groups may hide important file-level details."
+          ],
+          "linkedPageIds": [],
+          "linkedApiIds": [],
+          "evidenceIds": [
+            "evidence-112-lib-ops-adapters-supabase-test-ts",
+            "evidence-113-lib-ops-adapters-supabase-ts",
+            "evidence-114-lib-ops-artifacts-ts",
+            "evidence-115-lib-ops-auth-ts",
+            "evidence-116-lib-ops-automation-ts",
+            "evidence-117-lib-ops-data-ts",
+            "evidence-118-lib-ops-github-live-ts",
+            "evidence-121-lib-ops-ingest-ts"
+          ]
+        },
+        {
+          "id": "spec-arch-analysis-storage-architecture-contract",
+          "featureId": "feature-architecture-graph",
+          "title": "Storage / Schema architecture contract",
+          "behavior": "Storage / Schema should be represented as a durable architecture item with code evidence.",
+          "acceptanceCriteria": [
+            "Architecture node has implementation evidence.",
+            "Architecture node is visually linked on the canvas.",
+            "Architecture node can be exported into implementation briefs."
+          ],
+          "edgeCases": [
+            "Generated groups may hide important file-level details."
+          ],
+          "linkedPageIds": [],
+          "linkedApiIds": [],
+          "evidenceIds": [
+            "evidence-87-data-ops-automation-status-json",
+            "evidence-88-data-ops-github-cache-json",
+            "evidence-89-data-ops-notes-export-json",
+            "evidence-90-data-ops-project-canvas-json",
+            "evidence-91-data-ops-projects-json",
+            "evidence-92-data-ops-tasks-json",
+            "evidence-173-supabase-ops-runtime-missing-tables-sql",
+            "evidence-174-supabase-ops-schema-sql"
+          ]
+        },
+        {
+          "id": "spec-arch-analysis-jobs-architecture-contract",
+          "featureId": "feature-architecture-graph",
+          "title": "Jobs / Automation architecture contract",
+          "behavior": "Jobs / Automation should be represented as a durable architecture item with code evidence.",
+          "acceptanceCriteria": [
+            "Architecture node has implementation evidence.",
+            "Architecture node is visually linked on the canvas.",
+            "Architecture node can be exported into implementation briefs."
+          ],
+          "edgeCases": [
+            "Generated groups may hide important file-level details."
+          ],
+          "linkedPageIds": [],
+          "linkedApiIds": [
+            "http://127.0.0.1:3000/api/ops/ingest"
+          ],
+          "evidenceIds": [
+            "evidence-144-ops-cron-portfolio-ops-watch-cron-example",
+            "evidence-145-ops-macos-install-launchagent-sh",
+            "evidence-146-ops-macos-portfolio-ops-watch-plist-template",
+            "evidence-163-scripts-compress-images-js",
+            "evidence-164-scripts-export-ops-notes-mjs",
+            "evidence-165-scripts-ingest-ops-work-result-mjs",
+            "evidence-166-scripts-ops-automation-mjs",
+            "evidence-167-scripts-ops-mac-mini-worker-mjs"
+          ]
+        },
+        {
+          "id": "spec-arch-analysis-security-architecture-contract",
+          "featureId": "feature-architecture-graph",
+          "title": "Security / Auth architecture contract",
+          "behavior": "Security / Auth should be represented as a durable architecture item with code evidence.",
+          "acceptanceCriteria": [
+            "Architecture node has implementation evidence.",
+            "Architecture node is visually linked on the canvas.",
+            "Architecture node can be exported into implementation briefs."
+          ],
+          "edgeCases": [
+            "Generated groups may hide important file-level details."
+          ],
+          "linkedPageIds": [],
+          "linkedApiIds": [],
+          "evidenceIds": [
+            "evidence-8-app-api-ops-auth-route-ts",
+            "evidence-41-apps-ops-api-src-guards-ops-api-key-guard-ts",
+            "evidence-67-components-ops-auth-access-gate-tsx",
+            "evidence-115-lib-ops-auth-ts"
+          ]
+        },
+        {
+          "id": "spec-arch-analysis-deployment-architecture-contract",
+          "featureId": "feature-architecture-graph",
+          "title": "Config / Deploy architecture contract",
+          "behavior": "Config / Deploy should be represented as a durable architecture item with code evidence.",
+          "acceptanceCriteria": [
+            "Architecture node has implementation evidence.",
+            "Architecture node is visually linked on the canvas.",
+            "Architecture node can be exported into implementation briefs."
+          ],
+          "edgeCases": [
+            "Generated groups may hide important file-level details."
+          ],
+          "linkedPageIds": [],
+          "linkedApiIds": [],
+          "evidenceIds": [
+            "evidence-54-apps-ops-api-tsconfig-json",
+            "evidence-111-eslint-config-mjs",
+            "evidence-143-next-config-ts",
+            "evidence-148-package-json",
+            "evidence-179-tsconfig-json",
+            "evidence-180-tsconfig-tsbuildinfo",
+            "evidence-182-vercel-json"
+          ]
+        }
+      ],
+      "iaPages": [
+        {
+          "id": "ia-item",
+          "projectId": "portfolio",
+          "title": "Home",
+          "route": "/",
+          "depth": 1,
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "linkedSpecificationIds": [
+            "spec-item-page-behavior"
+          ],
+          "linkedUserFlowStepIds": [
+            "flow-step-item-visit"
+          ],
+          "linkedWireframeBlockIds": [
+            "wire-item-main"
+          ],
+          "evidenceIds": [
+            "evidence-36-app-page-tsx"
+          ],
+          "source": "github-analysis",
+          "confidence": 0.97
+        },
+        {
+          "id": "ia-ops",
+          "projectId": "portfolio",
+          "title": "Ops",
+          "route": "/ops",
+          "depth": 1,
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "linkedSpecificationIds": [
+            "spec-ops-page-behavior"
+          ],
+          "linkedUserFlowStepIds": [
+            "flow-step-ops-visit"
+          ],
+          "linkedWireframeBlockIds": [
+            "wire-ops-main"
+          ],
+          "evidenceIds": [
+            "evidence-32-app-ops-page-tsx"
+          ],
+          "source": "github-analysis",
+          "confidence": 0.97
+        },
+        {
+          "id": "ia-ops-docs",
+          "projectId": "portfolio",
+          "title": "Docs",
+          "route": "/ops/docs",
+          "depth": 2,
+          "parentId": "ia-ops",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "linkedSpecificationIds": [
+            "spec-ops-docs-page-behavior"
+          ],
+          "linkedUserFlowStepIds": [
+            "flow-step-ops-docs-visit"
+          ],
+          "linkedWireframeBlockIds": [
+            "wire-ops-docs-main"
+          ],
+          "evidenceIds": [
+            "evidence-29-app-ops-docs-page-tsx"
+          ],
+          "source": "github-analysis",
+          "confidence": 0.97
+        },
+        {
+          "id": "ia-ops-macmini",
+          "projectId": "portfolio",
+          "title": "Macmini",
+          "route": "/ops/macmini",
+          "depth": 2,
+          "parentId": "ia-ops",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "linkedSpecificationIds": [
+            "spec-ops-macmini-page-behavior"
+          ],
+          "linkedUserFlowStepIds": [
+            "flow-step-ops-macmini-visit"
+          ],
+          "linkedWireframeBlockIds": [
+            "wire-ops-macmini-main"
+          ],
+          "evidenceIds": [
+            "evidence-30-app-ops-macmini-page-tsx"
+          ],
+          "source": "github-analysis",
+          "confidence": 0.97
+        },
+        {
+          "id": "ia-ops-openclaw",
+          "projectId": "portfolio",
+          "title": "Openclaw",
+          "route": "/ops/openclaw",
+          "depth": 2,
+          "parentId": "ia-ops",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "linkedSpecificationIds": [
+            "spec-ops-openclaw-page-behavior"
+          ],
+          "linkedUserFlowStepIds": [
+            "flow-step-ops-openclaw-visit"
+          ],
+          "linkedWireframeBlockIds": [
+            "wire-ops-openclaw-main"
+          ],
+          "evidenceIds": [
+            "evidence-31-app-ops-openclaw-page-tsx"
+          ],
+          "source": "github-analysis",
+          "confidence": 0.97
+        },
+        {
+          "id": "ia-ops-projects",
+          "projectId": "portfolio",
+          "title": "Projects",
+          "route": "/ops/projects",
+          "depth": 2,
+          "parentId": "ia-ops",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "linkedSpecificationIds": [
+            "spec-ops-projects-page-behavior"
+          ],
+          "linkedUserFlowStepIds": [
+            "flow-step-ops-projects-visit"
+          ],
+          "linkedWireframeBlockIds": [
+            "wire-ops-projects-main"
+          ],
+          "evidenceIds": [
+            "evidence-35-app-ops-projects-page-tsx"
+          ],
+          "source": "github-analysis",
+          "confidence": 0.97
+        },
+        {
+          "id": "ia-ops-projects-project-id",
+          "projectId": "portfolio",
+          "title": "ProjectId",
+          "route": "/ops/projects/[projectId]",
+          "depth": 3,
+          "parentId": "ia-ops-projects",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "linkedSpecificationIds": [
+            "spec-ops-projects-project-id-page-behavior"
+          ],
+          "linkedUserFlowStepIds": [
+            "flow-step-ops-projects-project-id-visit"
+          ],
+          "linkedWireframeBlockIds": [
+            "wire-ops-projects-project-id-main"
+          ],
+          "evidenceIds": [
+            "evidence-33-app-ops-projects-project-id-page-tsx"
+          ],
+          "source": "github-analysis",
+          "confidence": 0.97
+        },
+        {
+          "id": "ia-ops-projects-new",
+          "projectId": "portfolio",
+          "title": "New",
+          "route": "/ops/projects/new",
+          "depth": 3,
+          "parentId": "ia-ops-projects",
+          "description": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+          "linkedSpecificationIds": [
+            "spec-ops-projects-new-page-behavior"
+          ],
+          "linkedUserFlowStepIds": [
+            "flow-step-ops-projects-new-visit"
+          ],
+          "linkedWireframeBlockIds": [
+            "wire-ops-projects-new-main"
+          ],
+          "evidenceIds": [
+            "evidence-34-app-ops-projects-new-page-tsx"
+          ],
+          "source": "github-analysis",
+          "confidence": 0.97
+        }
+      ],
+      "userFlows": [
+        {
+          "id": "flow-primary-project-journey",
+          "title": "Primary project journey",
+          "actorRoleId": "role-operator",
+          "steps": [
+            {
+              "id": "flow-step-item-visit",
+              "pageId": "ia-item",
+              "action": "Open Home",
+              "systemResponse": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+              "nextStepIds": [
+                "flow-step-ops-visit"
+              ],
+              "linkedSpecificationIds": [
+                "spec-item-page-behavior"
+              ]
+            },
+            {
+              "id": "flow-step-ops-visit",
+              "pageId": "ia-ops",
+              "action": "Navigate to Ops",
+              "systemResponse": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+              "nextStepIds": [
+                "flow-step-ops-docs-visit"
+              ],
+              "linkedSpecificationIds": [
+                "spec-ops-page-behavior"
+              ]
+            },
+            {
+              "id": "flow-step-ops-docs-visit",
+              "pageId": "ia-ops-docs",
+              "action": "Navigate to Docs",
+              "systemResponse": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+              "nextStepIds": [
+                "flow-step-ops-macmini-visit"
+              ],
+              "linkedSpecificationIds": [
+                "spec-ops-docs-page-behavior"
+              ]
+            },
+            {
+              "id": "flow-step-ops-macmini-visit",
+              "pageId": "ia-ops-macmini",
+              "action": "Navigate to Macmini",
+              "systemResponse": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+              "nextStepIds": [
+                "flow-step-ops-openclaw-visit"
+              ],
+              "linkedSpecificationIds": [
+                "spec-ops-macmini-page-behavior"
+              ]
+            },
+            {
+              "id": "flow-step-ops-openclaw-visit",
+              "pageId": "ia-ops-openclaw",
+              "action": "Navigate to Openclaw",
+              "systemResponse": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+              "nextStepIds": [
+                "flow-step-ops-projects-visit"
+              ],
+              "linkedSpecificationIds": [
+                "spec-ops-openclaw-page-behavior"
+              ]
+            },
+            {
+              "id": "flow-step-ops-projects-visit",
+              "pageId": "ia-ops-projects",
+              "action": "Navigate to Projects",
+              "systemResponse": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+              "nextStepIds": [
+                "flow-step-ops-projects-project-id-visit"
+              ],
+              "linkedSpecificationIds": [
+                "spec-ops-projects-page-behavior"
+              ]
+            },
+            {
+              "id": "flow-step-ops-projects-project-id-visit",
+              "pageId": "ia-ops-projects-project-id",
+              "action": "Navigate to ProjectId",
+              "systemResponse": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+              "nextStepIds": [
+                "flow-step-ops-projects-new-visit"
+              ],
+              "linkedSpecificationIds": [
+                "spec-ops-projects-project-id-page-behavior"
+              ]
+            },
+            {
+              "id": "flow-step-ops-projects-new-visit",
+              "pageId": "ia-ops-projects-new",
+              "action": "Navigate to New",
+              "systemResponse": "사용자가 접근하는 Next.js 화면 route입니다. IA의 1차 화면 노드로 사용합니다.",
+              "nextStepIds": [],
+              "linkedSpecificationIds": [
+                "spec-ops-projects-new-page-behavior"
+              ]
+            }
+          ]
+        }
+      ],
+      "wireframes": [
+        {
+          "id": "wire-item-main",
+          "pageId": "ia-item",
+          "sectionName": "Home main content",
+          "layoutType": "custom",
+          "contentPurpose": "Represent the primary content and actions for Home.",
+          "linkedSpecificationIds": [
+            "spec-item-page-behavior"
+          ],
+          "evidenceIds": [
+            "evidence-36-app-page-tsx"
+          ],
+          "order": 1
+        },
+        {
+          "id": "wire-ops-main",
+          "pageId": "ia-ops",
+          "sectionName": "Ops main content",
+          "layoutType": "custom",
+          "contentPurpose": "Represent the primary content and actions for Ops.",
+          "linkedSpecificationIds": [
+            "spec-ops-page-behavior"
+          ],
+          "evidenceIds": [
+            "evidence-32-app-ops-page-tsx"
+          ],
+          "order": 2
+        },
+        {
+          "id": "wire-ops-docs-main",
+          "pageId": "ia-ops-docs",
+          "sectionName": "Docs main content",
+          "layoutType": "custom",
+          "contentPurpose": "Represent the primary content and actions for Docs.",
+          "linkedSpecificationIds": [
+            "spec-ops-docs-page-behavior"
+          ],
+          "evidenceIds": [
+            "evidence-29-app-ops-docs-page-tsx"
+          ],
+          "order": 3
+        },
+        {
+          "id": "wire-ops-macmini-main",
+          "pageId": "ia-ops-macmini",
+          "sectionName": "Macmini main content",
+          "layoutType": "custom",
+          "contentPurpose": "Represent the primary content and actions for Macmini.",
+          "linkedSpecificationIds": [
+            "spec-ops-macmini-page-behavior"
+          ],
+          "evidenceIds": [
+            "evidence-30-app-ops-macmini-page-tsx"
+          ],
+          "order": 4
+        },
+        {
+          "id": "wire-ops-openclaw-main",
+          "pageId": "ia-ops-openclaw",
+          "sectionName": "Openclaw main content",
+          "layoutType": "custom",
+          "contentPurpose": "Represent the primary content and actions for Openclaw.",
+          "linkedSpecificationIds": [
+            "spec-ops-openclaw-page-behavior"
+          ],
+          "evidenceIds": [
+            "evidence-31-app-ops-openclaw-page-tsx"
+          ],
+          "order": 5
+        },
+        {
+          "id": "wire-ops-projects-main",
+          "pageId": "ia-ops-projects",
+          "sectionName": "Projects main content",
+          "layoutType": "canvas",
+          "contentPurpose": "Represent the primary content and actions for Projects.",
+          "linkedSpecificationIds": [
+            "spec-ops-projects-page-behavior"
+          ],
+          "evidenceIds": [
+            "evidence-35-app-ops-projects-page-tsx"
+          ],
+          "order": 6
+        },
+        {
+          "id": "wire-ops-projects-project-id-main",
+          "pageId": "ia-ops-projects-project-id",
+          "sectionName": "ProjectId main content",
+          "layoutType": "canvas",
+          "contentPurpose": "Represent the primary content and actions for ProjectId.",
+          "linkedSpecificationIds": [
+            "spec-ops-projects-project-id-page-behavior"
+          ],
+          "evidenceIds": [
+            "evidence-33-app-ops-projects-project-id-page-tsx"
+          ],
+          "order": 7
+        },
+        {
+          "id": "wire-ops-projects-new-main",
+          "pageId": "ia-ops-projects-new",
+          "sectionName": "New main content",
+          "layoutType": "canvas",
+          "contentPurpose": "Represent the primary content and actions for New.",
+          "linkedSpecificationIds": [
+            "spec-ops-projects-new-page-behavior"
+          ],
+          "evidenceIds": [
+            "evidence-34-app-ops-projects-new-page-tsx"
+          ],
+          "order": 8
+        }
+      ],
+      "architecture": [
+        {
+          "id": "arch-analysis-components",
+          "projectId": "portfolio",
+          "kind": "frontend",
+          "label": "UI Components",
+          "description": "화면을 구성하는 feature/shared component 계층입니다.",
+          "codeRefs": [
+            "components/About.tsx",
+            "components/AdminConsole.tsx",
+            "components/Awards.tsx",
+            "components/Contact.tsx",
+            "components/Experience.tsx",
+            "components/Hero.tsx",
+            "components/Navigation.tsx",
+            "components/Projects.tsx"
+          ],
+          "apiLinks": [
+            "/api/ops/notes-version",
+            "/api/ops/auth",
+            "/api/ops/auth",
+            "/api/ops/agent-runs",
+            "/api/ops/projects",
+            "/api/ops/projects/${projectId}/canvas",
+            "/api/ops/projects/${projectId}/canvas/export",
+            "/api/ops/tasks/${activeTask.id}"
+          ],
+          "evidenceIds": [
+            "evidence-55-components-about-tsx",
+            "evidence-56-components-admin-console-tsx",
+            "evidence-57-components-awards-tsx",
+            "evidence-58-components-contact-tsx",
+            "evidence-59-components-experience-tsx",
+            "evidence-60-components-hero-tsx",
+            "evidence-61-components-navigation-tsx",
+            "evidence-62-components-projects-tsx"
+          ],
+          "confidence": 0.91,
+          "source": "github-analysis"
+        },
+        {
+          "id": "arch-analysis-api",
+          "projectId": "portfolio",
+          "kind": "api",
+          "label": "API Boundary",
+          "description": "외부 요청과 UI action이 들어오는 endpoint 경계입니다.",
+          "codeRefs": [
+            "app/api/ops/agent-runs/route.ts",
+            "app/api/ops/agents/route.ts",
+            "app/api/ops/ai-reviews/route.ts",
+            "app/api/ops/auth/route.ts",
+            "app/api/ops/github/repositories/[owner]/[repo]/content/route.ts",
+            "app/api/ops/github/repositories/[owner]/[repo]/tree/route.ts",
+            "app/api/ops/host-status/route.ts",
+            "app/api/ops/ingest/route.ts"
+          ],
+          "apiLinks": [],
+          "evidenceIds": [
+            "evidence-5-app-api-ops-agent-runs-route-ts",
+            "evidence-6-app-api-ops-agents-route-ts",
+            "evidence-7-app-api-ops-ai-reviews-route-ts",
+            "evidence-8-app-api-ops-auth-route-ts",
+            "evidence-9-app-api-ops-github-repositories-owner-repo-content-route-ts",
+            "evidence-10-app-api-ops-github-repositories-owner-repo-tree-route-ts",
+            "evidence-11-app-api-ops-host-status-route-ts",
+            "evidence-12-app-api-ops-ingest-route-ts"
+          ],
+          "confidence": 0.91,
+          "source": "github-analysis"
+        },
+        {
+          "id": "arch-analysis-services",
+          "projectId": "portfolio",
+          "kind": "service",
+          "label": "Domain Services",
+          "description": "데이터 로드, mutation, adapter, contract 같은 도메인 책임입니다.",
+          "codeRefs": [
+            "lib/ops/adapters/supabase.test.ts",
+            "lib/ops/adapters/supabase.ts",
+            "lib/ops/artifacts.ts",
+            "lib/ops/auth.ts",
+            "lib/ops/automation.ts",
+            "lib/ops/data.ts",
+            "lib/ops/github-live.ts",
+            "lib/ops/ingest.ts"
+          ],
+          "apiLinks": [],
+          "evidenceIds": [
+            "evidence-112-lib-ops-adapters-supabase-test-ts",
+            "evidence-113-lib-ops-adapters-supabase-ts",
+            "evidence-114-lib-ops-artifacts-ts",
+            "evidence-115-lib-ops-auth-ts",
+            "evidence-116-lib-ops-automation-ts",
+            "evidence-117-lib-ops-data-ts",
+            "evidence-118-lib-ops-github-live-ts",
+            "evidence-121-lib-ops-ingest-ts"
+          ],
+          "confidence": 0.91,
+          "source": "github-analysis"
+        },
+        {
+          "id": "arch-analysis-storage",
+          "projectId": "portfolio",
+          "kind": "storage",
+          "label": "Storage / Schema",
+          "description": "Supabase schema와 local JSON fallback 저장소입니다.",
+          "codeRefs": [
+            "data/ops/automation-status.json",
+            "data/ops/github-cache.json",
+            "data/ops/notes-export.json",
+            "data/ops/project-canvas.json",
+            "data/ops/projects.json",
+            "data/ops/tasks.json",
+            "supabase/ops-runtime-missing-tables.sql",
+            "supabase/ops-schema.sql"
+          ],
+          "apiLinks": [],
+          "evidenceIds": [
+            "evidence-87-data-ops-automation-status-json",
+            "evidence-88-data-ops-github-cache-json",
+            "evidence-89-data-ops-notes-export-json",
+            "evidence-90-data-ops-project-canvas-json",
+            "evidence-91-data-ops-projects-json",
+            "evidence-92-data-ops-tasks-json",
+            "evidence-173-supabase-ops-runtime-missing-tables-sql",
+            "evidence-174-supabase-ops-schema-sql"
+          ],
+          "confidence": 0.91,
+          "source": "github-analysis"
+        },
+        {
+          "id": "arch-analysis-jobs",
+          "projectId": "portfolio",
+          "kind": "job",
+          "label": "Jobs / Automation",
+          "description": "GitHub sync, ingest, cron, worker 같은 백그라운드 실행 흐름입니다.",
+          "codeRefs": [
+            "ops/cron/portfolio-ops-watch.cron.example",
+            "ops/macos/install-launchagent.sh",
+            "ops/macos/portfolio-ops-watch.plist.template",
+            "scripts/compress-images.js",
+            "scripts/export-ops-notes.mjs",
+            "scripts/ingest-ops-work-result.mjs",
+            "scripts/ops-automation.mjs",
+            "scripts/ops-mac-mini-worker.mjs"
+          ],
+          "apiLinks": [
+            "http://127.0.0.1:3000/api/ops/ingest"
+          ],
+          "evidenceIds": [
+            "evidence-144-ops-cron-portfolio-ops-watch-cron-example",
+            "evidence-145-ops-macos-install-launchagent-sh",
+            "evidence-146-ops-macos-portfolio-ops-watch-plist-template",
+            "evidence-163-scripts-compress-images-js",
+            "evidence-164-scripts-export-ops-notes-mjs",
+            "evidence-165-scripts-ingest-ops-work-result-mjs",
+            "evidence-166-scripts-ops-automation-mjs",
+            "evidence-167-scripts-ops-mac-mini-worker-mjs"
+          ],
+          "confidence": 0.91,
+          "source": "github-analysis"
+        },
+        {
+          "id": "arch-analysis-security",
+          "projectId": "portfolio",
+          "kind": "auth",
+          "label": "Security / Auth",
+          "description": "session, same-origin, token scope, approval gate 같은 보호 경계입니다.",
+          "codeRefs": [
+            "app/api/ops/auth/route.ts",
+            "apps/ops-api/src/guards/ops-api-key.guard.ts",
+            "components/ops/auth/AccessGate.tsx",
+            "lib/ops/auth.ts"
+          ],
+          "apiLinks": [],
+          "evidenceIds": [
+            "evidence-8-app-api-ops-auth-route-ts",
+            "evidence-41-apps-ops-api-src-guards-ops-api-key-guard-ts",
+            "evidence-67-components-ops-auth-access-gate-tsx",
+            "evidence-115-lib-ops-auth-ts"
+          ],
+          "confidence": 0.91,
+          "source": "github-analysis"
+        },
+        {
+          "id": "arch-analysis-deployment",
+          "projectId": "portfolio",
+          "kind": "deploy",
+          "label": "Config / Deploy",
+          "description": "빌드, 환경, 배포 설정과 runtime 제약을 판단하는 근거입니다.",
+          "codeRefs": [
+            "apps/ops-api/tsconfig.json",
+            "eslint.config.mjs",
+            "next.config.ts",
+            "package.json",
+            "tsconfig.json",
+            "tsconfig.tsbuildinfo",
+            "vercel.json"
+          ],
+          "apiLinks": [],
+          "evidenceIds": [
+            "evidence-54-apps-ops-api-tsconfig-json",
+            "evidence-111-eslint-config-mjs",
+            "evidence-143-next-config-ts",
+            "evidence-148-package-json",
+            "evidence-179-tsconfig-json",
+            "evidence-180-tsconfig-tsbuildinfo",
+            "evidence-182-vercel-json"
+          ],
+          "confidence": 0.91,
+          "source": "github-analysis"
+        }
+      ],
+      "canvas": {
+        "nodes": [],
+        "edges": [],
+        "summary": {
+          "files": 182,
+          "routes": 8,
+          "layouts": 1,
+          "apiRoutes": 19,
+          "components": 30,
+          "services": 26,
+          "storages": 8,
+          "jobs": 13,
+          "docs": 22,
+          "config": 7,
+          "authFiles": 4,
+          "filesWithContent": 160,
+          "imports": 445,
+          "apiCalls": 30,
+          "docHeadings": 156
+        }
+      },
+      "agentTasks": [
+        {
+          "id": "agent-task-portfolio-planning-review",
+          "projectId": "portfolio",
+          "title": "Review generated planning model",
+          "description": "Validate PRD, specs, IA, architecture, and evidence before implementation.",
+          "linkedSpecificationIds": [
+            "spec-item-page-behavior",
+            "spec-ops-page-behavior",
+            "spec-ops-docs-page-behavior",
+            "spec-ops-macmini-page-behavior",
+            "spec-ops-openclaw-page-behavior",
+            "spec-ops-projects-page-behavior",
+            "spec-ops-projects-project-id-page-behavior",
+            "spec-ops-projects-new-page-behavior"
+          ],
+          "linkedArchitectureIds": [
+            "arch-analysis-components",
+            "arch-analysis-api",
+            "arch-analysis-services",
+            "arch-analysis-storage",
+            "arch-analysis-jobs",
+            "arch-analysis-security",
+            "arch-analysis-deployment"
+          ],
+          "status": "todo"
+        }
+      ],
+      "evidence": [
+        {
+          "id": "evidence-1-github-workflows-ci-yml",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": ".github/workflows/ci.yml",
+          "evidenceType": "config",
+          "summary": "config signal from .github/workflows/ci.yml",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-2-agents-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "AGENTS.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from AGENTS.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [
+            "AGENTS.md — Portfolio coding workflow",
+            "Token-efficient, quality-preserving workflow",
+            "Serena project"
+          ],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-3-customization-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "CUSTOMIZATION.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from CUSTOMIZATION.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [
+            "포트폴리오 커스터마이징 가이드",
+            "1. 기본 정보 수정",
+            "Hero 섹션 (`components/Hero.tsx`)",
+            "About 섹션 (`components/About.tsx`)",
+            "Contact 섹션 (`components/Contact.tsx`)",
+            "2. 기술 스택 수정",
+            "TechStack 섹션 (`components/TechStack.tsx`)",
+            "3. 프로젝트 추가/수정"
+          ],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-4-readme-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "README.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from README.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [
+            "Frontend Developer Portfolio",
+            "프로젝트 개요",
+            "주요 특징",
+            "토스 스타일 디자인",
+            "페이지 구성",
+            "시작하기",
+            "개발 서버 실행",
+            "/ops 노트 자동 연동"
+          ],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-5-app-api-ops-agent-runs-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/agent-runs/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/agent-runs/route.ts",
+          "imports": [
+            "next/server",
+            "@/lib/ops/auth",
+            "@/lib/ops/supabase"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-6-app-api-ops-agents-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/agents/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/agents/route.ts",
+          "imports": [
+            "next/server",
+            "@/lib/ops/auth",
+            "@/lib/ops/supabase",
+            "@/lib/ops/types"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-7-app-api-ops-ai-reviews-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/ai-reviews/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/ai-reviews/route.ts",
+          "imports": [
+            "next/server",
+            "@/lib/ops/auth",
+            "@/lib/ops/supabase",
+            "@/lib/ops/types"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-8-app-api-ops-auth-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/auth/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/auth/route.ts",
+          "imports": [
+            "next/server",
+            "@/lib/ops/auth"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-9-app-api-ops-github-repositories-owner-repo-content-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/github/repositories/[owner]/[repo]/content/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/github/repositories/[owner]/[repo]/content/route.ts",
+          "imports": [
+            "next/server",
+            "@/lib/ops/auth",
+            "@/lib/ops/project-management-contract.mjs",
+            "@/lib/ops/github-live",
+            "@/lib/ops/ops-api-proxy"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-10-app-api-ops-github-repositories-owner-repo-tree-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/github/repositories/[owner]/[repo]/tree/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/github/repositories/[owner]/[repo]/tree/route.ts",
+          "imports": [
+            "next/server",
+            "@/lib/ops/auth"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-11-app-api-ops-host-status-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/host-status/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/host-status/route.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-12-app-api-ops-ingest-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/ingest/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/ingest/route.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-13-app-api-ops-notes-version-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/notes-version/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/notes-version/route.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-14-app-api-ops-openclaw-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/openclaw/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/openclaw/route.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-15-app-api-ops-openclaw-status-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/openclaw-status/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/openclaw-status/route.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-16-app-api-ops-overview-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/overview/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/overview/route.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-17-app-api-ops-projects-id-canvas-export-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/projects/[id]/canvas/export/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/projects/[id]/canvas/export/route.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-18-app-api-ops-projects-id-canvas-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/projects/[id]/canvas/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/projects/[id]/canvas/route.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-19-app-api-ops-projects-id-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/projects/[id]/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/projects/[id]/route.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-20-app-api-ops-projects-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/projects/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/projects/route.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-21-app-api-ops-sync-requests-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/sync-requests/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/sync-requests/route.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-22-app-api-ops-tasks-id-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/tasks/[id]/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/tasks/[id]/route.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-23-app-api-ops-worker-status-route-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/api/ops/worker/status/route.ts",
+          "evidenceType": "api",
+          "summary": "api signal from app/api/ops/worker/status/route.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-24-app-apple-icon-png",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/apple-icon.png",
+          "evidenceType": "config",
+          "summary": "config signal from app/apple-icon.png",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-25-app-favicon-ico",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/favicon.ico",
+          "evidenceType": "config",
+          "summary": "config signal from app/favicon.ico",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-26-app-globals-css",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/globals.css",
+          "evidenceType": "config",
+          "summary": "config signal from app/globals.css",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-27-app-icon-png",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/icon.png",
+          "evidenceType": "config",
+          "summary": "config signal from app/icon.png",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-28-app-layout-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/layout.tsx",
+          "evidenceType": "config",
+          "summary": "config signal from app/layout.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-29-app-ops-docs-page-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/ops/docs/page.tsx",
+          "evidenceType": "route",
+          "summary": "route signal from app/ops/docs/page.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-30-app-ops-macmini-page-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/ops/macmini/page.tsx",
+          "evidenceType": "route",
+          "summary": "route signal from app/ops/macmini/page.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-31-app-ops-openclaw-page-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/ops/openclaw/page.tsx",
+          "evidenceType": "route",
+          "summary": "route signal from app/ops/openclaw/page.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-32-app-ops-page-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/ops/page.tsx",
+          "evidenceType": "route",
+          "summary": "route signal from app/ops/page.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-33-app-ops-projects-project-id-page-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/ops/projects/[projectId]/page.tsx",
+          "evidenceType": "route",
+          "summary": "route signal from app/ops/projects/[projectId]/page.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-34-app-ops-projects-new-page-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/ops/projects/new/page.tsx",
+          "evidenceType": "route",
+          "summary": "route signal from app/ops/projects/new/page.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-35-app-ops-projects-page-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/ops/projects/page.tsx",
+          "evidenceType": "route",
+          "summary": "route signal from app/ops/projects/page.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.9
+        },
+        {
+          "id": "evidence-36-app-page-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/page.tsx",
+          "evidenceType": "config",
+          "summary": "config signal from app/page.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-37-app-sitemap-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "app/sitemap.ts",
+          "evidenceType": "config",
+          "summary": "config signal from app/sitemap.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-38-apps-ops-api-readme-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/README.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from apps/ops-api/README.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [
+            "Ops API"
+          ],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-39-apps-ops-api-src-app-module-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/app.module.ts",
+          "evidenceType": "config",
+          "summary": "config signal from apps/ops-api/src/app.module.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-40-apps-ops-api-src-github-controller-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/github.controller.ts",
+          "evidenceType": "config",
+          "summary": "config signal from apps/ops-api/src/github.controller.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-41-apps-ops-api-src-guards-ops-api-key-guard-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/guards/ops-api-key.guard.ts",
+          "evidenceType": "auth",
+          "summary": "auth signal from apps/ops-api/src/guards/ops-api-key.guard.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-42-apps-ops-api-src-health-controller-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/health.controller.ts",
+          "evidenceType": "config",
+          "summary": "config signal from apps/ops-api/src/health.controller.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-43-apps-ops-api-src-main-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/main.ts",
+          "evidenceType": "config",
+          "summary": "config signal from apps/ops-api/src/main.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-44-apps-ops-api-src-project-canvas-controller-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/project-canvas.controller.ts",
+          "evidenceType": "config",
+          "summary": "config signal from apps/ops-api/src/project-canvas.controller.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-45-apps-ops-api-src-project-planning-controller-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/project-planning.controller.ts",
+          "evidenceType": "config",
+          "summary": "config signal from apps/ops-api/src/project-planning.controller.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-46-apps-ops-api-src-services-canvas-store-service-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/services/canvas-store.service.ts",
+          "evidenceType": "service",
+          "summary": "service signal from apps/ops-api/src/services/canvas-store.service.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-47-apps-ops-api-src-services-contract-service-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/services/contract.service.ts",
+          "evidenceType": "service",
+          "summary": "service signal from apps/ops-api/src/services/contract.service.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-48-apps-ops-api-src-services-github-live-service-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/services/github-live.service.ts",
+          "evidenceType": "service",
+          "summary": "service signal from apps/ops-api/src/services/github-live.service.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-49-apps-ops-api-src-services-local-repo-analysis-service-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/services/local-repo-analysis.service.ts",
+          "evidenceType": "service",
+          "summary": "service signal from apps/ops-api/src/services/local-repo-analysis.service.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-50-apps-ops-api-src-services-ops-data-service-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/services/ops-data.service.ts",
+          "evidenceType": "service",
+          "summary": "service signal from apps/ops-api/src/services/ops-data.service.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-51-apps-ops-api-src-services-planning-generator-service-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/services/planning-generator.service.ts",
+          "evidenceType": "service",
+          "summary": "service signal from apps/ops-api/src/services/planning-generator.service.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-52-apps-ops-api-src-services-planning-store-service-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/services/planning-store.service.ts",
+          "evidenceType": "service",
+          "summary": "service signal from apps/ops-api/src/services/planning-store.service.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-53-apps-ops-api-src-services-repo-root-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/src/services/repo-root.ts",
+          "evidenceType": "service",
+          "summary": "service signal from apps/ops-api/src/services/repo-root.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-54-apps-ops-api-tsconfig-json",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "apps/ops-api/tsconfig.json",
+          "evidenceType": "config",
+          "summary": "config signal from apps/ops-api/tsconfig.json",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-55-components-about-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/About.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/About.tsx",
+          "imports": [
+            "framer-motion",
+            "react-icons/fa"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-56-components-admin-console-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/AdminConsole.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/AdminConsole.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-57-components-awards-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/Awards.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/Awards.tsx",
+          "imports": [
+            "framer-motion",
+            "@/types"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-58-components-contact-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/Contact.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/Contact.tsx",
+          "imports": [
+            "framer-motion"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-59-components-experience-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/Experience.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/Experience.tsx",
+          "imports": [
+            "framer-motion",
+            "react",
+            "next/image",
+            "@/types"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-60-components-hero-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/Hero.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/Hero.tsx",
+          "imports": [
+            "framer-motion"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-61-components-navigation-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/Navigation.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/Navigation.tsx",
+          "imports": [
+            "framer-motion",
+            "react"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-62-components-projects-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/Projects.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/Projects.tsx",
+          "imports": [
+            "framer-motion",
+            "react",
+            "next/image",
+            "@/types"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-63-components-tech-stack-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/TechStack.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/TechStack.tsx",
+          "imports": [
+            "framer-motion",
+            "react",
+            "@/types"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-64-components-ops-ops-console-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/OpsConsole.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/OpsConsole.tsx",
+          "imports": [
+            "react"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-65-components-ops-ops-route-shell-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/OpsRouteShell.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/OpsRouteShell.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-66-components-ops-agents-floating-agent-panel-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/agents/FloatingAgentPanel.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/agents/FloatingAgentPanel.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-67-components-ops-auth-access-gate-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/auth/AccessGate.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/auth/AccessGate.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-68-components-ops-config-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/config.ts",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/config.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-69-components-ops-project-management-git-hub-repository-browser-page-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/project-management/GitHubRepositoryBrowserPage.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/project-management/GitHubRepositoryBrowserPage.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-70-components-ops-project-management-project-canvas-page-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/project-management/ProjectCanvasPage.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/project-management/ProjectCanvasPage.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-71-components-ops-project-management-project-repository-list-page-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/project-management/ProjectRepositoryListPage.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/project-management/ProjectRepositoryListPage.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-72-components-ops-project-management-canvas-control-bar-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/project-management/canvas-control-bar.mjs",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/project-management/canvas-control-bar.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-73-components-ops-project-management-canvas-control-bar-test-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/project-management/canvas-control-bar.test.mjs",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/project-management/canvas-control-bar.test.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-74-components-ops-project-management-mock-data-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/project-management/mock-data.ts",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/project-management/mock-data.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-75-components-ops-sections-aeyong-section-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/sections/AeyongSection.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/sections/AeyongSection.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-76-components-ops-sections-mac-mini-section-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/sections/MacMiniSection.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/sections/MacMiniSection.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-77-components-ops-sections-notes-section-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/sections/NotesSection.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/sections/NotesSection.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-78-components-ops-sections-overview-section-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/sections/OverviewSection.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/sections/OverviewSection.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-79-components-ops-sections-projects-section-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/sections/ProjectsSection.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/sections/ProjectsSection.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-80-components-ops-sections-releases-section-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/sections/ReleasesSection.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/sections/ReleasesSection.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-81-components-ops-sections-settings-section-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/sections/SettingsSection.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/sections/SettingsSection.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-82-components-ops-sections-tasks-section-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/sections/TasksSection.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/sections/TasksSection.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-83-components-ops-sections-worker-section-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/sections/WorkerSection.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/sections/WorkerSection.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-84-components-ops-sections-types-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/sections/types.ts",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/sections/types.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-85-components-ops-shared-tsx",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/shared.tsx",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/shared.tsx",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-86-components-ops-utils-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "components/ops/utils.ts",
+          "evidenceType": "component",
+          "summary": "component signal from components/ops/utils.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-87-data-ops-automation-status-json",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "data/ops/automation-status.json",
+          "evidenceType": "schema",
+          "summary": "schema signal from data/ops/automation-status.json",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-88-data-ops-github-cache-json",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "data/ops/github-cache.json",
+          "evidenceType": "schema",
+          "summary": "schema signal from data/ops/github-cache.json",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-89-data-ops-notes-export-json",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "data/ops/notes-export.json",
+          "evidenceType": "schema",
+          "summary": "schema signal from data/ops/notes-export.json",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-90-data-ops-project-canvas-json",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "data/ops/project-canvas.json",
+          "evidenceType": "schema",
+          "summary": "schema signal from data/ops/project-canvas.json",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-91-data-ops-projects-json",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "data/ops/projects.json",
+          "evidenceType": "schema",
+          "summary": "schema signal from data/ops/projects.json",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-92-data-ops-tasks-json",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "data/ops/tasks.json",
+          "evidenceType": "schema",
+          "summary": "schema signal from data/ops/tasks.json",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-93-docs-gstack-workflow-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/gstack-workflow.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/gstack-workflow.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-94-docs-ops-personal-os-renewal-spec-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/ops/personal-os-renewal-spec.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/ops/personal-os-renewal-spec.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-95-docs-ops-synapse-ui-design-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/ops/synapse-ui-design.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/ops/synapse-ui-design.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-96-docs-ops-ai-worklog-mvp-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/ops-ai-worklog-mvp.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/ops-ai-worklog-mvp.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-97-docs-ops-automation-mac-mini-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/ops-automation-mac-mini.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/ops-automation-mac-mini.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-98-docs-ops-codex-handoff-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/ops-codex-handoff.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/ops-codex-handoff.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-99-docs-ops-mac-mini-worker-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/ops-mac-mini-worker.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/ops-mac-mini-worker.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-100-docs-ops-supabase-sync-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/ops-supabase-sync.md",
+          "evidenceType": "schema",
+          "summary": "schema signal from docs/ops-supabase-sync.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-101-docs-plans-2026-05-08-ops-personal-os-renewal-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/plans/2026-05-08-ops-personal-os-renewal.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/plans/2026-05-08-ops-personal-os-renewal.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-102-docs-plans-2026-05-09-ops-overview-v2-design-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/plans/2026-05-09-ops-overview-v2-design.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/plans/2026-05-09-ops-overview-v2-design.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-103-docs-plans-2026-05-09-ops-overview-v2-implementation-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/plans/2026-05-09-ops-overview-v2-implementation.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/plans/2026-05-09-ops-overview-v2-implementation.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-104-docs-plans-2026-05-09-ops-projects-v2-design-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/plans/2026-05-09-ops-projects-v2-design.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/plans/2026-05-09-ops-projects-v2-design.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-105-docs-plans-2026-05-09-ops-projects-v2-implementation-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/plans/2026-05-09-ops-projects-v2-implementation.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/plans/2026-05-09-ops-projects-v2-implementation.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-106-docs-plans-2026-05-09-ops-routing-project-management-mock-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/plans/2026-05-09-ops-routing-project-management-mock.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/plans/2026-05-09-ops-routing-project-management-mock.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-107-docs-plans-2026-05-14-ops-codex-next-plan-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/plans/2026-05-14-ops-codex-next-plan.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/plans/2026-05-14-ops-codex-next-plan.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-108-docs-plans-2026-05-15-ops-project-canvas-prototype-design-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/plans/2026-05-15-ops-project-canvas-prototype-design.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/plans/2026-05-15-ops-project-canvas-prototype-design.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-109-docs-plans-2026-05-15-ops-project-canvas-prototype-implementation-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/plans/2026-05-15-ops-project-canvas-prototype-implementation.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/plans/2026-05-15-ops-project-canvas-prototype-implementation.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-110-docs-plans-2026-05-16-code-backed-planning-canvas-roadmap-md",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "docs/plans/2026-05-16-code-backed-planning-canvas-roadmap.md",
+          "evidenceType": "docs",
+          "summary": "docs signal from docs/plans/2026-05-16-code-backed-planning-canvas-roadmap.md",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-111-eslint-config-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "eslint.config.mjs",
+          "evidenceType": "config",
+          "summary": "config signal from eslint.config.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-112-lib-ops-adapters-supabase-test-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/adapters/supabase.test.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/adapters/supabase.test.ts",
+          "imports": [
+            "@/lib/ops/adapters/supabase"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-113-lib-ops-adapters-supabase-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/adapters/supabase.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/adapters/supabase.ts",
+          "imports": [
+            "@/lib/ops/types"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-114-lib-ops-artifacts-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/artifacts.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/artifacts.ts",
+          "imports": [
+            "@/lib/ops/types",
+            "@/lib/ops/worklog"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-115-lib-ops-auth-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/auth.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/auth.ts",
+          "imports": [
+            "next/headers",
+            "node:crypto"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-116-lib-ops-automation-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/automation.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/automation.ts",
+          "imports": [
+            "fs",
+            "path",
+            "@/lib/ops/types"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-117-lib-ops-data-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/data.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/data.ts",
+          "imports": [
+            "@/lib/ops/automation",
+            "@/lib/ops/openclaw",
+            "@/lib/ops/notes-source",
+            "@/lib/ops/supabase-data",
+            "@/lib/ops/supabase",
+            "@/lib/ops/sources/static",
+            "@/lib/ops/types",
+            "@/lib/ops/vault",
+            "@/lib/ops/artifacts",
+            "@/lib/ops/worklog"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-118-lib-ops-github-live-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/github-live.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/github-live.ts",
+          "imports": [
+            "node:child_process"
+          ],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-119-lib-ops-ingest-core-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/ingest-core.mjs",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/ingest-core.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-120-lib-ops-ingest-core-test-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/ingest-core.test.mjs",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/ingest-core.test.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-121-lib-ops-ingest-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/ingest.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/ingest.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-122-lib-ops-mutations-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/mutations.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/mutations.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-123-lib-ops-notes-source-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/notes-source.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/notes-source.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-124-lib-ops-obsidian-export-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/obsidian-export.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/obsidian-export.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-125-lib-ops-openclaw-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/openclaw.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/openclaw.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-126-lib-ops-ops-api-proxy-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/ops-api-proxy.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/ops-api-proxy.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-127-lib-ops-overview-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/overview.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/overview.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-128-lib-ops-project-canvas-store-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/project-canvas-store.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/project-canvas-store.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-129-lib-ops-project-management-contract-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/project-management-contract.mjs",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/project-management-contract.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-130-lib-ops-project-planning-contract-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/project-planning-contract.mjs",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/project-planning-contract.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-131-lib-ops-projects-test-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/projects.test.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/projects.test.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-132-lib-ops-projects-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/projects.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/projects.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-133-lib-ops-repo-analysis-server-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/repo-analysis-server.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/repo-analysis-server.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-134-lib-ops-selectors-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/selectors.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/selectors.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-135-lib-ops-sources-static-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/sources/static.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/sources/static.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-136-lib-ops-supabase-data-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/supabase-data.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/supabase-data.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-137-lib-ops-supabase-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/supabase.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/supabase.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-138-lib-ops-types-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/types.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/types.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-139-lib-ops-vault-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/vault.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/vault.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-140-lib-ops-version-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/version.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/version.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-141-lib-ops-worklog-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "lib/ops/worklog.ts",
+          "evidenceType": "service",
+          "summary": "service signal from lib/ops/worklog.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-142-next-env-d-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "next-env.d.ts",
+          "evidenceType": "config",
+          "summary": "config signal from next-env.d.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-143-next-config-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "next.config.ts",
+          "evidenceType": "config",
+          "summary": "config signal from next.config.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-144-ops-cron-portfolio-ops-watch-cron-example",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "ops/cron/portfolio-ops-watch.cron.example",
+          "evidenceType": "job",
+          "summary": "job signal from ops/cron/portfolio-ops-watch.cron.example",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-145-ops-macos-install-launchagent-sh",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "ops/macos/install-launchagent.sh",
+          "evidenceType": "job",
+          "summary": "job signal from ops/macos/install-launchagent.sh",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-146-ops-macos-portfolio-ops-watch-plist-template",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "ops/macos/portfolio-ops-watch.plist.template",
+          "evidenceType": "job",
+          "summary": "job signal from ops/macos/portfolio-ops-watch.plist.template",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-147-package-lock-json",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "package-lock.json",
+          "evidenceType": "config",
+          "summary": "config signal from package-lock.json",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-148-package-json",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "package.json",
+          "evidenceType": "config",
+          "summary": "config signal from package.json",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-149-postcss-config-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "postcss.config.mjs",
+          "evidenceType": "config",
+          "summary": "config signal from postcss.config.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-150-public-dreamics-png",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "public/dreamics.png",
+          "evidenceType": "config",
+          "summary": "config signal from public/dreamics.png",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-151-public-dreamics-webp",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "public/dreamics.webp",
+          "evidenceType": "config",
+          "summary": "config signal from public/dreamics.webp",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-152-public-kitagawa-webp",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "public/kitagawa.webp",
+          "evidenceType": "config",
+          "summary": "config signal from public/kitagawa.webp",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-153-public-load2-webp",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "public/load2.webp",
+          "evidenceType": "config",
+          "summary": "config signal from public/load2.webp",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-154-public-loga-png",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "public/loga.png",
+          "evidenceType": "config",
+          "summary": "config signal from public/loga.png",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-155-public-loga-webp",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "public/loga.webp",
+          "evidenceType": "config",
+          "summary": "config signal from public/loga.webp",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-156-public-portfolio-webp",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "public/portfolio.webp",
+          "evidenceType": "config",
+          "summary": "config signal from public/portfolio.webp",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-157-public-preview-webp",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "public/preview.webp",
+          "evidenceType": "config",
+          "summary": "config signal from public/preview.webp",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-158-public-robots-txt",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "public/robots.txt",
+          "evidenceType": "config",
+          "summary": "config signal from public/robots.txt",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-159-public-runcat-webp",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "public/runcat.webp",
+          "evidenceType": "config",
+          "summary": "config signal from public/runcat.webp",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-160-public-star-webp",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "public/star.webp",
+          "evidenceType": "config",
+          "summary": "config signal from public/star.webp",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-161-public-toor-webp",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "public/toor.webp",
+          "evidenceType": "config",
+          "summary": "config signal from public/toor.webp",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-162-public-water-webp",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "public/water.webp",
+          "evidenceType": "config",
+          "summary": "config signal from public/water.webp",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-163-scripts-compress-images-js",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "scripts/compress-images.js",
+          "evidenceType": "job",
+          "summary": "job signal from scripts/compress-images.js",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-164-scripts-export-ops-notes-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "scripts/export-ops-notes.mjs",
+          "evidenceType": "job",
+          "summary": "job signal from scripts/export-ops-notes.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-165-scripts-ingest-ops-work-result-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "scripts/ingest-ops-work-result.mjs",
+          "evidenceType": "job",
+          "summary": "job signal from scripts/ingest-ops-work-result.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-166-scripts-ops-automation-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "scripts/ops-automation.mjs",
+          "evidenceType": "job",
+          "summary": "job signal from scripts/ops-automation.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-167-scripts-ops-mac-mini-worker-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "scripts/ops-mac-mini-worker.mjs",
+          "evidenceType": "job",
+          "summary": "job signal from scripts/ops-mac-mini-worker.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-168-scripts-ops-source-sync-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "scripts/ops-source-sync.mjs",
+          "evidenceType": "job",
+          "summary": "job signal from scripts/ops-source-sync.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-169-scripts-ops-supabase-doctor-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "scripts/ops-supabase-doctor.mjs",
+          "evidenceType": "schema",
+          "summary": "schema signal from scripts/ops-supabase-doctor.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-170-scripts-sync-ops-github-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "scripts/sync-ops-github.mjs",
+          "evidenceType": "job",
+          "summary": "job signal from scripts/sync-ops-github.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-171-scripts-sync-ops-supabase-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "scripts/sync-ops-supabase.mjs",
+          "evidenceType": "schema",
+          "summary": "schema signal from scripts/sync-ops-supabase.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-172-scripts-watch-ops-notes-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "scripts/watch-ops-notes.mjs",
+          "evidenceType": "job",
+          "summary": "job signal from scripts/watch-ops-notes.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-173-supabase-ops-runtime-missing-tables-sql",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "supabase/ops-runtime-missing-tables.sql",
+          "evidenceType": "schema",
+          "summary": "schema signal from supabase/ops-runtime-missing-tables.sql",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-174-supabase-ops-schema-sql",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "supabase/ops-schema.sql",
+          "evidenceType": "schema",
+          "summary": "schema signal from supabase/ops-schema.sql",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-175-tailwind-config-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "tailwind.config.ts",
+          "evidenceType": "config",
+          "summary": "config signal from tailwind.config.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-176-tests-ops-planning-schema-test-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "tests/ops-planning-schema.test.mjs",
+          "evidenceType": "schema",
+          "summary": "schema signal from tests/ops-planning-schema.test.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-177-tests-ops-project-management-contract-test-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "tests/ops-project-management-contract.test.mjs",
+          "evidenceType": "config",
+          "summary": "config signal from tests/ops-project-management-contract.test.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-178-tests-ops-project-planning-contract-test-mjs",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "tests/ops-project-planning-contract.test.mjs",
+          "evidenceType": "config",
+          "summary": "config signal from tests/ops-project-planning-contract.test.mjs",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-179-tsconfig-json",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "tsconfig.json",
+          "evidenceType": "config",
+          "summary": "config signal from tsconfig.json",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-180-tsconfig-tsbuildinfo",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "tsconfig.tsbuildinfo",
+          "evidenceType": "config",
+          "summary": "config signal from tsconfig.tsbuildinfo",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-181-types-index-ts",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "types/index.ts",
+          "evidenceType": "config",
+          "summary": "config signal from types/index.ts",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        },
+        {
+          "id": "evidence-182-vercel-json",
+          "repo": "yongchane/Portfolio",
+          "branch": "develop",
+          "path": "vercel.json",
+          "evidenceType": "config",
+          "summary": "config signal from vercel.json",
+          "imports": [],
+          "apiCalls": [],
+          "headings": [],
+          "confidence": 0.76
+        }
+      ],
+      "updatedAt": "2026-05-16T05:27:23.026Z"
+    },
+    "updatedAt": "2026-05-16T05:27:23.026Z"
+  }
+}

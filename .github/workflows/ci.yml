@@ -29,6 +29,12 @@ jobs:
       - name: Run TypeScript type check
         run: npm run typecheck
 
+      - name: Build Ops API
+        run: npm run ops-api:build
+
+      - name: Run contract tests
+        run: npm run test
+
       - name: Build project
         run: npm run build
         env:

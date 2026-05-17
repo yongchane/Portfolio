@@ -2,6 +2,7 @@ import { OpsRouteShell } from "@/components/ops/OpsRouteShell";
 import { ProjectCanvasPage } from "@/components/ops/project-management/ProjectCanvasPage";
 import { isOpsAuthenticated } from "@/lib/ops/auth";
 import { getOpsConsoleData } from "@/lib/ops/data";
+import { getLocalRepoAnalysis } from "@/lib/ops/repo-analysis-server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -10,6 +11,8 @@ export default async function OpsProjectCanvasRoute({ params }: { params: Promis
   const authenticated = await isOpsAuthenticated();
   const data = authenticated ? await getOpsConsoleData() : null;
   const { projectId } = await params;
+  const project = data?.projects.find((item) => item.id === projectId);
+  const repoAnalysis = authenticated ? await getLocalRepoAnalysis(project?.repo) : null;
 
   return (
     <OpsRouteShell
@@ -20,7 +23,7 @@ export default async function OpsProjectCanvasRoute({ params }: { params: Promis
       hideHeader
       mainClassName="!p-0 overflow-hidden"
     >
-      {data && <ProjectCanvasPage data={data} projectId={projectId} />}
+      {data && <ProjectCanvasPage data={data} projectId={projectId} repoAnalysis={repoAnalysis} />}
     </OpsRouteShell>
   );
 }

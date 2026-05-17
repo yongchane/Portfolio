@@ -6,28 +6,107 @@ import clsx from "clsx";
 import { InfoTile } from "@/components/ops/shared";
 import type { OpsConsoleData } from "@/lib/ops/types";
 import {
-  buildCanvasNodes,
-  canvasEdges,
+  applyReadableCanvasLayout,
+  buildCanvasModel,
+  findProjectByProjectId,
   findProjectByRepo,
   findRepoByProjectId,
+  type ProjectPlanningDocument,
+  type ProjectCanvasEdge,
   type ProjectCanvasNode,
   type ProjectCanvasNodeShape,
   type ProjectCanvasNodeType,
+  type RepoAnalysisResult,
 } from "@/components/ops/project-management/mock-data";
 import { getCanvasControlBarState } from "@/components/ops/project-management/canvas-control-bar.mjs";
 
 const CANVAS_WIDTH = 5200;
 const CANVAS_HEIGHT = 3600;
 
-type CanvasModuleKey = "ia" | "architecture" | "export" | "deploy";
+type CanvasModuleKey = "ia" | "specifications" | "userFlows" | "wireframes" | "architecture" | "evidence" | "agentTasks" | "export" | "deploy";
+type CanvasApiPayload = {
+  ok?: boolean;
+  source?: string;
+  savedAt?: string;
+  canvas?: {
+    nodes?: ProjectCanvasNode[];
+    edges?: ProjectCanvasEdge[];
+    summary?: RepoAnalysisResult["summary"];
+  };
+};
+type PlanningApiPayload = {
+  ok?: boolean;
+  source?: string;
+  savedAt?: string;
+  planning?: ProjectPlanningDocument;
+  message?: string;
+};
+type PlanningGenerateApiPayload = PlanningApiPayload & {
+  canvas?: {
+    nodes?: ProjectCanvasNode[];
+    edges?: ProjectCanvasEdge[];
+    summary?: RepoAnalysisResult["summary"];
+  };
+};
+type AiSuggestion = {
+  id: string;
+  projectId: string;
+  targetType: "prd" | "requirement" | "feature" | "specification" | "ia-page" | "user-flow" | "wireframe" | "architecture" | "canvas" | "agent-task";
+  action: "create" | "update" | "delete" | "link";
+  proposedValue: Record<string, unknown>;
+  rationale: string;
+  evidenceIds: string[];
+  status: "pending" | "approved" | "rejected";
+  createdBy: string;
+  createdAt: string;
+  decidedAt?: string;
+  decidedBy?: string;
+};
+type SuggestionApiPayload = {
+  ok?: boolean;
+  suggestions?: AiSuggestion[];
+  suggestion?: AiSuggestion;
+  planning?: ProjectPlanningDocument;
+  message?: string;
+};
+type PlanningExportType = "prd" | "specifications" | "ia" | "user-flow" | "architecture" | "agent-brief" | "canvas";
+type PlanningExportPayload = {
+  ok?: boolean;
+  exportType?: PlanningExportType;
+  filename?: string;
+  content?: string;
+  mimeType?: string;
+  message?: string;
+};
+
+const planningExportActions: Array<{ type: PlanningExportType; label: string }> = [
+  { type: "prd", label: "PRD" },
+  { type: "specifications", label: "Spec" },
+  { type: "ia", label: "IA" },
+  { type: "user-flow", label: "Flow" },
+  { type: "architecture", label: "Arch" },
+  { type: "agent-brief", label: "Agent Brief" },
+  { type: "canvas", label: "Canvas MD" },
+];
 
 const editableNodeTypes: ProjectCanvasNodeType[] = [
   "page",
   "feature",
+  "route",
+  "screen",
+  "action",
+  "component",
   "api",
+  "service",
   "database",
+  "storage",
+  "integration",
+  "job",
+  "security",
   "deploy",
+  "deployment",
   "docs",
+  "artifact",
   "agent",
   "repo",
 ];
@@ -49,6 +128,12 @@ const createEmptyNodeDraft = () => ({
 const splitLines = (value: string) => value.split("\n").map((item) => item.trim()).filter(Boolean);
 const splitTags = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
 const stopCanvasWheel = (event: React.WheelEvent<HTMLElement>) => event.stopPropagation();
+const confidenceLabel = (value?: number) => {
+  if (typeof value !== "number") return "manual";
+  if (value >= 0.9) return "high";
+  if (value >= 0.75) return "medium";
+  return "low";
+};
 
 const canvasModules: Array<{
   key: CanvasModuleKey;
@@ -59,24 +144,59 @@ const canvasModules: Array<{
 }> = [
   {
     key: "ia",
-    title: "페이지별 기능 IA",
-    desc: "Page/Feature 흐름과 사용자 이동",
+    title: "IA Tree",
+    desc: "Manyfast식 페이지 계층",
     pan: { x: 120, y: 90 },
     zoom: 1,
+  },
+  {
+    key: "specifications",
+    title: "Spec Directory",
+    desc: "Requirement → Feature → Spec",
+    pan: { x: 110, y: 60 },
+    zoom: 0.92,
+  },
+  {
+    key: "userFlows",
+    title: "User Flow",
+    desc: "사용자 여정과 화면 연결",
+    pan: { x: 120, y: 90 },
+    zoom: 0.96,
+  },
+  {
+    key: "wireframes",
+    title: "Wireframe Blocks",
+    desc: "페이지별 섹션/블록",
+    pan: { x: 120, y: 90 },
+    zoom: 0.96,
   },
   {
     key: "architecture",
     title: "System Architecture",
     desc: "GitHub/API/DB/Deploy 연결",
-    pan: { x: 70, y: -690 },
-    zoom: 0.92,
+    pan: { x: 80, y: -970 },
+    zoom: 0.9,
+  },
+  {
+    key: "evidence",
+    title: "GitHub Evidence",
+    desc: "코드 근거와 신뢰도",
+    pan: { x: 80, y: -970 },
+    zoom: 0.82,
+  },
+  {
+    key: "agentTasks",
+    title: "Agent Tasks",
+    desc: "AI 작업 후보와 승인 흐름",
+    pan: { x: 90, y: -1910 },
+    zoom: 0.9,
   },
   {
     key: "export",
     title: "Export / AI Review",
     desc: "명세/이미지 출력과 AI 검토",
-    pan: { x: 90, y: -1450 },
-    zoom: 0.92,
+    pan: { x: 90, y: -1910 },
+    zoom: 0.9,
   },
   {
     key: "deploy",
@@ -89,12 +209,23 @@ const canvasModules: Array<{
 
 const nodeTone: Record<ProjectCanvasNodeType, string> = {
   repo: "border-slate-200/30 bg-slate-300/10 text-slate-50",
+  route: "border-cyan-300/45 bg-cyan-400/10 text-cyan-50",
+  screen: "border-cyan-200/40 bg-cyan-300/10 text-cyan-50",
+  action: "border-yellow-300/45 bg-yellow-400/10 text-yellow-50",
   page: "border-cyan-300/40 bg-cyan-400/10 text-cyan-50",
   feature: "border-amber-300/40 bg-amber-400/10 text-amber-50",
+  component: "border-teal-300/40 bg-teal-400/10 text-teal-50",
   api: "border-violet-300/40 bg-violet-400/10 text-violet-50",
+  service: "border-indigo-300/40 bg-indigo-400/10 text-indigo-50",
   database: "border-emerald-300/40 bg-emerald-400/10 text-emerald-50",
+  storage: "border-emerald-300/45 bg-emerald-400/10 text-emerald-50",
+  integration: "border-sky-300/40 bg-sky-400/10 text-sky-50",
+  job: "border-orange-300/40 bg-orange-400/10 text-orange-50",
+  security: "border-red-300/40 bg-red-400/10 text-red-50",
   deploy: "border-sky-300/40 bg-sky-400/10 text-sky-50",
+  deployment: "border-blue-300/40 bg-blue-400/10 text-blue-50",
   docs: "border-fuchsia-300/40 bg-fuchsia-400/10 text-fuchsia-50",
+  artifact: "border-lime-300/40 bg-lime-400/10 text-lime-50",
   agent: "border-rose-300/40 bg-rose-400/10 text-rose-50",
   start: "border-white/35 bg-white/10 text-white",
   decision: "border-orange-300/50 bg-orange-400/10 text-orange-50",
@@ -103,12 +234,23 @@ const nodeTone: Record<ProjectCanvasNodeType, string> = {
 
 const nodeLabel: Record<ProjectCanvasNodeType, string> = {
   repo: "Repo",
+  route: "Route",
+  screen: "Screen",
+  action: "Action",
   page: "Page",
   feature: "Feature",
+  component: "Component",
   api: "API",
+  service: "Service",
   database: "DB",
+  storage: "Storage",
+  integration: "Integration",
+  job: "Job",
+  security: "Security",
   deploy: "Deploy",
+  deployment: "Deploy",
   docs: "Docs",
+  artifact: "Artifact",
   agent: "AI",
   start: "Start",
   decision: "Decision",
@@ -148,7 +290,7 @@ const CanvasSectionLabel = ({
   </div>
 );
 
-const CanvasEdgeLayer = ({ nodes }: { nodes: ProjectCanvasNode[] }) => {
+const CanvasEdgeLayer = ({ nodes, edges }: { nodes: ProjectCanvasNode[]; edges: ProjectCanvasEdge[] }) => {
   const nodeMap = new Map(nodes.map((node) => [node.id, node]));
 
   return (
@@ -171,7 +313,7 @@ const CanvasEdgeLayer = ({ nodes }: { nodes: ProjectCanvasNode[] }) => {
           <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,255,255,0.48)" />
         </marker>
       </defs>
-      {canvasEdges.map((edge) => {
+      {edges.map((edge) => {
         const source = nodeMap.get(edge.source);
         const target = nodeMap.get(edge.target);
         if (!source || !target) return null;
@@ -277,20 +419,130 @@ const CanvasNodeCard = ({
   );
 };
 
+const EvidenceList = ({ label, items }: { label: string; items: string[] }) => (
+  <div>
+    <p className="mb-1 text-[10px] uppercase tracking-[0.18em] text-white/35">{label}</p>
+    {items.length ? (
+      <ul className="space-y-1">
+        {items.slice(0, 5).map((item) => (
+          <li key={item} className="break-all rounded-lg bg-black/25 px-2 py-1 text-[11px] leading-4 text-white/70">
+            {item}
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="rounded-lg bg-black/20 px-2 py-1 text-[11px] text-white/35">No signal</p>
+    )}
+  </div>
+);
+
+const getModeNodeIds = (mode: CanvasModuleKey, nodes: ProjectCanvasNode[]) => {
+  const byIdOrType = (ids: string[], types: ProjectCanvasNodeType[]) =>
+    new Set(nodes.filter((node) => ids.includes(node.id) || types.includes(node.type)).map((node) => node.id));
+
+  switch (mode) {
+    case "ia":
+    case "userFlows":
+    case "wireframes":
+      return byIdOrType(["entry", "repo", "canvas-editor"], ["route", "page", "feature", "screen", "action"]);
+    case "specifications":
+      return byIdOrType(["repo", "canvas-editor", "ops-api", "data-loader"], ["route", "page", "feature", "api", "service"]);
+    case "architecture":
+      return byIdOrType(["repo", "ops-api", "data-loader", "database", "deploy"], ["component", "api", "service", "storage", "database", "job", "security", "deployment", "deploy", "integration"]);
+    case "evidence":
+      return byIdOrType(["repo"], ["docs", "artifact", "component", "api", "service", "security", "deployment", "deploy", "storage", "database", "job"]);
+    case "agentTasks":
+    case "export":
+      return byIdOrType(["canvas-editor", "export-feature", "docs", "agent"], ["export", "agent", "docs", "artifact"]);
+    case "deploy":
+      return byIdOrType(["repo", "deploy", "analysis-deployment", "database"], ["deployment", "deploy", "storage", "database", "job"]);
+  }
+};
+
+const ModeDetailPanel = ({
+  mode,
+  planning,
+  source,
+}: {
+  mode: CanvasModuleKey;
+  planning?: ProjectPlanningDocument;
+  source?: string;
+}) => {
+  const rows = (() => {
+    if (!planning) return ["Planning API 응답 대기 중이거나 Nest proxy env가 필요합니다."];
+    if (mode === "ia") return planning.iaPages.slice(0, 10).map((page) => `${"  ".repeat(Math.max(0, page.depth - 1))}${page.title}${page.route ? ` · ${page.route}` : ""}`);
+    if (mode === "specifications") return [
+      `Requirements ${planning.requirements.length}`,
+      `Features ${planning.features.length}`,
+      ...planning.specifications.slice(0, 8).map((spec) => spec.title),
+    ];
+    if (mode === "userFlows") return planning.userFlows.flatMap((flow) => [flow.title, ...flow.steps.slice(0, 6).map((step) => `→ ${step.action}`)]).slice(0, 10);
+    if (mode === "wireframes") return planning.wireframes.slice(0, 10).map((block) => `${block.sectionName} · ${block.layoutType}`);
+    if (mode === "architecture") return planning.architecture.slice(0, 10).map((node) => `${node.kind} · ${node.label}`);
+    if (mode === "evidence") return planning.evidence.slice(0, 10).map((item) => `${item.evidenceType} · ${item.path}`);
+    if (mode === "agentTasks") return planning.agentTasks.slice(0, 10).map((task) => `${task.status} · ${task.title}`);
+    return [
+      `PRD goals ${planning.prd.goals.length}`,
+      `Specs ${planning.specifications.length}`,
+      `Evidence ${planning.evidence.length}`,
+      "Markdown/PNG/agent brief export 대상",
+    ];
+  })();
+
+  return (
+    <div className="absolute left-80 top-4 z-20 w-[28rem] rounded-[1.4rem] border border-white/10 bg-black/45 p-4 shadow-2xl backdrop-blur-xl" data-canvas-control="true" onWheel={stopCanvasWheel}>
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.22em] text-white/35">mode detail</p>
+          <h3 className="mt-1 text-lg font-black text-white">{canvasModules.find((item) => item.key === mode)?.title}</h3>
+        </div>
+        <span className="rounded-full border border-cyan-200/20 bg-cyan-300/10 px-2 py-1 text-[10px] text-cyan-50">{source || "planning"}</span>
+      </div>
+      <div className="grid grid-cols-4 gap-2 text-[11px]">
+        <InfoTile label="IA" value={String(planning?.iaPages.length ?? "-")} />
+        <InfoTile label="Specs" value={String(planning?.specifications.length ?? "-")} />
+        <InfoTile label="Arch" value={String(planning?.architecture.length ?? "-")} />
+        <InfoTile label="Evidence" value={String(planning?.evidence.length ?? "-")} />
+      </div>
+      <ul className="mt-3 max-h-56 space-y-1 overflow-auto pr-1">
+        {rows.map((row, index) => (
+          <li key={`${row}-${index}`} className="rounded-lg border border-white/5 bg-white/[0.04] px-2 py-1.5 text-[11px] leading-4 text-white/70">
+            {row}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+function downloadTextFile(filename: string, content: string, type = "text/markdown;charset=utf-8") {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 export function ProjectCanvasPage({
   data,
   projectId,
+  repoAnalysis,
 }: {
   data: OpsConsoleData;
   projectId: string;
+  repoAnalysis?: RepoAnalysisResult | null;
 }) {
   const repo = findRepoByProjectId(data, projectId);
-  const project = findProjectByRepo(data, repo);
-  const initialNodes = useMemo(
-    () => buildCanvasNodes(repo, project?.deployUrl),
-    [repo, project?.deployUrl],
+  const project = findProjectByProjectId(data, projectId) || findProjectByRepo(data, repo);
+  const initialModel = useMemo(
+    () => buildCanvasModel(repo, project?.deployUrl, project, repoAnalysis),
+    [repo, project, repoAnalysis],
   );
+  const initialNodes = initialModel.nodes;
   const [nodes, setNodes] = useState<ProjectCanvasNode[]>(initialNodes);
+  const [edges, setEdges] = useState<ProjectCanvasEdge[]>(initialModel.edges);
   const [selectedNodeId, setSelectedNodeId] = useState("entry");
   const [dragState, setDragState] = useState<{
     nodeId: string;
@@ -314,15 +566,110 @@ export function ProjectCanvasPage({
   const [activeModule, setActiveModule] = useState<CanvasModuleKey>("ia");
   const [nodeCreatorOpen, setNodeCreatorOpen] = useState(false);
   const [nodeDraft, setNodeDraft] = useState(createEmptyNodeDraft);
+  const [apiStatus, setApiStatus] = useState("Loading canvas API...");
+  const [planning, setPlanning] = useState<ProjectPlanningDocument | undefined>();
+  const [planningSource, setPlanningSource] = useState<string | undefined>();
+  const [suggestions, setSuggestions] = useState<AiSuggestion[]>([]);
+  const [suggestionStatus, setSuggestionStatus] = useState("AI suggestions not loaded");
   const selectedNode =
     nodes.find((node) => node.id === selectedNodeId) || nodes[0];
+  const visibleNodeIds = useMemo(() => {
+    const ids = getModeNodeIds(activeModule, nodes);
+    return ids.size ? ids : new Set(nodes.map((node) => node.id));
+  }, [activeModule, nodes]);
+  const visibleNodes = useMemo(
+    () => nodes.filter((node) => visibleNodeIds.has(node.id)),
+    [nodes, visibleNodeIds],
+  );
+  const visibleEdges = useMemo(
+    () => edges.filter((edge) => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target)),
+    [edges, visibleNodeIds],
+  );
+  const pendingSuggestions = useMemo(
+    () => suggestions.filter((item) => item.status === "pending"),
+    [suggestions],
+  );
 
   useEffect(() => {
-    setNodes(initialNodes);
-    setSelectedNodeId("entry");
-    setPan({ x: 120, y: 90 });
-    setZoom(1);
-  }, [initialNodes]);
+    const controller = new AbortController();
+
+    async function hydrateCanvas() {
+      setApiStatus("Loading canvas API...");
+      try {
+        const response = await fetch(`/api/ops/projects/${projectId}/canvas`, {
+          signal: controller.signal,
+        });
+        const result = (await response.json().catch(() => null)) as CanvasApiPayload | null;
+        if (!response.ok || !result?.canvas?.nodes?.length) {
+          throw new Error("Canvas API returned no nodes.");
+        }
+
+        const readableNodes = applyReadableCanvasLayout(result.canvas.nodes);
+        setNodes(readableNodes);
+        setEdges(result.canvas.edges || []);
+        setSelectedNodeId(readableNodes[0]?.id || "entry");
+        setApiStatus(`${result.source || "api"} loaded${result.savedAt ? ` · saved ${result.savedAt}` : ""}`);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setNodes(initialNodes);
+        setEdges(initialModel.edges);
+        setSelectedNodeId("entry");
+        setApiStatus(error instanceof Error ? `Fallback: ${error.message}` : "Fallback canvas loaded");
+      }
+      setPan({ x: 120, y: 90 });
+      setZoom(1);
+    }
+
+    void hydrateCanvas();
+    return () => controller.abort();
+  }, [projectId, initialNodes, initialModel.edges]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function hydratePlanning() {
+      try {
+        const response = await fetch(`/api/ops/projects/${projectId}/planning`, {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        const result = (await response.json().catch(() => null)) as PlanningApiPayload | null;
+        if (!response.ok || !result?.planning) return;
+        setPlanning(result.planning);
+        setPlanningSource(result.source || "planning-api");
+      } catch {
+        if (!controller.signal.aborted) setPlanningSource("planning unavailable");
+      }
+    }
+
+    void hydratePlanning();
+    return () => controller.abort();
+  }, [projectId]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function hydrateSuggestions() {
+      try {
+        const response = await fetch(`/api/ops/projects/${projectId}/suggestions`, {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        const result = (await response.json().catch(() => null)) as SuggestionApiPayload | null;
+        if (!response.ok || !result?.suggestions) {
+          setSuggestionStatus(result?.message || "AI suggestions API unavailable");
+          return;
+        }
+        setSuggestions(result.suggestions);
+        setSuggestionStatus(`${result.suggestions.filter((item) => item.status === "pending").length} pending suggestions`);
+      } catch {
+        if (!controller.signal.aborted) setSuggestionStatus("AI suggestions unavailable");
+      }
+    }
+
+    void hydrateSuggestions();
+    return () => controller.abort();
+  }, [projectId]);
 
   const changeZoom = (nextZoom: number) => {
     setZoom(Math.max(0.35, Math.min(1.8, Number(nextZoom.toFixed(2)))));
@@ -339,6 +686,72 @@ export function ProjectCanvasPage({
   };
 
   const resetView = () => focusModule("ia");
+
+  const autoLayoutCanvas = () => {
+    setNodes((current) => applyReadableCanvasLayout(current));
+    setApiStatus("readable lane layout applied · save to persist");
+  };
+
+  const generatePlanningFromGitHub = async () => {
+    setApiStatus("Generating planning from GitHub...");
+    const response = await fetch(`/api/ops/projects/${projectId}/planning/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    const result = (await response.json().catch(() => null)) as PlanningGenerateApiPayload | null;
+    if (!response.ok || !result?.planning) {
+      setApiStatus(result?.message || "Planning generate failed");
+      return;
+    }
+
+    setPlanning(result.planning);
+    setPlanningSource(result.source || "generated-planning");
+    const nextCanvas = result.canvas || result.planning.canvas;
+    if (nextCanvas?.nodes?.length) {
+      const readableNodes = applyReadableCanvasLayout(nextCanvas.nodes);
+      setNodes(readableNodes);
+      setEdges(nextCanvas.edges || []);
+      setSelectedNodeId(readableNodes[0]?.id || "planning-root");
+    }
+    setApiStatus(`generated-planning · ${result.savedAt || "saved to backend"}`);
+  };
+
+  const generateAiSuggestions = async () => {
+    setSuggestionStatus("Generating AI suggestions...");
+    const response = await fetch(`/api/ops/projects/${projectId}/suggestions/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    const result = (await response.json().catch(() => null)) as SuggestionApiPayload | null;
+    if (!response.ok || !result?.suggestions) {
+      setSuggestionStatus(result?.message || "AI suggestions generate failed");
+      return;
+    }
+    const nextSuggestions = [...result.suggestions, ...suggestions]
+      .filter((item, index, all) => all.findIndex((candidate) => candidate.id === item.id) === index);
+    setSuggestions(nextSuggestions);
+    setSuggestionStatus(`${result.suggestions.length} new suggestions generated`);
+  };
+
+  const decideSuggestion = async (suggestionId: string, decision: "approve" | "reject") => {
+    setSuggestionStatus(`${decision} suggestion...`);
+    const response = await fetch(`/api/ops/projects/${projectId}/suggestions/${suggestionId}/${decision}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    const result = (await response.json().catch(() => null)) as SuggestionApiPayload | null;
+    if (!response.ok || !result?.suggestion) {
+      setSuggestionStatus(result?.message || `Suggestion ${decision} failed`);
+      return;
+    }
+
+    setSuggestions((current) => current.map((item) => item.id === suggestionId ? result.suggestion as AiSuggestion : item));
+    if (result.planning) {
+      setPlanning(result.planning);
+      setPlanningSource("suggestion-approved");
+    }
+    setSuggestionStatus(`${result.suggestion.status} · ${result.suggestion.targetType}`);
+  };
 
   const updateSelectedNode = (patch: Partial<ProjectCanvasNode>) => {
     setNodes((current) =>
@@ -378,6 +791,120 @@ export function ProjectCanvasPage({
     if (!remainingNodes.length) return;
     setNodes(remainingNodes);
     setSelectedNodeId(remainingNodes[0].id);
+  };
+
+  const saveCanvas = async () => {
+    setApiStatus("Saving canvas...");
+    const response = await fetch(`/api/ops/projects/${projectId}/canvas`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ canvas: { nodes, edges } }),
+    });
+    const result = (await response.json().catch(() => null)) as CanvasApiPayload | { message?: string } | null;
+    if (!response.ok || !result || !("canvas" in result) || !result.canvas?.nodes?.length) {
+      setApiStatus(result && "message" in result && result.message ? result.message : "Canvas save failed");
+      return;
+    }
+
+    setNodes(applyReadableCanvasLayout(result.canvas.nodes));
+    setEdges(result.canvas.edges || []);
+    setApiStatus(`saved-canvas · ${"savedAt" in result && result.savedAt ? result.savedAt : "saved"}`);
+  };
+
+  const exportMarkdown = async () => {
+    setApiStatus("Exporting markdown...");
+    const response = await fetch(`/api/ops/projects/${projectId}/canvas/export`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ canvas: { nodes, edges } }),
+    });
+    const result = (await response.json().catch(() => null)) as { ok?: boolean; filename?: string; markdown?: string; message?: string } | null;
+    if (!response.ok || !result?.markdown) {
+      setApiStatus(result?.message || "Markdown export failed");
+      return;
+    }
+
+    downloadTextFile(result.filename || `${projectId}-canvas.md`, result.markdown);
+    setApiStatus("markdown exported");
+  };
+
+  const exportPlanningArtifact = async (exportType: PlanningExportType) => {
+    setApiStatus(`Exporting ${exportType}...`);
+    const response = await fetch(`/api/ops/projects/${projectId}/export/${exportType}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    const result = (await response.json().catch(() => null)) as PlanningExportPayload | null;
+    if (!response.ok || !result?.content) {
+      setApiStatus(result?.message || `${exportType} export failed`);
+      return;
+    }
+
+    downloadTextFile(
+      result.filename || `${projectId}-${exportType}.md`,
+      result.content,
+      result.mimeType || "text/markdown;charset=utf-8",
+    );
+    setApiStatus(`${exportType} exported`);
+  };
+
+  const exportPng = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1800;
+    canvas.height = 1200;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    context.fillStyle = "#07111f";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.strokeStyle = "rgba(255,255,255,0.18)";
+    for (let x = 0; x < canvas.width; x += 32) {
+      context.beginPath();
+      context.moveTo(x, 0);
+      context.lineTo(x, canvas.height);
+      context.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += 32) {
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(canvas.width, y);
+      context.stroke();
+    }
+
+    const scale = 0.45;
+    const offsetX = 80;
+    const offsetY = 80;
+    const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+    context.font = "14px sans-serif";
+    context.lineWidth = 2;
+    edges.forEach((item) => {
+      const source = nodeMap.get(item.source);
+      const target = nodeMap.get(item.target);
+      if (!source || !target) return;
+      context.strokeStyle = "rgba(255,255,255,0.42)";
+      context.beginPath();
+      context.moveTo(offsetX + source.x * scale + 70, offsetY + source.y * scale + 36);
+      context.lineTo(offsetX + target.x * scale + 70, offsetY + target.y * scale + 36);
+      context.stroke();
+    });
+    nodes.forEach((node) => {
+      const x = offsetX + node.x * scale;
+      const y = offsetY + node.y * scale;
+      context.fillStyle = "#102033";
+      context.strokeStyle = "#67e8f9";
+      context.fillRect(x, y, 150, 72);
+      context.strokeRect(x, y, 150, 72);
+      context.fillStyle = "#ffffff";
+      context.fillText(node.label.slice(0, 22), x + 10, y + 26);
+      context.fillStyle = "rgba(255,255,255,0.68)";
+      context.fillText(node.type, x + 10, y + 50);
+    });
+
+    const link = document.createElement("a");
+    link.href = canvas.toDataURL("image/png");
+    link.download = `${projectId}-canvas.png`;
+    link.click();
+    setApiStatus("png exported");
   };
 
   const beginNodeDrag = (
@@ -483,6 +1010,7 @@ export function ProjectCanvasPage({
             <h1 className="text-lg font-black">
               {repo?.repo || "프로젝트 canvas"}
             </h1>
+            <p className="mt-1 text-[11px] text-cyan-100/60">{apiStatus}</p>
             {controlsOpen && (
               <p className="mt-1 text-xs text-white/55">
                 프로젝트 상세보기에서는 main 전체가 canvas입니다. 배경 드래그로
@@ -611,6 +1139,18 @@ export function ProjectCanvasPage({
           onWheel={stopCanvasWheel}
         >
           <button
+            onClick={autoLayoutCanvas}
+            className="rounded-xl border border-cyan-200/30 bg-cyan-300/15 px-3 py-2 text-xs font-semibold text-cyan-50 shadow-xl backdrop-blur transition hover:bg-cyan-300/25"
+          >
+            Auto layout
+          </button>
+          <button
+            onClick={generatePlanningFromGitHub}
+            className="rounded-xl border border-amber-200/30 bg-amber-300/15 px-3 py-2 text-xs font-semibold text-amber-50 shadow-xl backdrop-blur transition hover:bg-amber-300/25"
+          >
+            Generate planning from GitHub
+          </button>
+          <button
             onClick={() => setNodeCreatorOpen((value) => !value)}
             className="rounded-xl border border-cyan-200/30 bg-cyan-300/15 px-3 py-2 text-xs font-semibold text-cyan-50 shadow-xl backdrop-blur transition hover:bg-cyan-300/25"
           >
@@ -622,15 +1162,31 @@ export function ProjectCanvasPage({
           >
             선택 노드 삭제
           </button>
-          {["Markdown Export", "Canvas PNG 다운로드", "AI Agent 리뷰"].map((action) => (
+          <button onClick={saveCanvas} className="rounded-xl border border-emerald-200/30 bg-emerald-300/15 px-3 py-2 text-xs font-semibold text-emerald-50 shadow-xl backdrop-blur transition hover:bg-emerald-300/25">
+            Canvas 저장
+          </button>
+          {planningExportActions.map((action) => (
             <button
-              key={action}
-              className="rounded-xl border border-white/10 bg-black/45 px-3 py-2 text-xs text-white/75 shadow-xl backdrop-blur transition hover:bg-white/10"
+              key={action.type}
+              onClick={() => void exportPlanningArtifact(action.type)}
+              className="rounded-xl border border-lime-200/25 bg-lime-300/10 px-3 py-2 text-xs font-semibold text-lime-50 shadow-xl backdrop-blur transition hover:bg-lime-300/20"
             >
-              {action}
+              {action.label} Export
             </button>
-          ))}        </div>
+          ))}
+          <button onClick={exportMarkdown} className="rounded-xl border border-white/10 bg-black/45 px-3 py-2 text-xs text-white/75 shadow-xl backdrop-blur transition hover:bg-white/10">
+            Legacy Canvas Export
+          </button>
+          <button onClick={exportPng} className="rounded-xl border border-white/10 bg-black/45 px-3 py-2 text-xs text-white/75 shadow-xl backdrop-blur transition hover:bg-white/10">
+            Canvas PNG 다운로드
+          </button>
+          <button onClick={generateAiSuggestions} className="rounded-xl border border-rose-200/30 bg-rose-300/15 px-3 py-2 text-xs font-semibold text-rose-50 shadow-xl backdrop-blur transition hover:bg-rose-300/25">
+            AI 제안 생성
+          </button>
+        </div>
       )}
+
+      <ModeDetailPanel mode={activeModule} planning={planning} source={planningSource} />
 
       {nodeCreatorOpen && (
         <div
@@ -682,9 +1238,9 @@ export function ProjectCanvasPage({
           transformOrigin: "0 0",
         }}
       >
-        <div className="absolute left-[180px] top-[160px] h-[520px] w-[1280px] rounded-[3rem] border border-cyan-300/10 bg-cyan-300/[0.03]" />
-        <div className="absolute left-[430px] top-[840px] h-[600px] w-[1280px] rounded-[3rem] border border-violet-300/10 bg-violet-300/[0.03]" />
-        <div className="absolute left-[430px] top-[1660px] h-[560px] w-[1120px] rounded-[3rem] border border-amber-300/10 bg-amber-300/[0.03]" />
+        <div className="absolute left-[180px] top-[140px] h-[690px] w-[1660px] rounded-[3rem] border border-cyan-300/10 bg-cyan-300/[0.03]" />
+        <div className="absolute left-[430px] top-[1040px] h-[620px] w-[1440px] rounded-[3rem] border border-violet-300/10 bg-violet-300/[0.03]" />
+        <div className="absolute left-[430px] top-[2060px] h-[520px] w-[1120px] rounded-[3rem] border border-amber-300/10 bg-amber-300/[0.03]" />
         <CanvasSectionLabel
           title="페이지별 기능 IA"
           subtitle="Page와 Feature를 분리해서 사용자 흐름을 확인"
@@ -695,16 +1251,16 @@ export function ProjectCanvasPage({
           title="System Architecture"
           subtitle="GitHub, Ops API, DB, Deploy 연결 구조"
           x={440}
-          y={800}
+          y={1000}
         />
         <CanvasSectionLabel
           title="Export / AI Review"
           subtitle="명세 다운로드와 AI 리뷰 작업 흐름"
           x={440}
-          y={1620}
+          y={2020}
         />
-        <CanvasEdgeLayer nodes={nodes} />
-        {nodes.map((node) => (
+        <CanvasEdgeLayer nodes={visibleNodes} edges={visibleEdges} />
+        {visibleNodes.map((node) => (
           <CanvasNodeCard
             key={node.id}
             node={node}
@@ -760,6 +1316,93 @@ export function ProjectCanvasPage({
                 label="Position"
                 value={`${Math.round(selectedNode.x)}, ${Math.round(selectedNode.y)}`}
               />
+            </div>
+            <div className="rounded-2xl border border-cyan-200/15 bg-cyan-300/[0.06] p-3">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-100/55">
+                  Analysis evidence
+                </p>
+                <span className="rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-white/60">
+                  {confidenceLabel(selectedNode.confidence)}
+                </span>
+              </div>
+              <div className="mb-3 grid grid-cols-2 gap-2">
+                <InfoTile
+                  label="Confidence"
+                  value={typeof selectedNode.confidence === "number" ? `${Math.round(selectedNode.confidence * 100)}%` : "-"}
+                />
+                <InfoTile
+                  label="Signals"
+                  value={`${selectedNode.codeRefs.length + selectedNode.apiLinks.length + selectedNode.interactions.length}`}
+                />
+              </div>
+              <div className="space-y-3">
+                <EvidenceList label="Evidence files" items={selectedNode.evidence || selectedNode.codeRefs} />
+                <EvidenceList label="API/data signals" items={selectedNode.apiLinks} />
+                <EvidenceList
+                  label="Import / action / docs"
+                  items={selectedNode.interactions.filter((item) => /import|api|docs|\.md|:|fetch|navigate|render/i.test(item))}
+                />
+              </div>
+            </div>
+            <div className="rounded-2xl border border-rose-200/15 bg-rose-300/[0.06] p-3">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-rose-100/55">
+                    AI suggestions
+                  </p>
+                  <p className="mt-1 text-[11px] leading-4 text-white/55">
+                    {suggestionStatus}
+                  </p>
+                </div>
+                <button
+                  onClick={generateAiSuggestions}
+                  className="rounded-lg border border-rose-200/25 bg-rose-300/15 px-2 py-1 text-[10px] font-semibold text-rose-50 hover:bg-rose-300/25"
+                >
+                  생성
+                </button>
+              </div>
+              <div className="space-y-2">
+                {pendingSuggestions.slice(0, 4).map((suggestion) => (
+                  <div key={suggestion.id} className="rounded-xl border border-white/10 bg-black/25 p-2">
+                    <div className="mb-1 flex items-center justify-between gap-2">
+                      <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/70">
+                        {suggestion.action} · {suggestion.targetType}
+                      </span>
+                      <span className="text-[10px] text-white/35">
+                        {suggestion.evidenceIds.length} evidence
+                      </span>
+                    </div>
+                    <p className="text-[11px] leading-4 text-white/70">
+                      {suggestion.rationale}
+                    </p>
+                    {"label" in suggestion.proposedValue || "title" in suggestion.proposedValue || "sectionName" in suggestion.proposedValue ? (
+                      <p className="mt-1 truncate text-[10px] text-rose-100/55">
+                        → {String(suggestion.proposedValue.label || suggestion.proposedValue.title || suggestion.proposedValue.sectionName)}
+                      </p>
+                    ) : null}
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => void decideSuggestion(suggestion.id, "approve")}
+                        className="rounded-lg bg-white px-2 py-1 text-[10px] font-bold text-black hover:bg-rose-100"
+                      >
+                        승인 적용
+                      </button>
+                      <button
+                        onClick={() => void decideSuggestion(suggestion.id, "reject")}
+                        className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-semibold text-white/65 hover:bg-white/10"
+                      >
+                        거절
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {!pendingSuggestions.length && (
+                  <p className="rounded-xl border border-white/10 bg-black/20 p-2 text-[11px] leading-4 text-white/45">
+                    대기 중인 제안이 없습니다. `AI 제안 생성`을 누르면 현재 planning의 누락된 IA/wireframe/architecture 연결을 제안합니다.
+                  </p>
+                )}
+              </div>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
               <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-white/40">

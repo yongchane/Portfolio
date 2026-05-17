@@ -31,6 +31,17 @@ export function ProjectRepositoryListPage({ data }: { data: OpsConsoleData }) {
 
       <Panel title="Repository list">
         <div className="divide-y divide-white/10 overflow-hidden rounded-3xl border border-white/10 bg-black/20">
+          {!managedRepos.length && (
+            <div className="p-8 text-center">
+              <p className="text-lg font-bold text-white">아직 관리 중인 GitHub 프로젝트가 없습니다.</p>
+              <p className="mt-2 text-sm text-white/55">
+                GitHub에서 프로젝트를 추가하면 repo 기반 IA/architecture canvas가 생성됩니다.
+              </p>
+              <Link href="/ops/projects/new" className="mt-5 inline-flex rounded-2xl bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-cyan-100">
+                첫 프로젝트 추가
+              </Link>
+            </div>
+          )}
           {managedRepos.map(({ repo, deployUrl }) => {
             const status = getRepoStatus(repo, deployUrl);
             return (

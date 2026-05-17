@@ -20,6 +20,9 @@ const eslintConfig = [
       "next-env.d.ts",
       "scripts/**",
       ".husky/**",
+      "tmp/**",
+      "apps/ops-api/**",
+      "apps/ops-api/dist/**",
     ],
   },
 ];

@@ -5,7 +5,12 @@ import {
   getSupabaseAdminClient,
   getSupabaseOpsDiagnostics,
 } from "@/lib/ops/supabase";
+import {
+  createProjectFromRepo as createProjectFromRepoContract,
+  toProjectId as toProjectIdContract,
+} from "@/lib/ops/project-management-contract.mjs";
 import type {
+  GitHubRepoSnapshot,
   NoteItem,
   Project,
   ProjectStage,
@@ -500,4 +505,60 @@ async function updateProjectInSupabase(input: {
       ? (data.github_focus as string[])
       : [],
   } satisfies Project;
+}
+
+export async function addProjectFromGitHubRepo(input: {
+  repo: GitHubRepoSnapshot;
+}) {
+  const project = createProjectFromRepoContract(input.repo) as Project;
+  const backend = await resolveMutationBackend();
+
+  if (backend === "supabase") {
+    await syncProjectToSupabaseIfAvailable(project);
+    return project;
+  }
+
+  return addProjectToLocalJson(project);
+}
+
+async function addProjectToLocalJson(project: Project) {
+  const projects = await readJsonFile<Project[]>(projectsPath);
+  const existingIndex = projects.findIndex(
+    (item) => item.id === project.id || item.repo === project.repo,
+  );
+
+  if (existingIndex !== -1) {
+    const existing = projects[existingIndex];
+    const normalized = {
+      ...existing,
+      id:
+        existing.id ||
+        toProjectIdContract({
+          repo: existing.repo || project.repo,
+          name: existing.name,
+        } as GitHubRepoSnapshot),
+      repo: existing.repo || project.repo,
+      branch: existing.branch || project.branch,
+      docs: existing.docs?.length ? existing.docs : project.docs,
+      sectors: existing.sectors?.length ? existing.sectors : project.sectors,
+      checklist: existing.checklist?.length ? existing.checklist : project.checklist,
+      operatingCadence: existing.operatingCadence?.length
+        ? existing.operatingCadence
+        : project.operatingCadence,
+      adminSurfaces: existing.adminSurfaces?.length
+        ? existing.adminSurfaces
+        : project.adminSurfaces,
+      vaultViews: existing.vaultViews?.length ? existing.vaultViews : project.vaultViews,
+      githubFocus: existing.githubFocus?.length ? existing.githubFocus : project.githubFocus,
+    };
+    projects[existingIndex] = normalized;
+    await writeJsonFile(projectsPath, projects);
+    await syncProjectToSupabaseIfAvailable(normalized);
+    return normalized;
+  }
+
+  projects.push(project);
+  await writeJsonFile(projectsPath, projects);
+  await syncProjectToSupabaseIfAvailable(project);
+  return project;
 }
